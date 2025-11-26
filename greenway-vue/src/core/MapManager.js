@@ -42,15 +42,25 @@ class MapManager {
       target: target,
       view: this._viewInstance,
       controls: config.controls !== false ? defaultControls({
-        zoom: true,
+        zoom: config.interactive !== false,
         rotate: false,
         attribution: true
       }) : [],
-      interactions: defaultInteractions({
+      interactions: config.interactive !== false ? defaultInteractions({
         altShiftDragRotate: false,
         pinchRotate: false
-      })
+      }) : [],
+      // 性能优化选项
+      loadTilesWhileAnimating: true,
+      loadTilesWhileInteracting: true
     })
+
+    // 延迟调用updateSize以确保容器已渲染
+    setTimeout(() => {
+      if (this._mapInstance) {
+        this._mapInstance.updateSize()
+      }
+    }, 100)
 
     console.log('[MapManager] 地图初始化完成')
     return this._mapInstance

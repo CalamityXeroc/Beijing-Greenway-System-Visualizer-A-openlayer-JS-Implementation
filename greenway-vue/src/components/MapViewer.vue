@@ -4,12 +4,25 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { rafThrottle, scheduleIdleTask } from '@/utils/performance'
+
+const POINTER_MOVE_THRESHOLD = 0.75
+
+const hasPointerShifted = (prevPixel, nextPixel) => {
+  if (!prevPixel) return true
+  return (
+    Math.abs(prevPixel[0] - nextPixel[0]) > POINTER_MOVE_THRESHOLD ||
+    Math.abs(prevPixel[1] - nextPixel[1]) > POINTER_MOVE_THRESHOLD
+  )
+}
+
+const STYLE_SIGNATURE_EMPTY = '__default__'
 
 const props = defineProps({
   // 地图配置
   center: {
     type: Array,
-    default: () => [116.5, 40]
+    default: () => [116.3, 39.95]
   },
   zoom: {
     type: Number,
@@ -28,6 +41,11 @@ const props = defineProps({
   layers: {
     type: Array,
     default: () => []
+  },
+  // 是否允许交互（缩放、平移）
+  interactive: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -45,7 +63,13 @@ const mapContainer = ref(null)
 let map = null
 let mapManager = null
 let layerManager = null
-let loadedLayers = new Map()
+const loadedLayers = new Map()
+const layerIdLookup = new WeakMap()
+let clickHandler = null
+let pointerMoveHandler = null
+let lastPointerPixel = null
+const deferredLayerConfigs = new Map()
+const deferredCreationTasks = new Map()
 
 // 初始化地图
 onMounted(async () => {
@@ -61,16 +85,19 @@ onMounted(async () => {
   // 初始化地图实例
   map = mapManager.init(mapContainer.value, {
     center: props.center,
-    zoom: props.zoom
+    zoom: props.zoom,
+    interactive: props.interactive
   })
 
   // 添加底图
   const baseLayer = layerManager.createGaodeLayer(props.baseLayerStyle)
   mapManager.addLayer('base', baseLayer)
+  loadedLayers.set('base', { layer: baseLayer, type: 'base', styleSignature: STYLE_SIGNATURE_EMPTY })
+  layerIdLookup.set(baseLayer, 'base')
 
   // 加载初始图层
   if (props.layers && props.layers.length > 0) {
-    await loadLayers(props.layers)
+    await syncLayers(props.layers)
   }
 
   // 注册事件监听
@@ -82,56 +109,196 @@ onMounted(async () => {
   console.log('[MapViewer] 地图组件初始化完成')
 })
 
-// 监听图层数据变化
-watch(() => props.layers, async (newLayers) => {
-  if (newLayers && map && mapManager) {
-    // 清除旧图层
-    loadedLayers.forEach((layer, id) => {
-      if (id !== 'base') {
-        mapManager.removeLayer(id)
-      }
-    })
-    loadedLayers.clear()
+// 监听图层数据变化，按需增删改
+watch(
+  () => props.layers,
+  (newLayers = []) => {
+    if (!mapManager || !layerManager) return
+    syncLayers(newLayers)
+  },
+  { deep: true }
+)
 
-    // 加载新图层
-    await loadLayers(newLayers)
+const getStyleSignature = (styleConfig) => {
+  if (!styleConfig) return STYLE_SIGNATURE_EMPTY
+  try {
+    return JSON.stringify(styleConfig)
+  } catch (error) {
+    console.warn('[MapViewer] 样式配置无法序列化，将强制刷新图层样式', error)
+    return `${STYLE_SIGNATURE_EMPTY}-${Date.now()}`
   }
-}, { deep: true })
+}
 
-// 加载图层
-async function loadLayers(layersConfig) {
-  if (!layerManager || !mapManager) return
-  
-  for (const config of layersConfig) {
-    try {
-      let layer = null
+const createLayerFromConfig = (config) => {
+  if (!config) return null
 
-      if (config.type === 'geojson') {
-        // 从 URL 或数据加载 GeoJSON 图层
-        layer = layerManager.createVectorLayerFromGeoJSON({
-          url: config.url,
-          data: config.data,
-          style: config.style ? layerManager.createStyleFunction(config.style) : undefined,
-          zIndex: config.zIndex || 10,
-          visible: config.visible !== false
-        })
-      } else if (config.type === 'vector') {
-        // 创建空的矢量图层
-        layer = layerManager.createVectorLayerFromFeatures([], {
-          style: config.style ? layerManager.createStyleFunction(config.style) : undefined,
-          zIndex: config.zIndex || 10,
-          visible: config.visible !== false
+  const baseOptions = {
+    zIndex: config.zIndex ?? 10,
+    visible: config.visible !== false
+  }
+
+  const styleFunction = config.style ? layerManager.createStyleFunction(config.style) : undefined
+
+  if (config.type === 'vector') {
+    return {
+      layer: layerManager.createVectorLayerFromFeatures([], {
+        ...baseOptions,
+        style: styleFunction
+      }),
+      styleSignature: getStyleSignature(config.style)
+    }
+  }
+
+  return {
+    layer: layerManager.createVectorLayerFromGeoJSON({
+      url: config.url,
+      data: config.data,
+      style: styleFunction,
+      zIndex: baseOptions.zIndex,
+      visible: baseOptions.visible,
+      renderAsImage: config.renderAsImage !== false
+    }),
+    styleSignature: getStyleSignature(config.style)
+  }
+}
+
+const applyLayerRuntimeProps = (record, config) => {
+  if (!record?.layer || !config) return
+
+  const desiredVisible = config.visible !== false
+  if (record.layer.getVisible() !== desiredVisible) {
+    record.layer.setVisible(desiredVisible)
+  }
+
+  const desiredZ = config.zIndex ?? 10
+  if (record.layer.getZIndex?.() !== desiredZ) {
+    record.layer.setZIndex?.(desiredZ)
+  }
+
+  const nextStyleSignature = getStyleSignature(config.style)
+  if (nextStyleSignature !== record.styleSignature) {
+    const nextStyle = config.style ? layerManager.createStyleFunction(config.style) : undefined
+    record.layer.setStyle(nextStyle)
+    record.styleSignature = nextStyleSignature
+  }
+}
+
+const shouldRebuildLayer = (record, config) => {
+  if (!record) return true
+  return (
+    record.type !== (config.type || 'geojson') ||
+    record.url !== (config.url || null) ||
+    record.dataRef !== (config.data || null)
+  )
+}
+
+const teardownLayer = (layerId) => {
+  if (layerId === 'base') return
+  cancelDeferredLayer(layerId)
+  const record = loadedLayers.get(layerId)
+  if (!record) return
+  mapManager.removeLayer(layerId)
+  layerIdLookup.delete(record.layer)
+  loadedLayers.delete(layerId)
+}
+
+const cancelDeferredLayer = (layerId) => {
+  if (deferredCreationTasks.has(layerId)) {
+    deferredCreationTasks.get(layerId)?.cancel?.()
+    deferredCreationTasks.delete(layerId)
+  }
+  deferredLayerConfigs.delete(layerId)
+}
+
+const queueDeferredLayer = (layerId, config) => {
+  deferredLayerConfigs.set(layerId, { ...config })
+  if (deferredCreationTasks.has(layerId)) return
+
+  const handle = scheduleIdleTask(() => {
+    deferredCreationTasks.delete(layerId)
+    const latestConfig = deferredLayerConfigs.get(layerId)
+    if (!latestConfig || loadedLayers.has(layerId)) {
+      deferredLayerConfigs.delete(layerId)
+      return
+    }
+
+    const created = createLayerFromConfig(latestConfig)
+    if (!created?.layer) {
+      deferredLayerConfigs.delete(layerId)
+      return
+    }
+
+    mapManager.addLayer(layerId, created.layer)
+    loadedLayers.set(layerId, {
+      layer: created.layer,
+      type: latestConfig.type || 'geojson',
+      url: latestConfig.url || null,
+      dataRef: latestConfig.data || null,
+      styleSignature: created.styleSignature
+    })
+    layerIdLookup.set(created.layer, layerId)
+    deferredLayerConfigs.delete(layerId)
+
+    if (latestConfig.fitExtent) {
+      const source = created.layer.getSource?.()
+      if (source) {
+        source.once('change', () => {
+          if (source.getState() === 'ready') {
+            mapManager.fitExtent(source.getExtent())
+          }
         })
       }
+    }
+  }, { timeout: config.deferTimeout || 1500 })
 
-      if (layer) {
-        const layerId = config.id || `layer-${Date.now()}`
-        mapManager.addLayer(layerId, layer)
-        loadedLayers.set(layerId, layer)
+  deferredCreationTasks.set(layerId, handle)
+}
 
-        // 如果需要自适应范围
-        if (config.fitExtent) {
-          const source = layer.getSource()
+async function syncLayers(layersConfig = []) {
+  const targetIds = new Set()
+
+  for (let index = 0; index < layersConfig.length; index += 1) {
+    const config = layersConfig[index]
+    if (!config) continue
+
+    const layerId = config.id || `layer-${index}`
+    targetIds.add(layerId)
+
+    const existingRecord = loadedLayers.get(layerId)
+    if (!existingRecord && config.defer) {
+      queueDeferredLayer(layerId, config)
+      continue
+    } else if (!config.defer) {
+      cancelDeferredLayer(layerId)
+    }
+
+    if (shouldRebuildLayer(existingRecord, config)) {
+      teardownLayer(layerId)
+
+      if (config.defer) {
+        queueDeferredLayer(layerId, config)
+        continue
+      }
+
+      const created = createLayerFromConfig(config)
+      if (!created?.layer) {
+        console.warn('[MapViewer] 图层创建失败，已跳过', config)
+        continue
+      }
+
+      mapManager.addLayer(layerId, created.layer)
+      loadedLayers.set(layerId, {
+        layer: created.layer,
+        type: config.type || 'geojson',
+        url: config.url || null,
+        dataRef: config.data || null,
+        styleSignature: created.styleSignature
+      })
+      layerIdLookup.set(created.layer, layerId)
+
+      if (config.fitExtent) {
+        const source = created.layer.getSource?.()
+        if (source) {
           source.once('change', () => {
             if (source.getState() === 'ready') {
               const extent = source.getExtent()
@@ -140,10 +307,26 @@ async function loadLayers(layersConfig) {
           })
         }
       }
-    } catch (error) {
-      console.error(`[MapViewer] 加载图层失败:`, config, error)
+    } else {
+      // 即使不需要重建，也需要更新运行时属性（如可见性、zIndex、样式）
+      applyLayerRuntimeProps(existingRecord, config)
     }
   }
+
+  // 移除不再需要的图层
+  loadedLayers.forEach((record, id) => {
+    if (id === 'base') return
+    if (!targetIds.has(id)) {
+      teardownLayer(id)
+    }
+  })
+
+  // 清理已经不需要的延迟任务
+  deferredLayerConfigs.forEach((_, id) => {
+    if (!targetIds.has(id)) {
+      cancelDeferredLayer(id)
+    }
+  })
 }
 
 // 设置事件监听器
@@ -151,7 +334,7 @@ function setupEventListeners() {
   if (!mapManager) return
   
   // 点击事件
-  mapManager.on('click', (evt) => {
+  clickHandler = (evt) => {
     emit('map-click', {
       coordinate: evt.coordinate,
       pixel: evt.pixel
@@ -161,12 +344,7 @@ function setupEventListeners() {
     const featuresWithLayers = []
     map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
       // 找到对应的图层ID
-      let layerId = null
-      loadedLayers.forEach((l, id) => {
-        if (l === layer) {
-          layerId = id
-        }
-      })
+      const layerId = layerIdLookup.get(layer) || null
       
       featuresWithLayers.push({
         feature: feature,
@@ -183,38 +361,76 @@ function setupEventListeners() {
         pixel: evt.pixel
       })
     }
-  })
+  }
+  mapManager.on('click', clickHandler)
 
-  // 鼠标移动事件
-  mapManager.on('pointermove', (evt) => {
+  // 鼠标移动事件 - 使用 requestAnimationFrame 节流
+  let lastHoverKey = null
+  pointerMoveHandler = rafThrottle((evt) => {
+    // 如果正在拖拽或缩放，跳过 hit detection
+    if (evt.dragging) return
+
     const featuresWithLayers = []
+    let hasFeature = false
+
     map.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
-      let layerId = null
-      loadedLayers.forEach((l, id) => {
-        if (l === layer) {
-          layerId = id
-        }
-      })
-      
+      hasFeature = true
+      const layerId = layerIdLookup.get(layer) || null
       featuresWithLayers.push({
-        feature: feature,
-        layer: layer,
-        layerId: layerId
+        feature,
+        layer,
+        layerId
       })
+      return true // 只获取最上层的要素
+    }, {
+      hitTolerance: 5, // 稍微减小点击容差
+      layerFilter: (layer) => {
+        // 过滤掉不需要交互的图层（如底图或不可见图层）
+        return layer.getVisible() && layer.get('interactive') !== false
+      }
     })
-    
-    // 修改鼠标样式
-    map.getTargetElement().style.cursor = featuresWithLayers.length > 0 ? 'pointer' : ''
+
+    const targetElement = map.getTargetElement()
+    const newCursor = hasFeature ? 'pointer' : ''
+    if (targetElement && targetElement.style.cursor !== newCursor) {
+      targetElement.style.cursor = newCursor
+    }
+
+    const pointerMoved = hasPointerShifted(lastPointerPixel, evt.pixel)
 
     if (featuresWithLayers.length > 0) {
+      const topFeature = featuresWithLayers[0]
+      const featureId = typeof topFeature.feature.getId === 'function'
+        ? topFeature.feature.getId()
+        : topFeature.feature.ol_uid
+      const hoverKey = `${topFeature.layerId || 'unknown'}-${featureId}`
+
+      if (hoverKey !== lastHoverKey || pointerMoved) {
+        lastHoverKey = hoverKey
+        lastPointerPixel = [evt.pixel[0], evt.pixel[1]]
+
+        emit('feature-hover', {
+          features: featuresWithLayers.map(f => f.feature),
+          featuresWithLayers,
+          coordinate: evt.coordinate,
+          pixel: evt.pixel
+        })
+      }
+    } else if (lastHoverKey !== null) {
+      lastHoverKey = null
+      lastPointerPixel = [evt.pixel[0], evt.pixel[1]]
       emit('feature-hover', {
-        features: featuresWithLayers.map(f => f.feature),
-        featuresWithLayers: featuresWithLayers,
+        features: [],
+        featuresWithLayers: [],
         coordinate: evt.coordinate,
         pixel: evt.pixel
       })
+    } else if (pointerMoved) {
+      lastPointerPixel = [evt.pixel[0], evt.pixel[1]]
     }
   })
+
+  mapManager.on('pointermove', pointerMoveHandler)
 
   // 视图变化事件
   const view = mapManager.getView()
@@ -234,25 +450,47 @@ defineExpose({
   getLayerManager: () => layerManager,
   setCenter: (lonLat, zoom) => mapManager?.setCenter(lonLat, zoom),
   fitExtent: (extent, options) => mapManager?.fitExtent(extent, options),
-  addLayer: (id, layer) => {
-    if (mapManager) {
-      mapManager.addLayer(id, layer)
-      loadedLayers.set(id, layer)
-    }
+  addLayer: (id, layer, meta = {}) => {
+    if (!mapManager || !layer) return
+    mapManager.addLayer(id, layer)
+    loadedLayers.set(id, {
+      layer,
+      type: meta.type || 'custom',
+      url: meta.url || null,
+      dataRef: meta.dataRef || null,
+      styleSignature: STYLE_SIGNATURE_EMPTY
+    })
+    layerIdLookup.set(layer, id)
   },
   removeLayer: (id) => {
-    if (mapManager) {
-      mapManager.removeLayer(id)
-      loadedLayers.delete(id)
-    }
+    if (!mapManager) return
+    teardownLayer(id)
   },
-  setLayerVisibility: (id, visible) => mapManager?.setLayerVisibility(id, visible)
+  setLayerVisibility: (id, visible) => {
+    const record = loadedLayers.get(id)
+    if (record?.layer) {
+      record.layer.setVisible(visible)
+    } else {
+      mapManager?.setLayerVisibility(id, visible)
+    }
+  }
 })
 
 // 清理
 onBeforeUnmount(() => {
+  if (mapManager) {
+    if (clickHandler) {
+      mapManager.un('click', clickHandler)
+    }
+    if (pointerMoveHandler) {
+      mapManager.un('pointermove', pointerMoveHandler)
+    }
+    mapManager.destroy()
+  }
   loadedLayers.clear()
-  // 注意：不要销毁全局的 mapManager，因为可能被其他组件使用
+  deferredLayerConfigs.clear()
+  deferredCreationTasks.forEach(task => task?.cancel?.())
+  deferredCreationTasks.clear()
   console.log('[MapViewer] 组件卸载')
 })
 </script>
@@ -263,6 +501,16 @@ onBeforeUnmount(() => {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
+  /* 硬件加速优化 */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* 强制GPU渲染 */
+  -webkit-transform: translateZ(0);
+  -moz-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  -o-transform: translateZ(0);
 }
 
 /* OpenLayers 控件样式优化 */

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京绿道系统 - 完整视图</title>
+    <!-- OpenLayers CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+    <!-- OpenLayers JS -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            color: #2c3e50;
+        }
+
+        /* 主容器 */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            gap: 0.5rem;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #34495e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-panel {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-badge {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 开关按钮样式 */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .switch-label {
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .switch-input {
+            display: none;
+        }
+
+        .switch-slider {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background-color: #cbd5e0;
+            border-radius: 20px;
+            transition: 0.3s all;
+        }
+
+        .switch-slider:before {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s all;
+        }
+
+        .switch-input:checked + .switch-slider {
+            background-color: #4CAF50;
+        }
+
+        .switch-input:checked + .switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 地图容器 */
+        .map-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+            height: 100vh;
+            min-height: 100vh;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* OpenLayers 弹窗美化 */
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+        
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+        }
+        
+        .ol-popup-closer:hover {
+            color: #333;
+        }
+
+        /* 选中状态的样式 */
+        .selected-feature {
+            font-weight: bold;
+            color: #2E7D32;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        /* OpenLayers 控件样式优化 */
+        .ol-control button {
+            background-color: white !important;
+            border-radius: 4px;
+            width: 36px !important;
+            height: 36px !important;
+            transition: all 0.2s ease;
+        }
+
+        .ol-control button:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .ol-zoom {
+            border-radius: 8px !important;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* 信息卡片样式 */
+        .info-cards {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            margin: 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.1);
+        }
+
+        .info-card-icon {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.3rem;
+        }
+
+        .info-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .info-card-content {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .info-card-content p {
+            margin: 0 0 0.75rem 0;
+        }
+
+        .stats-list {
+            margin-top: 0.75rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            background: rgba(52, 152, 219, 0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2196F3;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .features-list {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .feature-tag {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            padding: 0.5rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header fade-in">
+            <div class="title">
+                <i class="fas fa-map-marked-alt" style="color: #3498db;"></i>
+                北京绿道系统
+            </div>
+            <div class="info-panel">
+                <div class="status-badge">
+                    <i class="fas fa-check-circle"></i>
+                    实时数据已加载
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" class="switch-input" id="beijingAreaToggle" checked>
+                    <span class="switch-slider"></span>
+                    <span class="switch-label">显示北京区域</span>
+                </label>
+            </div>
+        </header>
+        <div class="map-container fade-in">
+            <div id="map"></div>
+        </div>
+
+        <div class="info-cards">
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h2 class="info-card-title">北京绿道体系</h2>
+                </div>
+                <div class="info-card-content">
+                    <p>北京绿道是一个连接公园、景区、文化场所和城市空间的绿色廊道网络系统，为市民提供休闲、游憩和绿色出行的空间。</p>
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <div class="stat-value">2000+</div>
+                            <div class="stat-label">公里总长度</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">16</div>
+                            <div class="stat-label">区县覆盖</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">300+</div>
+                            <div class="stat-label">景点连接</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #673AB7, #3F51B5);">
+                        <i class="fas fa-tree"></i>
+                    </div>
+                    <h2 class="info-card-title">绿道特色</h2>
+                </div>
+                <div class="info-card-content">
+                    <p>北京绿道系统整合了城市绿色资源，打造"山、水、城、景、文"五位一体的休闲游憩网络。</p>
+                    <div class="features-list">
+                        <span class="feature-tag">
+                            <i class="fas fa-mountain"></i>
+                            山地景观
+                        </span>
+                        <span class="feature-tag">
+                            <i class="fas fa-water"></i>
+                            滨水空间
+                        </span>
+                        <span class="feature-tag">
+                            <i class="fas fa-city"></i>
+                            城市风貌
+                        </span>
+                        <span class="feature-tag">
+                            <i class="fas fa-landmark"></i>
+                            文化遗产
+                        </span>
+                        <span class="feature-tag">
+                            <i class="fas fa-bicycle"></i>
+                            运动健身
+                        </span>
+                        <span class="feature-tag">
+                            <i class="fas fa-leaf"></i>
+                            生态保护
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-icon" style="background: linear-gradient(135deg, #FF9800, #FF5722);">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <h2 class="info-card-title">使用指南</h2>
+                </div>
+                <div class="info-card-content">
+                    <p>探索北京绿道系统，点击地图上的路线可以查看详细信息：</p>
+                    <ul style="list-style: none; padding: 0; margin: 0.75rem 0 0 0;">
+                        <li style="display: flex; align-items: center; gap: 0.75rem; margin: 0.75rem 0; padding: 0.5rem; background: rgba(52, 152, 219, 0.05); border-radius: 6px;">
+                            <i class="fas fa-mouse-pointer" style="color: #2196F3; font-size: 1.1rem;"></i>
+                            <span>点击绿道路线查看详情</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; margin: 0.75rem 0; padding: 0.5rem; background: rgba(76, 175, 80, 0.05); border-radius: 6px;">
+                            <i class="fas fa-search-plus" style="color: #4CAF50; font-size: 1.1rem;"></i>
+                            <span>使用鼠标滚轮缩放地图</span>
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 0.75rem; margin: 0.75rem 0; padding: 0.5rem; background: rgba(255, 152, 0, 0.05); border-radius: 6px;">
+                            <i class="fas fa-hand-paper" style="color: #FF9800; font-size: 1.1rem;"></i>
+                            <span>拖动地图浏览不同区域</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置中心 ====================
+        const CONFIG = {
+            map: {
+                center: [116.4, 40.0],
+                zoom: 7.5,
+                minZoom: 5,
+                maxZoom: 13,
+                extent: [114.0, 38.0, 119.0, 42.0]
+            },
+            tiles: {
+                gaode: 'https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}'
+            },
+            layers: [
+                {
+                    id: 'beijing-area',
+                    name: '北京区域',
+                    type: 'vector',
+                    url: '数据/北京面.geojson',
+                    style: {
+                        fillColor: 'rgba(100, 149, 237, 0.2)'
+                    },
+                    visible: true
+                },
+                {
+                    id: 'beijing-boundary',
+                    name: '北京边界',
+                    type: 'vector',
+                    url: '数据/北京边界.geojson',
+                    style: {
+                        strokeColor: '#4CAF50',
+                        strokeWidth: 6
+                    },
+                    visible: true
+                },
+                {
+                    id: 'wenyu-greenway',
+                    name: '温榆河绿道',
+                    type: 'vector',
+                    url: '数据/绿道/温榆河绿道/温榆河.geojson',
+                    style: {
+                        strokeColor: '#D2691E',
+                        strokeWidth: 4,
+                        hoverColor: '#2E7D32',
+                        hoverWidth: 6,
+                        selectedColor: '#1976D2',
+                        selectedWidth: 8,
+                        glowColor: 'rgba(76, 175, 80, 0.3)',
+                        glowWidth: 12
+                    },
+                    interactive: true,
+                    detailPage: '温榆河.html',
+                    popup: {
+                        title: '温榆河绿道',
+                        description: '北京市重要的生态景观廊道',
+                        icon: 'fa-leaf',
+                        color: '#2E7D32'
+                    }
+                }
+            ]
+        };
+
+        // ==================== 工具类 ====================
+        class MapManager {
+            constructor(config) {
+                this.config = config;
+                this.map = null;
+                this.layers = new Map();
+                this.states = {
+                    isHovered: false,
+                    isSelected: false,
+                    currentLayer: null
+                };
+                this.popup = null;
+            }
+
+            // 初始化地图
+            init(target) {
+                // 创建底图
+                const baseLayer = new ol.layer.Tile({
+                    source: new ol.source.XYZ({
+                        url: this.config.tiles.gaode,
+                        crossOrigin: 'anonymous'
+                    })
+                });
+
+                // 转换边界
+                const extent = ol.proj.transformExtent(
+                    this.config.map.extent,
+                    'EPSG:4326',
+                    'EPSG:3857'
+                );
+
+                // 创建视图
+                const view = new ol.View({
+                    center: ol.proj.fromLonLat(this.config.map.center),
+                    zoom: this.config.map.zoom,
+                    minZoom: this.config.map.minZoom,
+                    maxZoom: this.config.map.maxZoom,
+                    extent: extent
+                });
+
+                // 创建地图
+                this.map = new ol.Map({
+                    target: target,
+                    layers: [baseLayer],
+                    view: view
+                });
+
+                // 初始化弹窗
+                this.initPopup();
+
+                // 加载图层
+                this.loadLayers();
+
+                // 绑定事件
+                this.bindEvents();
+
+                console.log('地图初始化完成');
+                return this.map;
+            }
+
+            // 初始化弹窗
+            initPopup() {
+                const popupContainer = document.createElement('div');
+                popupContainer.className = 'ol-popup';
+                popupContainer.innerHTML = '<div id="popup-content"></div>';
+                document.body.appendChild(popupContainer);
+
+                this.popup = new ol.Overlay({
+                    element: popupContainer,
+                    autoPan: true,
+                    autoPanAnimation: { duration: 250 }
+                });
+                this.map.addOverlay(this.popup);
+            }
+
+            // 加载图层
+            loadLayers() {
+                this.config.layers.forEach(layerConfig => {
+                    const layer = this.createLayer(layerConfig);
+                    if (layer) {
+                        this.map.addLayer(layer);
+                        this.layers.set(layerConfig.id, {
+                            layer: layer,
+                            config: layerConfig
+                        });
+                    }
+                });
+            }
+
+            // 创建图层
+            createLayer(config) {
+                if (config.type === 'vector') {
+                    const source = new ol.source.Vector({
+                        url: config.url,
+                        format: new ol.format.GeoJSON()
+                    });
+
+                    const layer = new ol.layer.Vector({
+                        source: source,
+                        style: (feature) => this.getStyle(config, feature),
+                        visible: config.visible !== false
+                    });
+
+                    layer.set('id', config.id);
+                    layer.set('name', config.name);
+                    return layer;
+                }
+                return null;
+            }
+
+            // 获取样式
+            getStyle(config, feature) {
+                const styles = [];
+                const isInteractive = config.interactive && 
+                                     this.states.currentLayer === config.id;
+                
+                // 发光效果
+                if (isInteractive && (this.states.isHovered || this.states.isSelected)) {
+                    styles.push(new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: this.states.isSelected ? 
+                                   'rgba(33, 150, 243, 0.4)' : config.style.glowColor,
+                            width: this.states.isSelected ? 16 : config.style.glowWidth
+                        })
+                    }));
+                }
+
+                // 主样式
+                const strokeColor = this.states.isSelected ? 
+                                   config.style.selectedColor :
+                                   (this.states.isHovered ? 
+                                    config.style.hoverColor : 
+                                    config.style.strokeColor);
+                
+                const strokeWidth = this.states.isSelected ?
+                                   config.style.selectedWidth :
+                                   (this.states.isHovered ?
+                                    config.style.hoverWidth :
+                                    config.style.strokeWidth);
+
+                if (config.style.fillColor) {
+                    styles.push(new ol.style.Style({
+                        fill: new ol.style.Fill({
+                            color: config.style.fillColor
+                        })
+                    }));
+                }
+
+                if (config.style.strokeColor) {
+                    styles.push(new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: strokeColor,
+                            width: strokeWidth
+                        })
+                    }));
+                }
+
+                return styles;
+            }
+
+            // 绑定事件
+            bindEvents() {
+                // 鼠标移动
+                this.map.on('pointermove', (evt) => this.handlePointerMove(evt));
+                
+                // 点击
+                this.map.on('click', (evt) => this.handleClick(evt));
+            }
+
+            // 处理鼠标移动
+            handlePointerMove(evt) {
+                if (evt.dragging) return;
+
+                const pixel = this.map.getEventPixel(evt.originalEvent);
+                let found = false;
+
+                this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
+                    const layerId = layer.get('id');
+                    const layerData = this.layers.get(layerId);
+                    
+                    if (layerData && layerData.config.interactive) {
+                        found = true;
+                        this.states.currentLayer = layerId;
+                        
+                        if (!this.states.isHovered) {
+                            this.states.isHovered = true;
+                            layer.changed();
+                        }
+
+                        this.showPopup(evt.coordinate, layerData.config);
+                        return true;
+                    }
+                });
+
+                this.map.getTargetElement().style.cursor = found ? 'pointer' : '';
+
+                if (!found && this.states.isHovered) {
+                    this.states.isHovered = false;
+                    this.states.currentLayer = null;
+                    this.hidePopup();
+                    this.refreshLayers();
+                }
+            }
+
+            // 处理点击
+            handleClick(evt) {
+                const pixel = this.map.getEventPixel(evt.originalEvent);
+                let clicked = false;
+
+                this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
+                    const layerId = layer.get('id');
+                    const layerData = this.layers.get(layerId);
+                    
+                    if (layerData && layerData.config.interactive) {
+                        clicked = true;
+                        
+                        // 打开详情页
+                        if (layerData.config.detailPage) {
+                            window.open(layerData.config.detailPage, '_blank');
+                        }
+
+                        // 设置选中状态
+                        if (!this.states.isSelected) {
+                            this.states.isSelected = true;
+                            this.states.currentLayer = layerId;
+                            layer.changed();
+                        }
+                        return true;
+                    }
+                });
+
+                // 点击空白处取消选中
+                if (!clicked && this.states.isSelected) {
+                    this.states.isSelected = false;
+                    this.states.currentLayer = null;
+                    this.refreshLayers();
+                }
+            }
+
+            // 显示弹窗
+            showPopup(coordinate, layerConfig) {
+                if (!layerConfig.popup) return;
+
+                const lonLat = ol.proj.toLonLat(coordinate);
+                const popup = layerConfig.popup;
+                
+                const content = `
+                    <div>
+                        <div style="font-size: 1.1rem; font-weight: 600; color: ${popup.color}; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;">
+                            <i class="fas ${popup.icon}" style="margin-right: 0.5rem;"></i>
+                            ${popup.title}
+                        </div>
+                        <div style="color: #4a5568; line-height: 1.5;">
+                            <p style="margin: 0;">
+                                <i class="fas fa-info-circle" style="color: #3498db; margin-right: 0.5rem;"></i>
+                                ${popup.description}
+                            </p>
+                            <div style="margin: 0.75rem 0 0 0; padding: 0.75rem; background: rgba(52, 152, 219, 0.1); border-radius: 6px;">
+                                <p style="margin: 0; font-size: 0.875rem; color: #2d3748; font-weight: 500;">
+                                    <i class="fas fa-map-marker-alt" style="color: #3498db; margin-right: 0.5rem;"></i>
+                                    位置信息
+                                </p>
+                                <div style="margin-top: 0.5rem; font-family: 'Consolas', monospace; font-size: 0.8125rem; color: #718096;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                        <span>经度：</span>
+                                        <span style="color: #2d3748; font-weight: 500;">${lonLat[0].toFixed(6)}°E</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>纬度：</span>
+                                        <span style="color: #2d3748; font-weight: 500;">${lonLat[1].toFixed(6)}°N</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('popup-content').innerHTML = content;
+                this.popup.setPosition(coordinate);
+            }
+
+            // 隐藏弹窗
+            hidePopup() {
+                this.popup.setPosition(undefined);
+            }
+
+            // 刷新图层
+            refreshLayers() {
+                this.layers.forEach(layerData => {
+                    layerData.layer.changed();
+                });
+            }
+
+            // 切换图层可见性
+            toggleLayer(layerId, visible) {
+                const layerData = this.layers.get(layerId);
+                if (layerData) {
+                    layerData.layer.setVisible(visible);
+                }
+            }
+
+            // 获取图层列表
+            getLayerList() {
+                const list = [];
+                this.layers.forEach((layerData, id) => {
+                    list.push({
+                        id: id,
+                        name: layerData.config.name,
+                        visible: layerData.layer.getVisible()
+                    });
+                });
+                return list;
+            }
+        }
+
+        // ==================== 初始化应用 ====================
+        const mapManager = new MapManager(CONFIG);
+        mapManager.init('map');
+
+        // 图层可见性控制
+        document.getElementById('beijingAreaToggle').addEventListener('change', function(e) {
+            const visible = e.target.checked;
+            mapManager.toggleLayer('beijing-area', visible);
+            mapManager.toggleLayer('beijing-boundary', visible);
+        });
+
+        // 窗口大小变化
+        window.addEventListener('resize', function() {
+            mapManager.map.updateSize();
+        });
+
+        console.log('应用初始化完成');
+        console.log('已加载图层:', mapManager.getLayerList());
+    </script>
+</body>
+</html>

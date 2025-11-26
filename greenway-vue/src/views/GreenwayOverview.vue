@@ -16,17 +16,17 @@
         @feature-click="onFeatureClick"
         @feature-hover="onFeatureHover"
       />
-      
-      <!-- 地图工具栏 -->
-      <MapToolbar
-        v-if="mapManager"
-        :mapManager="mapManager"
-        :layerConfig="layerConfig"
-        @tool-activated="onToolActivated"
-        @layer-added="onLayerAdded"
-        @layer-toggled="onLayerToggled"
-      />
     </div>
+    
+    <!-- 地图工具栏 - 移到容器外以确保层级正确 -->
+    <MapToolbar
+      v-if="mapManager"
+      :mapManager="mapManager"
+      :layerConfig="layerConfig"
+      @tool-activated="onToolActivated"
+      @layer-added="onLayerAdded"
+      @layer-toggled="onLayerToggled"
+    />
 
     <!-- 信息卡片区域 -->
     <div class="info-section">
@@ -124,7 +124,11 @@
     </div>
 
     <!-- 悬浮提示框 (Tooltip) -->
-    <div v-if="tooltip.visible" class="hover-tooltip" :style="tooltipStyle">
+    <div
+      ref="tooltipRef"
+      v-show="tooltip.visible"
+      class="hover-tooltip"
+    >
       <div class="tooltip-header">
         <i class="fas fa-route"></i>
         <strong>{{ tooltip.title }}</strong>
@@ -149,16 +153,16 @@
     </div>
 
     <!-- 弹窗 (点击后显示) -->
-    <div v-if="popup.visible" class="popup" :style="popupStyle">
-      <div class="popup-content" @mousedown="startDrag">
-        <div class="popup-header">
+    <div v-show="popup.visible" class="popup" :style="popupStyle">
+      <div class="popup-content">
+        <div class="popup-header" @mousedown="startDrag">
           <h4>{{ popup.title }}</h4>
           <button class="popup-close" @click.stop="closePopup">
             <i class="fas fa-times"></i>
           </button>
         </div>
         <p>{{ popup.content }}</p>
-        <button @click.stop="viewPopupDetail" class="popup-btn">
+        <button @click="viewPopupDetail" class="popup-btn">
           <i class="fas fa-external-link-alt"></i> 查看详情
         </button>
       </div>
@@ -167,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Style, Stroke } from 'ol/style'
 import MapViewer from '@/components/MapViewer.vue'
@@ -177,25 +181,12 @@ const router = useRouter()
 
 // 地图配置
 const mapConfig = reactive({
-  center: [116.4, 40.15],  // 稍微向北调整中心点
+  center: [116.4, 40.4],  // 向北移动视角，使北京区域下移显示
   zoom: 8.5  // 降低缩放级别，确保完整显示北京
 })
 
 // 图层配置
 const layerConfig = ref([
-  {
-    id: 'beijing-area',
-    name: '北京市域',
-    type: 'geojson',
-    url: '/数据/北京面.geojson',
-    visible: true,
-    zIndex: 5,
-    style: {
-      strokeColor: '#1976D2',
-      strokeWidth: 3,
-      fillColor: 'rgba(33, 150, 243, 0.15)'  // 更明显的蓝色填充
-    }
-  },
   {
     id: 'beijing-boundary',
     name: '市界',
@@ -203,16 +194,31 @@ const layerConfig = ref([
     url: '/数据/北京边界.geojson',
     visible: true,
     zIndex: 6,
+    interactive: false, // 标记为不可交互
     style: {
-      strokeColor: '#1565C0',
-      strokeWidth: 4  // 加粗边界线
+      lineColor: '#1565C0', // 使用 lineColor 而不是 strokeColor
+      lineWidth: 4          // 使用 lineWidth 而不是 strokeWidth
+    }
+  },
+  {
+    id: 'beijing-area',
+    name: '北京市域',
+    type: 'geojson',
+    url: '/数据/北京面.geojson',
+    visible: true,
+    zIndex: 5,
+    interactive: false, // 标记为不可交互
+    style: {
+      strokeColor: 'rgba(0,0,0,0)', // 透明描边
+      strokeWidth: 0,
+      fillColor: 'rgba(33, 150, 243, 0.15)'
     }
   },
   {
     id: 'wenyu-greenway',
     name: '温榆河绿道',
     type: 'geojson',
-    url: '/数据/绿道/温榆河绿道/温榆河.geojson',
+    url: '/数据/绿道/温榆河.geojson',
     visible: true,
     zIndex: 10,
     fitExtent: false,  // 不自动适配，使用我们设置的初始视图
@@ -226,16 +232,218 @@ const layerConfig = ref([
       length: 108,
       area: '昌平、顺义、朝阳、通州'
     }
+  },
+  {
+    id: 'huanerhuan-greenway',
+    name: '环二环城市绿道',
+    type: 'geojson',
+    url: '/数据/绿道/环二环城市绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '环二环城市绿道',
+      description: '环绕二环路的城市型绿道，全长87公里',
+      length: 87,
+      area: '东城、西城、朝阳、海淀'
+    }
+  },
+  {
+    id: 'liangmahe-greenway',
+    name: '亮马河绿道',
+    type: 'geojson',
+    url: '/数据/绿道/亮马河绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '亮马河绿道',
+      description: '朝阳区国际化滨水绿道，全长5.5公里',
+      length: 5.5,
+      area: '朝阳区'
+    }
+  },
+  {
+    id: 'changying-greenway',
+    name: '常营半马绿道',
+    type: 'geojson',
+    url: '/数据/绿道/常营半马绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '常营半马绿道',
+      description: '专业半马赛道型绿道，全长21公里',
+      length: 21,
+      area: '朝阳区常营地区'
+    }
+  },
+  {
+    id: 'changping42-greenway',
+    name: '昌平42绿道',
+    type: 'geojson',
+    url: '/数据/绿道/昌平42绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '昌平42绿道',
+      description: '山地型绿道，全长42公里',
+      length: 42,
+      area: '昌平区'
+    }
+  },
+  {
+    id: 'lidu-greenway',
+    name: '丽都商圈绿道',
+    type: 'geojson',
+    url: '/数据/绿道/丽都商圈绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '丽都商圈绿道',
+      description: '商圈绿化廊道，全长6.8公里',
+      length: 6.8,
+      area: '朝阳区丽都商圈'
+    }
+  },
+  {
+    id: 'beiyunhe-greenway',
+    name: '北运河绿道',
+    type: 'geojson',
+    url: '/数据/绿道/北运河绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '北运河绿道',
+      description: '运河文化滨水绿道，全长36公里',
+      length: 36,
+      area: '通州区北运河沿岸'
+    }
+  },
+  {
+    id: 'nansha-greenway',
+    name: '南沙绿道',
+    type: 'geojson',
+    url: '/数据/绿道/南沙绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '南沙绿道',
+      description: '滨水生态绿道，全长15公里',
+      length: 15,
+      area: '昌平区南沙河沿岸'
+    }
+  },
+  {
+    id: 'aosen-greenway',
+    name: '奥林匹克森林公园绿道',
+    type: 'geojson',
+    url: '/数据/绿道/奥林匹克森林公园绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '奥林匹克森林公园绿道',
+      description: '奥运文化主题绿道，全长23公里',
+      length: 23,
+      area: '朝阳区奥森公园'
+    }
+  },
+  {
+    id: 'yingcheng-greenway',
+    name: '营城建都绿道',
+    type: 'geojson',
+    url: '/数据/绿道/营城建都绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '营城建都绿道',
+      description: '历史文化古迹串联绿道，全长42公里',
+      length: 42,
+      area: '西城区、东城区'
+    }
   }
 ])
 
-// 当前激活的图层
-const layers = computed(() => {
-  return layerConfig.value.map(layer => ({
-    ...layer,
-    visible: layer.visible !== false
-  }))
-})
+const layerInfoCache = new Map()
+const interactiveLayerIds = new Set()
+
+const rebuildLayerCaches = () => {
+  layerInfoCache.clear()
+  interactiveLayerIds.clear()
+  layerConfig.value.forEach(layer => {
+    layerInfoCache.set(layer.id, layer)
+    if (layer.info) {
+      interactiveLayerIds.add(layer.id)
+    }
+  })
+}
+
+const pickInteractiveFeature = (featuresWithLayers = []) => {
+  if (!featuresWithLayers) return null
+  for (let i = 0; i < featuresWithLayers.length; i += 1) {
+    const candidate = featuresWithLayers[i]
+    if (candidate?.layerId && interactiveLayerIds.has(candidate.layerId)) {
+      return candidate
+    }
+  }
+  return null
+}
+
+rebuildLayerCaches()
+
+watch(layerConfig, rebuildLayerCaches, { deep: true })
+
+// 当前激活的图层 - 使用浅拷贝优化性能
+const layers = computed(() => layerConfig.value.slice())
 
 // 选中的绿道
 const selectedGreenway = ref(null)
@@ -244,14 +452,26 @@ const selectedGreenway = ref(null)
 const tooltip = reactive({
   visible: false,
   title: '',
-  data: {},
-  position: { x: 0, y: 0 }
+  data: {}
 })
 
-const tooltipStyle = computed(() => ({
-  left: `${tooltip.position.x + 15}px`,  // 偏移15px，避免遮挡鼠标
-  top: `${tooltip.position.y + 15}px`
-}))
+const tooltipRef = ref(null)
+const tooltipPixel = { x: -9999, y: -9999 }
+let tooltipMoveRaf = null
+
+const scheduleTooltipPosition = (pixel) => {
+  if (!pixel) return
+  tooltipPixel.x = pixel[0] + 15
+  tooltipPixel.y = pixel[1] + 15
+
+  if (tooltipMoveRaf) return
+  tooltipMoveRaf = requestAnimationFrame(() => {
+    tooltipMoveRaf = null
+    if (tooltipRef.value) {
+      tooltipRef.value.style.transform = `translate3d(${tooltipPixel.x}px, ${tooltipPixel.y}px, 0)`
+    }
+  })
+}
 
 // 弹窗状态 (Popup - 点击后显示)
 const popup = reactive({
@@ -270,6 +490,7 @@ const popupStyle = computed(() => ({
 // 弹窗拖动相关
 const isDragging = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
+let popupRafId = null
 
 const startDrag = (event) => {
   isDragging.value = true
@@ -278,19 +499,29 @@ const startDrag = (event) => {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top
   }
-  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('mousemove', onDrag, { passive: true })
   document.addEventListener('mouseup', stopDrag)
 }
 
 const onDrag = (event) => {
-  if (isDragging.value) {
+  if (!isDragging.value) return
+  
+  if (popupRafId) {
+    cancelAnimationFrame(popupRafId)
+  }
+  
+  popupRafId = requestAnimationFrame(() => {
     popup.position.x = event.clientX - dragOffset.value.x
     popup.position.y = event.clientY - dragOffset.value.y
-  }
+  })
 }
 
 const stopDrag = () => {
   isDragging.value = false
+  if (popupRafId) {
+    cancelAnimationFrame(popupRafId)
+    popupRafId = null
+  }
   document.removeEventListener('mousemove', onDrag)
   document.removeEventListener('mouseup', stopDrag)
 }
@@ -304,6 +535,13 @@ const onMapReady = (map) => {
   // 获取 MapManager 实例
   if (mapViewer.value) {
     mapManager.value = mapViewer.value.getMapManager()
+    // 记录每个图层的默认样式，方便恢复
+    layerConfig.value.forEach(layer => {
+      const layerInstance = mapManager.value?.getLayer(layer.id)
+      if (layerInstance && !layerDefaultStyles.has(layer.id)) {
+        layerDefaultStyles.set(layer.id, layerInstance.getStyle())
+      }
+    })
   }
 }
 
@@ -313,7 +551,52 @@ const hoveredFeature = ref(null)
 const selectedLayer = ref(null)
 const selectedLayerId = ref(null)
 
-// 高亮整个图层的所有要素
+// 高亮样式缓存，避免重复创建
+const highlightStyleCache = new Map()
+const layerDefaultStyles = new Map()
+
+const getHighlightStyle = (color, width, isHover) => {
+  const key = `${color}-${width}-${isHover}`
+  
+  if (!highlightStyleCache.has(key)) {
+    highlightStyleCache.set(key, [
+      // 外层阴影（模拟发光效果）
+      new Style({
+        stroke: new Stroke({
+          color: isHover ? 'rgba(255, 215, 0, 0.4)' : 'rgba(255, 107, 53, 0.4)',
+          width: width + 6,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }),
+        zIndex: 1
+      }),
+      // 中层阴影
+      new Style({
+        stroke: new Stroke({
+          color: isHover ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255, 107, 53, 0.6)',
+          width: width + 3,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }),
+        zIndex: 2
+      }),
+      // 主线条
+      new Style({
+        stroke: new Stroke({
+          color: color,
+          width: width,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }),
+        zIndex: 3
+      })
+    ])
+  }
+  
+  return highlightStyleCache.get(key)
+}
+
+// 高亮整个图层的所有要素 - 直接切换图层样式
 const highlightLayer = (layerId, color, width, isHover = false) => {
   const mapViewerComponent = mapViewer.value
   if (!mapViewerComponent) return
@@ -323,53 +606,18 @@ const highlightLayer = (layerId, color, width, isHover = false) => {
   
   const layer = mapManager.getLayer(layerId)
   if (!layer) return
+
+  if (!layerDefaultStyles.has(layerId)) {
+    layerDefaultStyles.set(layerId, layer.getStyle())
+  }
   
-  const source = layer.getSource()
-  const features = source.getFeatures()
-  
-  // 创建带阴影效果的高亮样式
-  const highlightStyle = [
-    // 外层阴影（模拟发光效果）
-    new Style({
-      stroke: new Stroke({
-        color: isHover ? 'rgba(255, 215, 0, 0.4)' : 'rgba(255, 107, 53, 0.4)',
-        width: width + 6,
-        lineCap: 'round',
-        lineJoin: 'round'
-      }),
-      zIndex: 1
-    }),
-    // 中层阴影
-    new Style({
-      stroke: new Stroke({
-        color: isHover ? 'rgba(255, 215, 0, 0.6)' : 'rgba(255, 107, 53, 0.6)',
-        width: width + 3,
-        lineCap: 'round',
-        lineJoin: 'round'
-      }),
-      zIndex: 2
-    }),
-    // 主线条
-    new Style({
-      stroke: new Stroke({
-        color: color,
-        width: width,
-        lineCap: 'round',
-        lineJoin: 'round'
-      }),
-      zIndex: 3
-    })
-  ]
-  
-  // 给所有要素设置高亮样式
-  features.forEach(feature => {
-    feature.setStyle(highlightStyle)
-  })
-  
-  return { layer, features }
+  const highlightStyle = getHighlightStyle(color, width, isHover)
+  if (layer.getStyle() !== highlightStyle) {
+    layer.setStyle(highlightStyle)
+  }
 }
 
-// 清除图层高亮
+// 清除图层高亮 - 恢复默认样式
 const clearLayerHighlight = (layerId) => {
   const mapViewerComponent = mapViewer.value
   if (!mapViewerComponent) return
@@ -379,121 +627,89 @@ const clearLayerHighlight = (layerId) => {
   
   const layer = mapManager.getLayer(layerId)
   if (!layer) return
-  
-  const source = layer.getSource()
-  const features = source.getFeatures()
-  
-  // 恢复默认样式
-  features.forEach(feature => {
-    feature.setStyle(undefined)
-  })
+
+  const defaultStyle = layerDefaultStyles.get(layerId)
+  if (defaultStyle) {
+    layer.setStyle(defaultStyle)
+  } else {
+    layer.setStyle(undefined)
+  }
 }
 
 // 要素点击
-const onFeatureClick = ({ features, featuresWithLayers, pixel }) => {
-  console.log('[GreenwayOverview] 点击事件:', { features, featuresWithLayers, pixel })
-  
-  if (featuresWithLayers && featuresWithLayers.length > 0) {
-    // 只处理来自温榆河绿道图层的要素
-    const greenwayFeature = featuresWithLayers.find(f => f.layerId === 'wenyu-greenway')
-    
-    if (!greenwayFeature) {
-      console.log('[GreenwayOverview] 未点击到绿道图层')
-      return
-    }
-    
-    console.log('[GreenwayOverview] 点击到绿道:', greenwayFeature)
-    
-    // 清除之前选中的图层高亮
-    if (selectedLayerId.value && selectedLayerId.value !== 'wenyu-greenway') {
-      clearLayerHighlight(selectedLayerId.value)
-    }
-    
-    // 高亮整个绿道图层（橙红色表示选中，第四个参数 false 表示是点击状态）
-    highlightLayer('wenyu-greenway', '#FF6B35', 5, false)
-    selectedLayerId.value = 'wenyu-greenway'
+const onFeatureClick = ({ featuresWithLayers, pixel }) => {
+  console.log('[GreenwayOverview] 点击事件:', { featuresWithLayers, pixel })
 
-    // 查找对应的图层配置
-    const layerInfo = layerConfig.value.find(l => l.id === 'wenyu-greenway')
-    
-    if (layerInfo && layerInfo.info) {
-      selectedGreenway.value = layerInfo.info
-      
-      // 隐藏悬停提示框
-      tooltip.visible = false
-      
-      // 显示弹窗
-      popup.title = layerInfo.info.name
-      popup.content = layerInfo.info.description
-      popup.data = layerInfo
-      popup.position = { x: pixel[0], y: pixel[1] }
-      popup.visible = true
-      
-      console.log('[GreenwayOverview] 显示弹窗:', popup)
-    }
+  const greenwayFeature = pickInteractiveFeature(featuresWithLayers)
+  if (!greenwayFeature) {
+    console.log('[GreenwayOverview] 未点击到绿道图层')
+    return
+  }
+
+  console.log('[GreenwayOverview] 点击到绿道:', greenwayFeature)
+
+  if (selectedLayerId.value && selectedLayerId.value !== greenwayFeature.layerId) {
+    clearLayerHighlight(selectedLayerId.value)
+  }
+
+  highlightLayer(greenwayFeature.layerId, '#FF6B35', 5, false)
+  selectedLayerId.value = greenwayFeature.layerId
+
+  const layerInfo = layerInfoCache.get(greenwayFeature.layerId)
+  if (layerInfo && layerInfo.info) {
+    selectedGreenway.value = layerInfo.info
+    tooltip.visible = false
+
+    popup.title = layerInfo.info.name
+    popup.content = layerInfo.info.description
+    popup.data = layerInfo
+    popup.position = { x: pixel[0], y: pixel[1] }
+    popup.visible = true
+
+    console.log('[GreenwayOverview] 显示弹窗:', popup)
   }
 }
 
 // 要素悬停
-const onFeatureHover = ({ featuresWithLayers, pixel, coordinate }) => {
-  // 如果已经有选中的图层，只显示tooltip，不改变高亮样式
+let lastHoveredLayerId = null
+
+const onFeatureHover = ({ featuresWithLayers, pixel }) => {
   const isLayerSelected = selectedLayerId.value !== null
-  
-  if (featuresWithLayers && featuresWithLayers.length > 0) {
-    // 只处理绿道图层
-    const greenwayFeature = featuresWithLayers.find(f => f.layerId === 'wenyu-greenway')
-    
-    if (greenwayFeature) {
-      // 查找绿道信息
-      const layerInfo = layerConfig.value.find(l => l.id === 'wenyu-greenway')
-      
-      // 只有在弹窗未显示时才显示悬浮提示框
-      if (layerInfo && layerInfo.info && !popup.visible) {
-        tooltip.title = layerInfo.info.name
-        tooltip.data = {
-          length: layerInfo.info.length,
-          area: layerInfo.info.area,
-          description: layerInfo.info.description
-        }
-        tooltip.position = { x: pixel[0], y: pixel[1] }
-        tooltip.visible = true
+  const greenwayFeature = pickInteractiveFeature(featuresWithLayers)
+
+  if (greenwayFeature) {
+    const layerInfo = layerInfoCache.get(greenwayFeature.layerId)
+
+    if (layerInfo?.info && !popup.visible) {
+      tooltip.title = layerInfo.info.name
+      tooltip.data = {
+        length: layerInfo.info.length,
+        area: layerInfo.info.area,
+        description: layerInfo.info.description
       }
-      
-      // 如果没有选中的图层，才更新高亮效果
-      if (!isLayerSelected) {
-        // 只有当悬停到不同的要素时才更新高亮
-        if (greenwayFeature.feature !== hoveredFeature.value) {
-          // 清除之前的高亮
-          if (hoveredFeature.value) {
-            clearLayerHighlight('wenyu-greenway')
-          }
-          
-          // 高亮整个绿道图层（金色表示悬停，第四个参数 true 表示是悬停状态）
-          hoveredFeature.value = greenwayFeature.feature
-          highlightLayer('wenyu-greenway', '#FFD700', 6, true)
-        }
-      }
-    } else {
-      // 鼠标不在绿道图层上
-      // 隐藏tooltip
-      tooltip.visible = false
-      
-      // 如果没有选中的图层，清除悬停高亮
-      if (!isLayerSelected && hoveredFeature.value) {
-        clearLayerHighlight('wenyu-greenway')
-        hoveredFeature.value = null
-      }
+      scheduleTooltipPosition(pixel)
+      tooltip.visible = true
     }
-  } else {
-    // 没有任何要素在鼠标下方
-    // 隐藏tooltip
-    tooltip.visible = false
-    
-    // 如果没有选中的图层，清除悬停高亮
-    if (!isLayerSelected && hoveredFeature.value) {
-      clearLayerHighlight('wenyu-greenway')
-      hoveredFeature.value = null
+
+    if (!isLayerSelected && greenwayFeature.layerId !== lastHoveredLayerId) {
+      if (lastHoveredLayerId) {
+        clearLayerHighlight(lastHoveredLayerId)
+      }
+
+      hoveredFeature.value = greenwayFeature.feature
+      lastHoveredLayerId = greenwayFeature.layerId
+      highlightLayer(greenwayFeature.layerId, '#FFD700', 6, true)
     }
+
+    return
+  }
+
+  tooltip.visible = false
+
+  if (!isLayerSelected && lastHoveredLayerId) {
+    clearLayerHighlight(lastHoveredLayerId)
+    hoveredFeature.value = null
+    lastHoveredLayerId = null
   }
 }
 
@@ -512,7 +728,12 @@ const toggleLayer = (layerId, visible) => {
 
 // 图层切换事件（来自工具栏）
 const onLayerToggled = ({ layerId, visible }) => {
-  toggleLayer(layerId, visible)
+  const layer = layerConfig.value.find(l => l.id === layerId)
+  if (layer) {
+    layer.visible = visible
+  } else {
+    console.warn('GreenwayOverview: layer not found', layerId)
+  }
 }
 
 // 关闭弹窗
@@ -528,15 +749,122 @@ const closePopup = () => {
 
 // 查看详情
 const viewDetail = () => {
-  if (selectedGreenway.value) {
+  if (selectedLayerId.value === 'wenyu-greenway') {
     router.push('/wenyu')
+  } else if (selectedLayerId.value === 'huanerhuan-greenway') {
+    router.push('/huanerhuan')
+  } else if (selectedLayerId.value === 'liangmahe-greenway') {
+    router.push('/liangmahe')
+  } else if (selectedLayerId.value === 'changying-greenway') {
+    router.push('/changying')
+  } else if (selectedLayerId.value === 'changping42-greenway') {
+    router.push('/changping42')
+  } else if (selectedLayerId.value === 'lidu-greenway') {
+    router.push('/lidu')
+  } else if (selectedLayerId.value === 'beiyunhe-greenway') {
+    router.push('/beiyunhe')
+  } else if (selectedLayerId.value === 'nansha-greenway') {
+    router.push('/nansha')
+  } else if (selectedLayerId.value === 'aosen-greenway') {
+    router.push('/aosen')
+  } else if (selectedLayerId.value === 'yingcheng-greenway') {
+    router.push('/yingcheng')
   }
 }
 
 // 弹窗查看详情
 const viewPopupDetail = () => {
+  console.log('[GreenwayOverview] 🔍 弹窗查看详情按钮被点击')
+  console.log('[GreenwayOverview] 📍 当前选中的图层ID:', selectedLayerId.value)
+  console.log('[GreenwayOverview] 📦 popup数据:', popup)
+  
+  // ⚠️ 重要：必须在 closePopup() 之前保存图层ID，因为 closePopup() 会将其设为 null
+  const targetLayerId = selectedLayerId.value
+  
+  console.log('[GreenwayOverview] 💾 保存的目标图层ID:', targetLayerId)
+  
   closePopup()
-  router.push('/wenyu')
+  
+  console.log('[GreenwayOverview] 🚀 准备导航，目标图层:', targetLayerId)
+  
+  if (targetLayerId === 'wenyu-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到温榆河绿道 /wenyu')
+    router.push('/wenyu').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'huanerhuan-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到环二环绿道 /huanerhuan')
+    router.push('/huanerhuan').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'liangmahe-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到亮马河绿道 /liangmahe')
+    router.push('/liangmahe').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'changying-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到常营半马绿道 /changying')
+    router.push('/changying').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'changping42-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到昌平42绿道 /changping42')
+    router.push('/changping42').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'lidu-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到丽都商圈绿道 /lidu')
+    router.push('/lidu').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'beiyunhe-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到北运河绿道 /beiyunhe')
+    router.push('/beiyunhe').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'nansha-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到南沙绿道 /nansha')
+    router.push('/nansha').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'aosen-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到奥林匹克森林公园绿道 /aosen')
+    router.push('/aosen').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'yingcheng-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到营城建都绿道 /yingcheng')
+    router.push('/yingcheng').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else {
+    console.warn('[GreenwayOverview] ⚠️ 未找到匹配的图层ID:', targetLayerId)
+    console.warn('[GreenwayOverview] 📋 所有支持的图层:', [
+      'wenyu-greenway', 'huanerhuan-greenway', 'liangmahe-greenway',
+      'changying-greenway', 'changping42-greenway', 'lidu-greenway',
+      'beiyunhe-greenway', 'nansha-greenway', 'aosen-greenway', 'yingcheng-greenway'
+    ])
+  }
 }
 
 // 工具栏事件处理
@@ -546,15 +874,27 @@ const onToolActivated = (data) => {
 
 const onLayerAdded = (layerInfo) => {
   console.log('[GreenwayOverview] 图层已添加:', layerInfo)
+  rebuildLayerCaches()
 }
 
 onMounted(() => {
   console.log('[GreenwayOverview] 组件已挂载')
+  if (tooltipRef.value) {
+    tooltipRef.value.style.transform = 'translate3d(-9999px, -9999px, 0)'
+  }
+})
+
+onBeforeUnmount(() => {
+  if (tooltipMoveRaf) {
+    cancelAnimationFrame(tooltipMoveRaf)
+    tooltipMoveRaf = null
+  }
 })
 </script>
 
 <style scoped>
 .greenroad-page {
+  position: relative; /* 确保子元素绝对定位相对于此容器 */
   min-height: 100vh;
   background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
   padding-top: 0;
@@ -578,6 +918,11 @@ onMounted(() => {
   z-index: 1000;
   flex-shrink: 0;
   pointer-events: none;
+  /* 硬件加速优化 */
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .header h1,
@@ -600,10 +945,12 @@ onMounted(() => {
   background-clip: text;
   color: transparent;
   font-weight: 800;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
-               0 4px 16px rgba(76, 175, 80, 0.4);
-  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.8));
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 3px;
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .header p {
@@ -627,6 +974,11 @@ onMounted(() => {
   overflow: hidden;
   min-height: 100vh;
   flex-shrink: 0;
+  /* 硬件加速优化 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  contain: layout style paint;
 }
 
 /* 弹窗样式 */
@@ -650,15 +1002,19 @@ onMounted(() => {
 
 .popup-content {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 255, 248, 0.98));
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(8px);
   border-radius: 16px;
   padding: 0;
   box-shadow: 0 8px 32px rgba(76, 175, 80, 0.25);
   border: 2px solid rgba(76, 175, 80, 0.2);
+  /* 硬件加速 */
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   min-width: 250px;
   max-width: 350px;
   position: relative;
-  cursor: move;
   user-select: none;
 }
 
@@ -742,6 +1098,9 @@ onMounted(() => {
   margin: 0;
   backdrop-filter: blur(10px);
   flex-shrink: 0;
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: 600px 520px;
 }
 
 .info-cards {
@@ -945,7 +1304,7 @@ onMounted(() => {
   }
 }
 
-/* 悬停提示框 */
+/* 悬停提示框 - 性能优化 */
 .hover-tooltip {
   position: fixed;
   z-index: 9999;
@@ -956,20 +1315,23 @@ onMounted(() => {
   padding: 0;
   min-width: 280px;
   max-width: 320px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
   border: 1px solid rgba(76, 175, 80, 0.2);
   overflow: hidden;
   animation: tooltipFadeIn 0.2s ease-out;
+  /* 硬件加速 */
+  transform: translate3d(-9999px, -9999px, 0);
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 @keyframes tooltipFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

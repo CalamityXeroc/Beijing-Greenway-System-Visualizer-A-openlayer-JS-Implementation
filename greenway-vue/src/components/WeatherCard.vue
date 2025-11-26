@@ -80,11 +80,7 @@
           </div>
           <div class="detail-item">
             <i class="fas fa-map-marker-alt"></i>
-            <span>{{ weather.city || '北京' }}</span>
-          </div>
-          <div class="detail-item">
-            <i class="fas fa-clock"></i>
-            <span>{{ formatTime(weather.reporttime) }}</span>
+            <span>{{ displayLocation }}</span>
           </div>
         </div>
       </div>
@@ -93,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 
 const props = defineProps({
   longitude: {
@@ -115,6 +111,10 @@ const props = defineProps({
   refreshInterval: {
     type: Number,
     default: 30 * 60 * 1000 // 30分钟
+  },
+  locationLabel: {
+    type: String,
+    default: ''
   }
 })
 
@@ -125,6 +125,13 @@ const weather = ref(null)
 const loading = ref(false)
 const error = ref(null)
 let refreshTimer = null
+
+const displayLocation = computed(() => {
+  if (props.locationLabel && props.locationLabel.trim().length > 0) {
+    return props.locationLabel
+  }
+  return weather.value?.city || '北京'
+})
 
 // 折叠和拖动状态
 const isCollapsed = ref(true) // 初始为折叠状态
@@ -149,24 +156,35 @@ const startDrag = (e) => {
     y: e.clientY - position.value.y
   }
   
-  document.addEventListener('mousemove', onDrag)
+  document.addEventListener('mousemove', onDrag, { passive: true })
   document.addEventListener('mouseup', stopDrag)
   e.preventDefault()
 }
 
-// 拖动中
+// 拖动中 - 使用 requestAnimationFrame 优化性能
+let rafId = null
 const onDrag = (e) => {
   if (!isDragging.value) return
   
-  position.value = {
-    x: e.clientX - dragStart.value.x,
-    y: e.clientY - dragStart.value.y
+  if (rafId) {
+    cancelAnimationFrame(rafId)
   }
+  
+  rafId = requestAnimationFrame(() => {
+    position.value = {
+      x: e.clientX - dragStart.value.x,
+      y: e.clientY - dragStart.value.y
+    }
+  })
 }
 
 // 停止拖动
 const stopDrag = () => {
   isDragging.value = false
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
   document.removeEventListener('mousemove', onDrag)
   document.removeEventListener('mouseup', stopDrag)
 }

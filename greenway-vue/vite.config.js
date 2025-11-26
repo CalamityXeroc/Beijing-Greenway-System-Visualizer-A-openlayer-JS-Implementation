@@ -16,6 +16,23 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: false
+    sourcemap: false,
+    // 性能优化
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'ol': ['ol'],
+          'vue-router': ['vue-router']
+        }
+      }
+    },
+    // 压缩优化
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    }
   }
 })

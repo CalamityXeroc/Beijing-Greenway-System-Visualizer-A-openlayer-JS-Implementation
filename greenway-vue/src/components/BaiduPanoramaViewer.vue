@@ -8,7 +8,10 @@
           <i class="fas fa-street-view"></i>
           <span>{{ currentPoint.name }}</span>
           <span class="badge-realtime">
-            <i class="fas fa-video"></i> 真实街景
+            <i class="fas fa-video"></i> 百度街景
+          </span>
+          <span class="badge-warning">
+            <i class="fas fa-exclamation-triangle"></i> 街景位置为近似点
           </span>
         </div>
         <div class="panorama-controls">
@@ -286,7 +289,18 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.3rem;
   padding: 0.3rem 0.6rem;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -325,6 +339,11 @@ onBeforeUnmount(() => {
   width: 100%;
   position: relative;
   background: #000;
+}
+
+/* 修复百度地图黑色方块问题 - 只隐藏特定的控件 */
+.panorama-content :deep(.anchorBL) {
+  opacity: 0.3 !important;
 }
 
 .panorama-footer {

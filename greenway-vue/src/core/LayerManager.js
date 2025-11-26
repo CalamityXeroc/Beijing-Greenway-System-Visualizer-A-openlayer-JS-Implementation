@@ -5,6 +5,7 @@
 
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
+import VectorImageLayer from 'ol/layer/VectorImage'
 import XYZ from 'ol/source/XYZ'
 import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
@@ -33,7 +34,7 @@ class LayerManager {
   }
 
   /**
-   * 创建矢量图层（从 GeoJSON）
+   * 创建矢量图层（从 GeoJSON）- 性能优化版本
    * @param {Object} options - 配置选项
    */
   createVectorLayerFromGeoJSON(options = {}) {
@@ -42,23 +43,51 @@ class LayerManager {
       data,
       style = this.getDefaultStyle(),
       zIndex = 10,
-      visible = true
+      visible = true,
+      renderAsImage = true,
+      interactive = true // 默认为可交互
     } = options
 
     const source = new VectorSource({
       url: url,
-      format: new GeoJSON(),
+      format: new GeoJSON({
+        featureProjection: 'EPSG:3857'
+      }),
       features: data ? new GeoJSON().readFeatures(data, {
         featureProjection: 'EPSG:3857'
-      }) : undefined
+      }) : undefined,
+      // 性能优化：使用RTree空间索引加速要素查询
+      useSpatialIndex: true
     })
 
-    const layer = new VectorLayer({
+    const LayerClass = renderAsImage ? VectorImageLayer : VectorLayer
+
+    const commonOptions = {
       source: source,
       style: style,
       zIndex: zIndex,
-      visible: visible
-    })
+      visible: visible,
+      declutter: false,
+      // 将 interactive 属性传递给图层对象，供 MapViewer 过滤使用
+      properties: {
+        interactive: options.interactive !== false
+      }
+    }
+
+    const layer = new LayerClass(
+      renderAsImage
+        ? {
+            ...commonOptions,
+            imageRatio: 1, // 降低 imageRatio 减少内存占用
+          }
+        : {
+            ...commonOptions,
+            renderMode: 'vector',
+            updateWhileAnimating: false, // 禁用动画时更新，提高性能
+            updateWhileInteracting: false, // 禁用交互时更新，提高性能
+            renderBuffer: 50 // 减少渲染缓冲区
+          }
+    )
 
     return layer
   }
@@ -122,16 +151,31 @@ class LayerManager {
   }
 
   /**
-   * 创建动态样式函数
+   * 创建动态样式函数（带缓存优化）
    * @param {Object} config - 样式配置
    */
   createStyleFunction(config = {}) {
+    // 为静态配置创建缓存样式
+    const staticStyle = this.getDefaultStyle({
+      strokeColor: config.lineColor || '#2196F3',
+      strokeWidth: config.lineWidth || 3,
+      fillColor: config.fillColor || 'rgba(33, 150, 243, 0.1)',
+      pointRadius: config.pointRadius || 6,
+      pointFillColor: config.pointColor || '#2196F3'
+    })
+    
     return (feature) => {
       const properties = feature.getProperties()
+      
+      // 如果feature没有自定义样式属性，直接返回缓存的静态样式
+      if (!properties.color && !properties.width) {
+        return staticStyle
+      }
+      
+      // 只有feature有自定义属性时才动态创建样式
       const geometry = feature.getGeometry()
       const geometryType = geometry.getType()
 
-      // 根据几何类型和属性动态设置样式
       let style = {}
 
       if (geometryType === 'LineString' || geometryType === 'MultiLineString') {

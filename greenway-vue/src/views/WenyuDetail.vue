@@ -12,7 +12,7 @@
       <!-- 左侧信息栏 -->
       <div class="left-sidebar">
         <img 
-          src="/数据/绿道/温榆河绿道/温榆河风景.jpg" 
+          src="/images/wenyu-hero.svg" 
           alt="温榆河绿道景观" 
           class="feature-image"
           @error="handleImageError"
@@ -74,6 +74,7 @@
           :center="mapConfig.center"
           :zoom="mapConfig.zoom"
           :layers="layers"
+          :interactive="false"
           height="100%"
           @map-ready="onMapReady"
         />
@@ -85,6 +86,7 @@
       v-if="weatherLocation"
       :longitude="weatherLocation.lon"
       :latitude="weatherLocation.lat"
+      location-label="温榆河滨水绿道"
       @weather-loaded="onWeatherLoaded"
     />
 
@@ -166,7 +168,7 @@ const layers = ref([
   {
     id: 'wenyu-greenway',
     type: 'geojson',
-    url: '/数据/绿道/温榆河绿道/温榆河.geojson',
+    url: '/数据/绿道/温榆河.geojson',
     visible: true,
     fitExtent: true,
     style: {
@@ -314,6 +316,8 @@ onMounted(() => {
   flex: 1;
   position: relative;
   overflow: hidden;
+  min-width: 0;
+  min-height: 0;
 }
 
 .feature-image {

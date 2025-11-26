@@ -1,7 +1,7 @@
 /* 全局样式 - 基于你的现有设计 */
 
-/* 引入 Font Awesome */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+/* Font Awesome - 移除外部CDN加载，避免追踪警告 */
+/* 如需图标，请使用本地字体或SVG图标库 */
 
 /* 引入 Noto Sans SC 字体 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
@@ -28,7 +28,7 @@
   box-sizing: border-box;
 }
 
-/* 全局字体和颜色 */
+/* 全局字体和颜色 - 性能优化 */
 body {
   font-family: 'Noto Sans SC', "Microsoft YaHei", sans-serif;
   color: var(--text-dark);
@@ -37,11 +37,22 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 硬件加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* 优化渲染 */
+  text-rendering: optimizeLegibility;
+  /* 减少重绘 */
+  contain: layout style paint;
 }
 
 #app {
   width: 100%;
   min-height: 100vh;
+  /* GPU加速 */
+  transform: translateZ(0);
+  will-change: contents;
+  isolation: isolate;
 }
 
 /* 滚动条美化 */

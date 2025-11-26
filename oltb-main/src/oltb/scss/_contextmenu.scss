@@ -1,0 +1,79 @@
+@use './variables' as oltb;
+
+.oltb-context-menu {
+    display: none;
+    list-style: none;
+    margin: 0;
+    max-width: 250px;
+    min-width: 230px;
+    padding: 0;
+    position: fixed;
+    user-select: none;
+    background-color: oltb.$background-theme-light;
+    box-shadow: oltb.$box-shadow-mid;
+    text-shadow: oltb.$text-shadow-light;
+    border-radius: oltb.$border-radius;
+    font-size: .875rem;
+  
+    &__item {
+        padding: .625rem;
+        cursor: pointer;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: oltb.$color-dark;
+        display: flex;
+        align-items: center;
+        margin: .25rem;
+        border-radius: oltb.$border-radius;
+        transition: background-color 100ms ease-in-out;
+  
+        &:hover,
+        &:focus {
+            background-color: oltb.$color-blue-200;
+            color: oltb.$color-blue-400;
+        }
+    }
+
+    &__icon {
+        pointer-events: none;
+        display: flex;
+        padding-right: .625rem;
+        margin: 0;
+        filter: oltb.$drop-shadow-filter-light;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__text {
+        margin: 0;
+    }
+  
+    &__divider {
+        background-color: rgba(0, 0, 0, .15);
+        height: 1px;
+        margin: .25rem 0;
+    }
+
+    &--show {
+        display: block;
+    }
+}
+
+body.oltb-dark .oltb-context-menu {
+    background-color: oltb.$background-theme-dark;
+
+    &__item {
+        color: oltb.$background-theme-light;
+
+        &:hover,
+        &:focus {
+            background-color: oltb.$color-blue-300;
+            color: oltb.$color-light;
+        }
+    }
+}

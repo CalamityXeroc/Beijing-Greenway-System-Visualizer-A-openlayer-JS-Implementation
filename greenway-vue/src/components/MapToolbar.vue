@@ -1,13 +1,29 @@
 <template>
-  <div class="map-toolbar" :class="{ 'toolbar-collapsed': collapsed }">
-    <div class="toolbar-header">
-      <h3><i class="fas fa-tools"></i> 地图工具</h3>
-      <button class="collapse-btn" @click="toggleCollapse">
-        <i :class="collapsed ? 'fas fa-chevron-down' : 'fas fa-chevron-up'"></i>
-      </button>
-    </div>
+  <div class="toolbar-container">
+    <!-- 折叠状态：只显示小按钮 -->
+    <button 
+      v-if="collapsed" 
+      class="toolbar-toggle-btn" 
+      @click="toggleCollapse"
+      title="打开地图工具"
+    >
+      <i class="fas fa-tools"></i>
+    </button>
 
-    <div v-if="!collapsed" class="toolbar-content">
+    <!-- 展开状态：显示完整工具栏 -->
+    <div v-else class="map-toolbar">
+      <div class="toolbar-header">
+        <h3><i class="fas fa-tools"></i> 地图工具</h3>
+        <button 
+          class="collapse-btn" 
+          @click="toggleCollapse"
+          title="收起工具栏"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="toolbar-content">
       <!-- 绘制工具 -->
       <div class="tool-section">
         <h4><i class="fas fa-draw-polygon"></i> 绘制工具</h4>
@@ -67,23 +83,26 @@
         </div>
       </div>
 
-      <!-- 图层管理 -->
+<!-- 图层管理 -->
       <div class="tool-section">
         <h4><i class="fas fa-layer-group"></i> 图层控制</h4>
         <div class="base-layer-list">
           <div 
-            v-for="layer in props.layerConfig" 
+            v-for="layer in filteredLayerConfig" 
             :key="layer.id"
             class="base-layer-item"
+            @click="toggleBaseLayer(layer.id, !layer.visible)"
           >
-            <label class="layer-checkbox">
+            <div class="checkbox-wrapper">
               <input 
+                :id="'layer-check-' + layer.id"
                 type="checkbox" 
                 :checked="layer.visible !== false"
+                @click.stop
                 @change="toggleBaseLayer(layer.id, $event.target.checked)"
               />
-              <span>{{ layer.name }}</span>
-            </label>
+              <label :for="'layer-check-' + layer.id" @click.stop>{{ layer.name }}</label>
+            </div>
           </div>
         </div>
       </div>
@@ -145,12 +164,13 @@
           </button>
         </div>
       </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import Draw from 'ol/interaction/Draw'
 import { Vector as VectorLayer } from 'ol/layer'
 import { Vector as VectorSource } from 'ol/source'
@@ -173,10 +193,26 @@ const props = defineProps({
 const emit = defineEmits(['tool-activated', 'layer-added', 'layer-toggled'])
 
 // 状态
-const collapsed = ref(false)
+const collapsed = ref(true) // 默认折叠状态
 const activeTool = ref(null)
 const showLayerUpload = ref(false)
 const customLayers = ref([])
+
+// 图层控制列表(排除绿道图层,它们始终可见)
+const filteredLayerConfig = computed(() => {
+  return props.layerConfig.filter(layer => {
+    return layer.id !== 'wenyu-greenway' && 
+           layer.id !== 'huanerhuan-greenway' && 
+           layer.id !== 'liangmahe-greenway' &&
+           layer.id !== 'changying-greenway' &&
+           layer.id !== 'changping42-greenway' &&
+           layer.id !== 'lidu-greenway' &&
+           layer.id !== 'beiyunhe-greenway' &&
+           layer.id !== 'nansha-greenway' &&
+           layer.id !== 'aosen-greenway' &&
+           layer.id !== 'yingcheng-greenway'
+  })
+})
 
 // 绘制相关
 let drawInteraction = null
@@ -483,61 +519,150 @@ const clearMeasurements = () => {
 </script>
 
 <style scoped>
-.map-toolbar {
+/* 容器 */
+.toolbar-container {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  width: 220px;
+  z-index: 2000;
+  /* 移除 pointer-events: none，让容器正常响应点击 */
+}
+
+/* 移除这个规则，因为容器已经可以响应点击了 */
+/* .toolbar-container > * {
+  pointer-events: auto;
+} */
+
+/* 折叠按钮样式 */
+.toolbar-toggle-btn {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  /* 移除 !important */
+  pointer-events: auto;
+  z-index: 2001;
+}
+
+.toolbar-toggle-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.5);
+  background: linear-gradient(135deg, #43A047, #5CB860);
+}
+
+.toolbar-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.toolbar-toggle-btn i {
+  animation: pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* 展开的工具栏样式 */
+.map-toolbar {
+  position: relative;
+  width: 240px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(76, 175, 80, 0.15);
-  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.2);
   max-height: calc(100vh - 2rem);
   overflow-y: auto;
-  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease;
+  /* 移除 !important */
+  pointer-events: auto;
+  z-index: 2001;
 }
 
-.map-toolbar.toolbar-collapsed {
-  height: auto;
-  overflow: visible;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .toolbar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  border-bottom: 1px solid rgba(76, 175, 80, 0.15);
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05), rgba(33, 150, 243, 0.05));
+  padding: 1rem;
+  border-bottom: 2px solid rgba(76, 175, 80, 0.15);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(33, 150, 243, 0.08));
 }
 
 .toolbar-header h3 {
   margin: 0;
   color: #2E7D32;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .toolbar-header h3 i {
-  font-size: 0.9rem;
+  font-size: 1rem;
+  color: #4CAF50;
+  pointer-events: none;
 }
 
 .collapse-btn {
-  background: none;
+  position: relative;
+  background: rgba(76, 175, 80, 0.1);
   border: none;
   cursor: pointer;
   color: #4CAF50;
-  font-size: 1rem;
-  padding: 0.2rem;
-  transition: transform 0.3s ease;
+  font-size: 1.1rem;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  /* 移除 !important */
+  pointer-events: auto;
+  z-index: 2002;
 }
 
 .collapse-btn:hover {
-  transform: scale(1.1);
+  background: rgba(76, 175, 80, 0.2);
+  transform: rotate(90deg);
+}
+
+.collapse-btn i {
+  pointer-events: none;
 }
 
 .toolbar-content {
@@ -670,23 +795,35 @@ const clearMeasurements = () => {
   margin-bottom: 0.4rem;
 }
 
-.layer-checkbox {
-  flex: 1;
+.checkbox-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem;
-  background: rgba(255, 152, 0, 0.05);
-  border: 1px solid rgba(255, 152, 0, 0.2);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.75rem;
+  padding: 0.5rem;
+  gap: 0.5rem;
 }
 
-.layer-checkbox input {
+.checkbox-wrapper input[type="checkbox"] {
   accent-color: #4CAF50;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+}
+
+.checkbox-wrapper label {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #333;
+  flex: 1;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
+
+/* 移除旧的 .layer-checkbox 样式（如果不再使用或冲突） */
+.layer-checkbox {
+  display: none; 
 }
 
 .base-layer-list {
@@ -699,16 +836,13 @@ const clearMeasurements = () => {
   background: rgba(76, 175, 80, 0.03);
   border-radius: 6px;
   transition: all 0.2s ease;
+  position: relative; /* Ensure stacking context */
+  z-index: 1;
+  cursor: pointer; /* Add pointer cursor to the whole item */
 }
 
 .base-layer-item:hover {
   background: rgba(76, 175, 80, 0.08);
-}
-
-.base-layer-item .layer-checkbox {
-  background: transparent;
-  border: none;
-  padding: 0.5rem;
 }
 
 .delete-btn {
