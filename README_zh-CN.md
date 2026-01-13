@@ -2,192 +2,114 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
-![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2.0-blue.svg)
-![Vite](https://img.shields.io/badge/Vite-5.0-blueviolet.svg)
-![Status](https://img.shields.io/badge/状态-早期开发-yellow.svg)
+![Node.js](https://img.shields.io/badge/Node.js-16+-brightgreen.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)
+![Status](https://img.shields.io/badge/状态-开发中-yellow.svg)
 
 [English Documentation](./README.md)
 
-一个现代化、交互式的 Web GIS 可视化平台，用于探索北京广泛的绿道网络系统。基于 **Vue 3 + OpenLayers + Vite** 构建，为用户提供直观的界面来发现城市绿色廊道、生态空间和休闲路径。
+一个现代化的 Web GIS 地图可视化平台，用于探索北京的绿道网络。
+**前端** (Vue 3 + OpenLayers + Vite) | **后端** (Node.js + Express + PostgreSQL)
 
-## 📢 项目状态说明
+一个现代化的 Web GIS 地图平台，用于探索、分析和交互北京的绿道网络系统。
 
-> ⚠️ **本项目目前处于早期开发阶段。**
+## 📢 项目特点
 
-### 当前已实现内容
-- ✅ **10条完整绿道路线**：所有主要北京绿道均已实现详情页面
-  - 温榆河（108公里）、环二环（87公里）、亮马河（8公里）
-  - 常营半马、昌平42、丽都商圈
-  - 北运河、南沙、奥林匹克森林公园、营城建都历史文化路线
-- ✅ **高级交互功能**：图层控制、绘制工具、测量工具
-- ✅ **性能优化**：流畅的交互体验、高效的渲染机制
-- ✅ **增强的 UI/UX**：可折叠工具栏、响应式设计、改进的可访问性
-- ✅ **完整 GIS 工具集**：绘制、测量、自定义图层上传
-- ✅ **360° 全景视图**：集成百度街景，提供沉浸式探索体验
-- ✅ **实时天气**：可拖动、可折叠的天气信息组件
-
-### 计划扩展内容
-- 🚧 **增强分析功能**：高级空间分析和统计可视化仪表板
-- 🚧 **用户功能**：个性化路线规划、收藏功能、社交分享
-- 🚧 **移动端优化**：原生移动应用体验
-
-### 🔒 关于开源说明
-
-本项目当前为**部分开源**，以下内容暂不公开：
-
-- **其他绿道数据**：北京其他绿道的完整数据集（学术论文发表后开源）
-- **核心算法**：高级空间分析和优化算法（用于竞赛和科研）
-- **完整后端**：后端服务完整实现和 API 接口
-
-**部分开源的原因**：本项目正在参与学术竞赛和科研论文发表。为保持研究的创新性和竞争优势，核心组件将在以下情况后开源：
-- 竞赛结果公布后
-- 学术论文发表后
-- 满足学术规范要求后
-
-**预计完全开源时间**：我们计划在 2026 年中期完全开源所有组件，包括完整数据集、算法实现和后端服务。
-
-**我们欢迎社区的反馈和建议！** 欢迎通过 Issues 或 Discussions 提出您的想法，帮助我们完善这个项目。如需学术合作或获取完整代码，请通过邮件联系。
+- ✅ **10条完整绿道**：温榆河（108km）、环二环（87km）、亮马河等
+- ✅ **完整的前后端**：Vue 3 前端 + Node.js 后端 + PostgreSQL 数据库
+- ✅ **丰富的交互功能**：绘制、测量、图层控制、360° 全景
+- ✅ **实时数据**：天气信息、绿道统计、设施位置
+- ✅ **生产级别**：良好的性能、安全的 API、完整的文档
 
 ## ✨ 核心特性
 
-### 🗺️ 交互式地图体验
-- **全屏地图视图**：基于 OpenLayers 的高性能地图渲染，流畅交互
-- **多图层可视化**：自由切换行政边界、绿道路线和生态要素
-- **智能图层管理**：直观的图层控制界面，动态显示/隐藏
-- **响应式设计**：完美适配桌面端和移动端设备
+### 🗺️ 交互式地图
+- **全屏地图体验**：基于 OpenLayers 高性能地图
+- **多图层管理**：灵活控制行政边界、绿道路线、生态要素
+- **10 条绿道详情页**：每条绿道都有详细信息和 360° 全景
+- **响应式设计**：完美适配桌面端和移动设备
 
-### 🛠️ 专业 GIS 工具
-- **绘制工具**：在地图上直接创建点、线、多边形
-- **测量工具**：精确计算距离（米/公里）和面积（平方米/平方公里）
-- **自定义图层上传**：导入您自己的 GeoJSON 数据进行分析
-- **交互式弹窗**：点击要素查看详细信息，支持悬停提示效果
-- **智能图层过滤**：独立切换基础图层（北京市界、北京市域）
-- **可折叠工具栏**：节省空间的有序工具界面
-- **性能优化**：缩放和平移时流畅的交互体验
+### 🛠️ GIS 工具集
+- **绘制工具**：点、线、多边形绘制
+- **测量工具**：精确计算距离和面积
+- **图层管理**：上传自定义 GeoJSON 数据
+- **信息弹窗**：点击查看详细信息
 
-### 🌈 增强用户体验
-- **透明浮动标题**：现代化的标题悬浮在地图之上，不遮挡视野
-- **可折叠天气组件**：可拖动、可折叠的实时天气信息窗口
-- **流畅动画效果**：精致的过渡动画和悬停交互
-- **信息卡片展示**：直观展示绿道统计、特色和使用指南
-
-### 🌄 360° 全景体验
-- **百度街景集成**：通过沉浸式全景影像探索绿道
-- **多个观景点**：在路线沿线的不同景点之间切换
-- **交互式导航**：点击探索并在全景场景中导航
-
-### 🎯 绿道详情页面
-- **10条完整路线**：所有主要北京绿道均已实现详情页面
-  - **温榆河**：108公里滨水生态廊道
-  - **环二环**：87公里环绕二环路的城市绿道
-  - **亮马河**：8公里国际商务区绿道
-  - **常营半马**：城市运动健身绿道
-  - **昌平42**：郊区生态绿道
-  - **丽都商圈**：城市商业区绿道
-  - **北运河**：历史运河绿道
-  - **南沙**：滨水生态绿道
-  - **奥林匹克森林公园**：奥运遗产公园绿道
-  - **营城建都**：历史文化遗产路线
-- **固定视图地图**：详情页面地图禁用缩放/平移，专注展示
-- **丰富图像资料**：绿道景点和设施的视觉指南
-- **全面信息**：覆盖区域、长度、设施和亮点介绍
-- **左右分栏布局**：清晰的信息侧边栏，全尺寸地图展示
+### 🌄 沉浸式体验
+- **360° 全景街景**：百度街景集成
+- **实时天气**：可拖动、可折叠的天气组件
+- **流畅动画**：精致的过渡和交互效果
+- **清晰布局**：信息侧边栏 + 全尺寸地图
 
 ## 🚀 快速开始
 
 ### 环境要求
-- **Node.js**：16.x 或更高版本
-- **npm**：7.x 或更高版本
+- **Node.js**：16+ 版本
+- **PostgreSQL**：13+ 版本（需要 PostGIS 扩展）
+- **npm** 或 **yarn**
 
-### 安装步骤
+### 前端启动
 
-1. **克隆仓库**
 ```bash
-git clone https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation.git
 cd greenway-vue
-```
-
-2. **安装依赖**
-```bash
 npm install
-```
-
-3. **启动开发服务器**
-```bash
 npm run dev
+# 访问 http://localhost:5173
 ```
 
-4. **打开浏览器**
-访问 `http://localhost:5173`
-
-### 生产环境构建
+### 后端启动
 
 ```bash
-npm run build
+cd greenway-backend
+npm install
+npm run db:init        # 初始化数据库
+npm run db:import      # 导入 GeoJSON 数据
+npm run dev            # 启动后端服务
+# 访问 http://localhost:3000
 ```
 
-构建文件将输出到 `dist/` 目录。
+### 一键启动（Windows）
+项目根目录下有 `启动完整系统.bat`，双击即可启动前后端。
 
 ## 🛠️ 技术栈
 
-### 核心框架
-- **Vue 3.4.0**：渐进式 JavaScript 框架，使用 Composition API
-- **Vue Router 4.2.5**：Vue.js 官方路由管理器
-- **Vite 5.0.0**：下一代前端构建工具
+### 前端
+- **Vue 3.4** + **Composition API**
+- **OpenLayers 8.2** - Web GIS 地图库
+- **Vite 5.0** - 现代化构建工具
+- **Axios** - HTTP 请求库
+- **百度地图 API** - 街景服务
+- **高德天气 API** - 实时天气
 
-### 地图与 GIS
-- **OpenLayers 8.2.0**：高性能 Web 地图库
-  - 矢量和栅格图层支持
-  - 绘制和测量交互功能
-  - GeoJSON 格式支持
-  - 自定义样式和动画效果
-
-### 其他功能
-- **Axios 1.6.0**：基于 Promise 的 HTTP 客户端
-- **百度地图 API**：集成全景街景体验
-- **高德天气 API**：实时天气数据集成
+### 后端
+- **Node.js** + **Express** - Web 框架
+- **PostgreSQL 13+** - 关系数据库
+- **PostGIS** - 地理空间扩展
+- **GeoJSON** - 地理数据格式
 
 ## 📁 项目结构
 
 ```
-greenway-vue/
-├── public/
-│   └── 数据/              # GeoJSON 空间数据
-│       ├── 北京边界.geojson
-│       ├── 北京面.geojson
-│       └── 绿道/
-│           └── 温榆河绿道/
+greenway-vue/              # 前端项目
 ├── src/
-│   ├── components/        # 可复用 Vue 组件
-│   │   ├── MapViewer.vue         # 核心地图组件（含性能优化）
-│   │   ├── MapToolbar.vue        # 可折叠 GIS 工具集（含图层控制）
-│   │   ├── WeatherCard.vue       # 可拖动、可折叠天气组件
-│   │   ├── BaiduPanoramaViewer.vue  # 360° 全景查看器
-│   │   ├── PanoramaViewer.vue    # 备用全景组件
-│   │   └── FPSMonitor.vue        # 性能监控组件
-│   ├── views/             # 页面组件（共11个）
-│   │   ├── GreenwayOverview.vue  # 主交互式概览页面
-│   │   ├── WenyuDetail.vue       # 温榆河详情页面
-│   │   ├── HuanerhuanDetail.vue  # 环二环详情页面
-│   │   ├── LiangmaheDetail.vue   # 亮马河详情页面
-│   │   ├── ChangyingDetail.vue   # 常营半马详情页面
-│   │   ├── Changping42Detail.vue # 昌平42详情页面
-│   │   ├── LiduDetail.vue        # 丽都商圈详情页面
-│   │   ├── BeiyunheDetail.vue    # 北运河详情页面
-│   │   ├── NanshaDetail.vue      # 南沙详情页面
-│   │   ├── AosenDetail.vue       # 奥森详情页面
-│   │   └── YingchengDetail.vue   # 营城建都详情页面
-│   ├── core/              # 核心功能模块
-│   │   ├── MapManager.js         # 地图管理（含交互控制）
-│   │   └── LayerManager.js       # 优化的图层渲染逻辑
-│   ├── utils/             # 工具函数
-│   │   └── performance.js        # 性能优化工具
-│   ├── router/            # Vue Router 配置
-│   ├── App.vue            # 根组件
-│   └── main.js            # 应用入口
-├── index.html
-├── vite.config.js
-└── package.json
+│   ├── views/            # 10条绿道详情页面
+│   ├── components/       # 地图、工具、天气等组件
+│   ├── core/             # MapManager、LayerManager
+│   ├── router/           # 路由配置
+│   └── assets/           # 静态资源
+
+greenway-backend/          # 后端项目
+├── src/
+│   ├── index.js          # Express 应用
+│   └── db.js             # 数据库配置
+├── scripts/              # 数据导入脚本
+└── sql/                  # 数据库初始化脚本
+
+public/                    # GeoJSON 地理数据
+└── 数据/
+    ├── 北京边界.geojson
+    └── 绿道/
+        └── *.geojson
 ```
 
 ## 🎨 功能亮点
@@ -222,70 +144,43 @@ greenway-vue/
 
 **数据格式**：GeoJSON (WGS84 / EPSG:4326)
 
-## 🗺️ 绿道详情页面特性
+## 🎯 绿道概览
 
-### 共同特点（所有10条绿道）
-- **固定视图地图**：详情页面禁用缩放和平移，聚焦绿道展示
-- **360° 全景浏览**：精选观景点的真实百度街景
-- **实时天气信息**：可拖动、可折叠的天气信息窗口
-- **左右分栏布局**：左侧信息栏 + 右侧全尺寸地图
-- **详细信息展示**：绿道亮点、简介、标签、统计数据
-
-### 温榆河绿道示例
-- **总长度**：108 公里
-- **覆盖区域**：昌平、顺义、朝阳、通州四区
-- **建设面积**：417 公顷
-- **特色**：滨水生态景观、休闲步道系统
-- **观景点**：5 个精选全景位置
+| 名称 | 长度 | 描述 |
+|------|------|------|
+| 温榆河 | 108 km | 滨水生态廊道，跨越四区 |
+| 环二环 | 87 km | 环绕二环路的城市绿道 |
+| 亮马河 | 8 km | 国际商务区绿道 |
+| 常营半马 | - | 城市运动健身绿道 |
+| 昌平42 | - | 郊区生态绿道 |
+| 丽都商圈 | - | 城市商业区绿道 |
+| 北运河 | - | 历史运河绿道 |
+| 南沙 | - | 滨水生态绿道 |
+| 奥森 | - | 奥运遗产公园绿道 |
+| 营城建都 | - | 历史文化遗产路线 |
 
 ## 🌐 浏览器支持
 
-- **Chrome/Edge**（推荐）：90+ 版本
-- **Firefox**：88+ 版本
-- **Safari**：14+ 版本
+- Chrome/Edge 90+（推荐）
+- Firefox 88+
+- Safari 14+
 
 ## 🤝 贡献与反馈
 
-我们欢迎贡献和反馈！由于项目处于早期开发阶段，您的意见对我们尤其重要。
+欢迎提交 Issue 和 Pull Request！
 
-### 如何参与
-- 💡 **功能建议**：通过 Issue 分享您对新功能或改进的想法
-- 🐛 **问题反馈**：发现 Bug？请详细描述重现步骤进行反馈
-- 📝 **文档完善**：帮助改进项目文档和使用指南
-- 🎨 **UI/UX 反馈**：分享您对设计和用户体验的看法
-- 🔧 **代码贡献**：提交 Pull Request 修复问题或添加新功能
-
-### Pull Request 流程
-1. Fork 本仓库
-2. 创建您的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 提交 Pull Request 并清晰描述所做的修改
-
-**提示**：由于项目处于早期开发阶段，在开发重大功能前，建议先通过 Issue 进行讨论。
+- 💡 **功能建议**：分享您的创意和改进想法
+- 🐛 **问题反馈**：报告 Bug 并描述重现步骤
+- 🔧 **代码贡献**：修复问题或添加新功能
 
 ## 📄 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](./LICENSE) 文件。
-
-## 🙏 致谢
-
-- 北京市规划和自然资源委员会提供绿道数据
-- OpenLayers 社区提供优秀的地图库
-- Vue.js 团队提供出色的框架
-- 百度地图提供全景影像服务
+MIT License - 详见 [LICENSE](./LICENSE) 文件
 
 ## 📧 联系方式
 
-项目链接：[https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation](https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation)
-
-**学术合作咨询**：
-- 📬 完整代码访问（用于学术研究）
-- 🤝 绿道可视化项目合作
-- 📊 数据共享与联合研究
-
-如有学术合作需求，请通过 Issue 联系或邮件咨询项目维护者。
+GitHub: [Beijing-Greenway-System-Visualizer](https://github.com/CalamityXeroc/Beijing-Greenway-System-Visualizer-A-openlayer-JS-Implementation)
 
 ---
 
-**用 ❤️ 构建，探索北京的绿色空间**
+**用 ❤️ 为城市绿道而开发**

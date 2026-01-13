@@ -1,151 +1,89 @@
 # Beijing Greenway System Visualization Platform
 
-![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
-![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2.0-blue.svg)
-![Vite](https://img.shields.io/badge/Vite-5.0-blueviolet.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-Early%20Development-yellow.svg)
-
-A modern, interactive WebGIS platform for exploring Beijing's extensive greenway network. Built with **Vue 3 + OpenLayers + Vite**, offering an intuitive interface to discover urban green corridors, ecological spaces, and recreational paths.
+![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
+![Node.js](https://img.shields.io/badge/Node.js-16+-brightgreen.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)
+![Status](https://img.shields.io/badge/status-Development-yellow.svg)
 
 [中文文档](./README_zh-CN.md)
 
-## 📢 Project Status
+A modern WebGIS platform for exploring Beijing's greenway network.
+**Frontend** (Vue 3 + OpenLayers) | **Backend** (Node.js + Express + PostgreSQL)
 
-> ⚠️ **This project is currently in early development stage.**
+## 📢 Project Overview
 
-### Current Implementation
-- ✅ **10 Complete Greenway Routes**: All major Beijing greenways with detailed pages
-  - Wenyu River (108km), Ring No.2 (87km), Liangma River (8km)
-  - Changying Half-Marathon, Changping 42, Lidu Commercial District
-  - Beiyunhe Canal, Nansha, Olympic Forest Park, Yingcheng Historic Route
-- ✅ **Advanced Interactive Features**: Layer controls, drawing tools, measurements
-- ✅ **Performance Optimizations**: Smooth interactions, efficient rendering
-- ✅ **Enhanced UI/UX**: Collapsible toolbar, responsive design, improved accessibility
-- ✅ **Full GIS Toolkit**: Drawing, measuring, custom layer upload
-- ✅ **360° Panoramic Views**: Integrated Baidu street view for immersive exploration
-- ✅ **Real-time Weather**: Draggable, collapsible weather widget
+- ✅ **10 Greenways**: Wenyu River (108km), Ring No.2 (87km), and more
+- ✅ **Full Stack**: Vue 3 frontend + Node.js backend + PostgreSQL database
+- ✅ **Rich Features**: Drawing, measurement, layer control, 360° panorama
+- ✅ **Real-time Data**: Weather, greenway statistics, facilities
+- ✅ **Production Ready**: Good performance, secure APIs, full documentation
 
-### Planned Expansions
-- 🚧 **Enhanced Analytics**: Advanced spatial analysis and statistics dashboard
-- 🚧 **User Features**: Personalized routes, favorites, and social sharing
-- 🚧 **Mobile Optimization**: Native mobile app experience
+## ✨ Features
 
-### 🔒 About Open Source
+### 🗺️ Interactive Map
+- High-performance OpenLayers rendering
+- Multi-layer visualization with layer controls
+- 10 complete greenway detail pages
+- Responsive design for desktop and mobile
 
-This is a **partial open-source project**. The following content is currently not publicly available:
+### 🛠️ GIS Tools
+- Draw points, lines, polygons
+- Measure distances and areas
+- Upload custom GeoJSON data
+- Click to view detailed information
 
-- **Additional Greenway Data**: Other Beijing greenway datasets (to be released after academic publication)
-- **Core Algorithms**: Advanced spatial analysis and optimization algorithms (for competition and research purposes)
-- **Complete Backend**: Full backend implementation and API services
-
-**Reason for Partial Release**: This project is being developed for academic competitions and research publications. To maintain research integrity and competitive advantage, certain core components will be released after:
-- Competition results are announced
-- Research papers are published
-- Academic requirements are fulfilled
-
-**Expected Full Release**: We plan to fully open-source all components by mid-2026, including complete datasets, algorithms, and backend services.
-
-**We welcome community feedback and suggestions!** Feel free to open issues or discussions to help shape the future of this project. For academic collaboration or access to complete code, please contact via email.
-
-## ✨ Key Features
-
-### 🗺️ Interactive Mapping
-- **Full-Screen Map Experience**: High-performance OpenLayers rendering with smooth interactions
-- **Multi-Layer Visualization**: Toggle between administrative boundaries, greenways, and ecological elements
-- **Smart Layer Management**: Dynamic control over map layers with intuitive UI
-- **Responsive Design**: Optimized for both desktop and mobile devices
-
-### 🛠️ Advanced GIS Tools
-- **Drawing Tools**: Create points, lines, and polygons directly on the map
-- **Measurement Tools**: Accurately measure distances (m/km) and areas (m²/km²)
-- **Custom Layer Upload**: Import your own GeoJSON data for analysis
-- **Interactive Popups**: Click features to view detailed information with hover effects
-- **Smart Layer Filtering**: Toggle base layers independently (Beijing boundary, area)
-- **Collapsible Toolbar**: Space-saving, organized tool interface
-- **Performance Optimized**: Smooth interaction during zooming and panning
-
-### 🌈 Enhanced User Experience
-- **Transparent Header**: Modern floating title overlay on the map
-- **Collapsible Weather Widget**: Draggable, foldable real-time weather information
-- **Smooth Animations**: Polished transitions and hover effects throughout
-- **Information Cards**: Discover greenway statistics, features, and usage guides
-
-### 🌄 360° Panoramic Views
-- **Baidu Street View Integration**: Explore greenways through immersive panoramic imagery
-- **Multiple Viewpoints**: Switch between different scenic spots along the route
-- **Interactive Navigation**: Click to explore and navigate through panoramic scenes
-
-### 🎯 Greenway Detail Pages
-- **10 Complete Routes**: Full detail pages for all major Beijing greenways
-  - **Wenyu River (温榆河)**: 108km waterfront ecological corridor
-  - **Ring No.2 (环二环)**: 87km urban greenway circling the second ring road
-  - **Liangma River (亮马河)**: 8km international commercial district greenway
-  - **Changying Half-Marathon (常营半马)**: Urban sports and fitness greenway
-  - **Changping 42 (昌平42)**: Suburban ecological greenway
-  - **Lidu Commercial (丽都商圈)**: Urban commercial district greenway
-  - **Beiyunhe Canal (北运河)**: Historic canal greenway
-  - **Nansha (南沙)**: Waterfront ecological greenway
-  - **Olympic Forest Park (奥森)**: Olympic legacy park greenway
-  - **Yingcheng Historic (营城建都)**: Historical cultural heritage route
-- **Fixed View Maps**: Static maps in detail pages (no zoom/pan) for focused presentation
-- **Rich Imagery**: Visual guides to greenway attractions and facilities
-- **Comprehensive Info**: Coverage area, length, amenities, and highlights
-- **Left-Right Layout**: Clean information sidebar with full-size map display
+### 🌄 Immersive Experience
+- 360° Baidu street panorama view
+- Real-time weather widget (draggable, collapsible)
+- Smooth animations and interactions
+- Clean left-right layout design
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js**: 16.x or higher
-- **npm**: 7.x or higher
+### Requirements
+- **Node.js**: 16+ version
+- **PostgreSQL**: 13+ version (with PostGIS extension)
+- **npm** or **yarn**
 
-### Installation
+### Frontend Setup
 
-1. **Clone the repository**
 ```bash
-git clone https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation.git
 cd greenway-vue
-```
-
-2. **Install dependencies**
-```bash
 npm install
-```
-
-3. **Start development server**
-```bash
 npm run dev
+# Visit http://localhost:5173
 ```
 
-4. **Open in browser**
-Navigate to `http://localhost:5173`
-
-### Production Build
+### Backend Setup
 
 ```bash
-npm run build
+cd greenway-backend
+npm install
+npm run db:init        # Initialize database
+npm run db:import      # Import GeoJSON data
+npm run dev            # Start backend service
+# Visit http://localhost:3000
 ```
 
-Build files will be output to the `dist/` directory.
+### One-click Startup (Windows)
+Double-click `启动完整系统.bat` in the project root to start both frontend and backend.
 
 ## 🛠️ Tech Stack
 
-### Core Framework
-- **Vue 3.4.0**: Progressive JavaScript framework with Composition API
-- **Vue Router 4.2.5**: Official router for Vue.js
-- **Vite 5.0.0**: Next-generation frontend build tool
+### Frontend
+- **Vue 3.4** + **Composition API**
+- **OpenLayers 8.2** - Web GIS library
+- **Vite 5.0** - Modern build tool
+- **Axios** - HTTP client
+- **Baidu Maps API** - Street panorama
+- **Weather API** - Real-time weather
 
-### Mapping & GIS
-- **OpenLayers 8.2.0**: High-performance web mapping library
-  - Vector and raster layer support
-  - Drawing and measurement interactions
-  - GeoJSON format support
-  - Custom styling and animations
-
-### Additional Features
-- **Axios 1.6.0**: Promise-based HTTP client for API requests
-- **Baidu Maps API**: Integrated for panoramic street view experiences
-- **Weather API**: Real-time weather data integration
+### Backend
+- **Node.js** + **Express** - Web framework
+- **PostgreSQL 13+** - Relational database
+- **PostGIS** - Geospatial extension
+- **GeoJSON** - Geospatial data format
 
 ## 📁 Project Structure
 
@@ -212,54 +150,65 @@ greenway-vue/
 - **Interactive Markers**: Click to jump between locations
 - **Fullscreen Mode**: Immersive panoramic viewing
 
-## 🗺️ Data Sources
+## � Project Structure
 
-Geospatial data visualized on the platform includes:
-- Beijing administrative boundaries
-- Wenyu River Greenway route (108km)
-- Ecological zones and parks
-- Weather station locations
+```
+greenway-vue/              # Frontend project
+├── src/
+│   ├── views/            # 10 greenway detail pages
+│   ├── components/       # Map, tools, weather components
+│   ├── core/             # MapManager, LayerManager
+│   ├── router/           # Route configuration
+│   └── assets/           # Static assets
 
-**Data Format**: GeoJSON (WGS84 / EPSG:4326)
+greenway-backend/          # Backend project
+├── src/
+│   ├── index.js          # Express app
+│   └── db.js             # Database config
+├── scripts/              # Data import scripts
+└── sql/                  # Database init scripts
+
+public/                    # GeoJSON geospatial data
+└── 数据/
+    ├── 北京边界.geojson
+    └── 绿道/
+        └── *.geojson
+```
+
+## 🎯 Greenways Overview
+
+| Name | Length | Description |
+|------|--------|-------------|
+| Wenyu River (温榆河) | 108 km | Waterfront ecological corridor |
+| Ring No.2 (环二环) | 87 km | Urban greenway around ring road |
+| Liangma River (亮马河) | 8 km | Commercial district greenway |
+| Others | - | Changying, Changping, Lidu, Beiyunhe, Nansha, Aosen, Yingcheng |
 
 ## 🌐 Browser Support
 
-- **Chrome/Edge** (Recommended): Version 90+
-- **Firefox**: Version 88+
-- **Safari**: Version 14+
+- Chrome/Edge 90+ (recommended)
+- Firefox 88+
+- Safari 14+
 
 ## 🤝 Contributing
 
-We welcome contributions and feedback! As this project is in early development, your input is especially valuable.
+Welcome to submit issues and pull requests!
 
-### How to Contribute
-- 💡 **Suggestions**: Open an issue to share ideas for new features or improvements
-- 🐛 **Bug Reports**: Found a bug? Please report it with detailed steps to reproduce
-- 📝 **Documentation**: Help improve our documentation and guides
-- 🎨 **UI/UX Feedback**: Share your thoughts on design and user experience
-- 🔧 **Code Contributions**: Submit pull requests for bug fixes or new features
-
-### Pull Request Process
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request with a clear description of changes
-
-**Note**: As we're in early development, please open an issue for discussion before working on major features.
+- 💡 **Feature Suggestions**: Share your ideas and improvements
+- 🐛 **Bug Reports**: Report issues with reproduction steps
+- 🔧 **Code Contributions**: Fix bugs or add new features
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Beijing Municipal Planning and Natural Resources Commission for greenway data
-- OpenLayers community for excellent mapping library
-- Vue.js team for the outstanding framework
-- Baidu Maps for panoramic imagery services
+MIT License - see [LICENSE](./LICENSE) file
 
 ## 📧 Contact
+
+GitHub: [Beijing-Greenway-System-Visualizer](https://github.com/CalamityXeroc/Beijing-Greenway-System-Visualizer-A-openlayer-JS-Implementation)
+
+---
+
+**Built with ❤️ for urban greenways**
 
 Project Link: [https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation](https://github.com/CalamityXeroc/Beijing-Greenway-Visualizer-A-openlayer-JS-Implementation)
 
