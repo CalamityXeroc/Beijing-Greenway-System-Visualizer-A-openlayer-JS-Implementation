@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.sln
+*.swp
+*.swc
+*.bak
+
+# Resources (不提交资料文件夹)
+/greenway-vue/public/数据/资料/
+/greenway-vue/resources/
+
+# Database backups
+*.sql
+!init-db.sql
+!postgis-init.sql
+
+# Temporary files
+*.tmp
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+.DS_Store

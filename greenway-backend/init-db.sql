@@ -4,11 +4,14 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- 创建绿道表
 CREATE TABLE IF NOT EXISTS greenways (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
   length DECIMAL(10, 2),
   introduction TEXT,
   location VARCHAR(255),
+  coverage_area DECIMAL(10, 2),
+  construction_area DECIMAL(10, 2),
+  features TEXT,
   geometry GEOMETRY(LineString, 4326),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

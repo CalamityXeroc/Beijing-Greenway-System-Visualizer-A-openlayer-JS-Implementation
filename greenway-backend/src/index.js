@@ -31,6 +31,20 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// 绿道颜色配置
+const greenwayColors = {
+  '环二环城市绿道': '#2E7D32',
+  '昌平42绿道': '#388E3C',
+  '温榆河': '#1976D2',
+  '亮马河绿道': '#0097A7',
+  '北运河绿道': '#00897B',
+  '南沙绿道': '#558B2F',
+  '奥林匹克森林公园绿道': '#689F38',
+  '常营半马绿道': '#7CB342',
+  '丽都商圈绿道': '#AFB42B',
+  '营城建都绿道': '#FBC02D'
+};
+
 // 获取所有绿道列表
 app.get('/api/greenways', async (req, res) => {
   try {
@@ -44,11 +58,10 @@ app.get('/api/greenways', async (req, res) => {
         length,
         introduction,
         location,
-        coordinates,
-        total_length,
         coverage_area,
         construction_area,
         features,
+        ST_AsGeoJSON(geometry)::json as geometry,
         created_at,
         updated_at
       FROM greenways
@@ -68,18 +81,18 @@ app.get('/api/greenways', async (req, res) => {
     const features = result.rows.map(row => ({
       type: 'Feature',
       id: row.id,
-      geometry: row.coordinates,
+      geometry: row.geometry,
       properties: {
         id: row.id,
         name: row.name,
         description: row.description,
         length: row.length,
-        total_length: row.total_length,
         introduction: row.introduction,
         location: row.location,
         coverage_area: row.coverage_area,
         construction_area: row.construction_area,
         features: row.features,
+        color: greenwayColors[row.name] || '#4CAF50',  // 添加颜色属性
         created_at: row.created_at,
         updated_at: row.updated_at
       }
@@ -107,11 +120,7 @@ app.get('/api/greenways/:id', async (req, res) => {
         length,
         introduction,
         location,
-        coordinates,
-        total_length,
-        coverage_area,
-        construction_area,
-        features,
+        ST_AsGeoJSON(geometry)::json as geometry,
         created_at,
         updated_at
       FROM greenways
@@ -131,7 +140,7 @@ app.get('/api/greenways/:id', async (req, res) => {
         name,
         description,
         poi_type,
-        coordinates
+        ST_AsGeoJSON(geometry)::json as geometry
       FROM points_of_interest
       WHERE greenway_id = $1
     `, [id]);
@@ -158,18 +167,24 @@ app.post('/api/greenways', async (req, res) => {
 
     const coordinatesStr = typeof coordinates === 'string' ? coordinates : JSON.stringify(coordinates);
 
+    // 构造 GeoJSON 结构用于转换
+    const geoJsonInput = JSON.stringify({
+      type: "LineString",
+      coordinates: typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates
+    });
+
     const result = await pool.query(`
-      INSERT INTO greenways (name, description, length, introduction, location, coordinates)
-      VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+      INSERT INTO greenways (name, description, length, introduction, location, geometry)
+      VALUES ($1, $2, $3, $4, $5, ST_GeomFromGeoJSON($6))
       ON CONFLICT (name) DO UPDATE SET
         description = $2,
         length = $3,
         introduction = $4,
         location = $5,
-        coordinates = $6::jsonb,
+        geometry = ST_GeomFromGeoJSON($6),
         updated_at = CURRENT_TIMESTAMP
-      RETURNING *
-    `, [name, description, length, introduction, location, coordinatesStr]);
+      RETURNING id, name, description, length, introduction, location, ST_AsGeoJSON(geometry)::json as geometry, created_at, updated_at
+    `, [name, description, length, introduction, location, geoJsonInput]);
 
     res.json({
       status: 'success',
@@ -190,13 +205,17 @@ app.post('/api/greenways/:id/poi', async (req, res) => {
       return res.status(400).json({ status: 'error', message: '缺少必要字段' });
     }
 
-    const coordinatesStr = typeof coordinates === 'string' ? coordinates : JSON.stringify(coordinates);
+    // 构造 GeoJSON Point 结构
+    const geoJsonInput = JSON.stringify({
+      type: "Point",
+      coordinates: typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates
+    });
 
     const result = await pool.query(`
-      INSERT INTO points_of_interest (name, description, poi_type, greenway_id, coordinates)
-      VALUES ($1, $2, $3, $4, $5::jsonb)
-      RETURNING *
-    `, [name, description, poi_type, id, coordinatesStr]);
+      INSERT INTO points_of_interest (name, description, poi_type, greenway_id, geometry)
+      VALUES ($1, $2, $3, $4, ST_GeomFromGeoJSON($5))
+      RETURNING id, name, description, poi_type, ST_AsGeoJSON(geometry)::json as geometry
+    `, [name, description, poi_type, id, geoJsonInput]);
 
     res.json({
       status: 'success',
@@ -221,14 +240,10 @@ app.get('/api/greenways/geojson/collection', async (req, res) => {
             'name', name,
             'description', description,
             'length', length,
-            'total_length', total_length,
             'introduction', introduction,
-            'location', location,
-            'coverage_area', coverage_area,
-            'construction_area', construction_area,
-            'features', features
+            'location', location
           ),
-          'geometry', coordinates
+          'geometry', ST_AsGeoJSON(geometry)::json
         ))
       ) as collection
       FROM greenways
@@ -238,6 +253,11 @@ app.get('/api/greenways/geojson/collection', async (req, res) => {
       type: 'FeatureCollection',
       features: []
     };
+    
+    // 处理空结果可能是 null 的情况
+    if (!collection.features) {
+       collection.features = [];
+    }
 
     res.json(collection);
   } catch (err) {

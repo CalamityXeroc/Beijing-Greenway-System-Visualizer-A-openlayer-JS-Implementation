@@ -1,0 +1,122 @@
+[
+  {
+    "name": "温榆河",
+    "length": 42.5,
+    "coverage_area": 850,
+    "construction_area": 320,
+    "features": "蜿蜒曲折，生态保护，滨水风景",
+    "description": "温榆河绿道是北京重要的滨水生态走廊，途经多个区域，是欣赏河流风景的好去处。"
+  },
+  {
+    "name": "亮马河绿道",
+    "length": 12.8,
+    "coverage_area": 280,
+    "construction_area": 95,
+    "features": "城市景观，步行友好，休闲娱乐",
+    "description": "亮马河绿道位于朝阳区，是城市中心的生态廊道，提供舒适的步行和骑行环境。"
+  },
+  {
+    "name": "丽都商圈绿道",
+    "length": 3.5,
+    "coverage_area": 85,
+    "construction_area": 32,
+    "features": "商业配套，景观绿化，休闲广场",
+    "description": "丽都商圈绿道连接周边商业区域和居住区，为居民提供便捷的休闲通道。"
+  },
+  {
+    "name": "北运河绿道",
+    "length": 18.2,
+    "coverage_area": 520,
+    "construction_area": 180,
+    "features": "运河风景，文化遗产，观光游憩",
+    "description": "北运河绿道沿河而建，展现北京运河的历史文化特色和自然风景。"
+  },
+  {
+    "name": "南沙绿道",
+    "length": 6.3,
+    "coverage_area": 180,
+    "construction_area": 62,
+    "features": "城市休闲，景观设计，健身娱乐",
+    "description": "南沙绿道为南城居民提供高质量的休闲空间和运动设施。"
+  },
+  {
+    "name": "奥林匹克森林公园绿道",
+    "length": 25.5,
+    "coverage_area": 680,
+    "construction_area": 240,
+    "features": "生态公园，运动健身，自然体验",
+    "description": "奥林匹克森林公园内的绿道充满了自然生态特色，是北京最大的城市公园。"
+  },
+  {
+    "name": "常营半马绿道",
+    "length": 21.0,
+    "coverage_area": 450,
+    "construction_area": 155,
+    "features": "运动活动，社区联系，绿色出行",
+    "description": "常营半马绿道是居民半程马拉松的专业路线，也是日常健身的热门选择。"
+  },
+  {
+    "name": "昌平42绿道",
+    "length": 19.8,
+    "coverage_area": 380,
+    "construction_area": 138,
+    "features": "郊野特色，自然风光，户外运动",
+    "description": "昌平42绿道蜿蜒于郊野之间，展现京郊独特的自然生态风景。"
+  },
+  {
+    "name": "环二环城市绿道",
+    "length": 33.4,
+    "coverage_area": 720,
+    "construction_area": 265,
+    "features": "城市环游，历史文化，商业配套",
+    "description": "环二环绿道环绕二环路，连接城市主要商业和文化地标，是城市骑行的最佳选择。"
+  },
+  {
+    "name": "营城建都绿道",
+    "length": 15.6,
+    "coverage_area": 320,
+    "construction_area": 110,
+    "features": "城市文化，历史底蕴，景观体验",
+    "description": "营城建都绿道诠释北京建城发展历程，融合历史和现代的完美结合。"
+  },
+  {
+    "name": "莱阳河绿道",
+    "length": 8.9,
+    "coverage_area": 210,
+    "construction_area": 75,
+    "features": "河畔步行，生态修复，亲水体验",
+    "description": "莱阳河绿道通过生态修复改善河道环境，为居民提供亲水休闲空间。"
+  },
+  {
+    "name": "通州运河绿道",
+    "length": 28.5,
+    "coverage_area": 850,
+    "construction_area": 310,
+    "features": "副中心特色，文化创意，滨水休闲",
+    "description": "通州运河绿道是城市副中心的重要景观廊道，展现通州的发展活力。"
+  },
+  {
+    "name": "怀柔科学城绿道",
+    "length": 12.2,
+    "coverage_area": 280,
+    "construction_area": 95,
+    "features": "科技园区，生态保护，创新融合",
+    "description": "怀柔科学城绿道融合科技园区建设与生态保护，营造绿色创新环境。"
+  },
+  {
+    "name": "顺义新城绿道",
+    "length": 16.8,
+    "coverage_area": 420,
+    "construction_area": 150,
+    "features": "新城规划，现代风景，健康出行",
+    "description": "顺义新城绿道是新城规划的重要组成部分，体现现代城市的设计理念。"
+  },
+  {
+    "name": "昌平南口绿道",
+    "length": 11.5,
+    "coverage_area": 260,
+    "construction_area": 88,
+    "features": "历史古迹，文化走廊，郊野体验",
+    "description": "昌平南口绿道沿古迹而建，融合历史文化和自然风景。"
+  }
+]

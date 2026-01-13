@@ -167,8 +167,36 @@ class LayerManager {
     return (feature) => {
       const properties = feature.getProperties()
       
+      // 检查 feature 是否有颜色属性（来自后端绿道数据）
+      if (properties.color) {
+        const geometry = feature.getGeometry()
+        const geometryType = geometry.getType()
+        
+        let style = {}
+        
+        if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
+          style = {
+            strokeColor: properties.color,
+            strokeWidth: config.lineWidth || 3
+          }
+        } else if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') {
+          style = {
+            strokeColor: properties.color,
+            strokeWidth: config.strokeWidth || 2,
+            fillColor: `${properties.color}33`  // 使用 color 配置填充色
+          }
+        } else if (geometryType === 'Point' || geometryType === 'MultiPoint') {
+          style = {
+            pointRadius: config.pointRadius || 6,
+            pointFillColor: properties.color
+          }
+        }
+        
+        return this.getDefaultStyle(style)
+      }
+      
       // 如果feature没有自定义样式属性，直接返回缓存的静态样式
-      if (!properties.color && !properties.width) {
+      if (!properties.width) {
         return staticStyle
       }
       

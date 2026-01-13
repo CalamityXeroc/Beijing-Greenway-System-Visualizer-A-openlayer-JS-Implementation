@@ -400,9 +400,9 @@ const layerConfig = ref([
     type: 'geojson',
     url: '/数据/绿道/营城建都绿道.geojson',
     visible: true,
-    zIndex: 10,
+    zIndex: 20,
     fitExtent: false,
-    defer: true,
+    defer: false,
     style: {
       lineColor: '#4CAF50',
       lineWidth: 5

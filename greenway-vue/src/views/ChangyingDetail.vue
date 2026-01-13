@@ -108,6 +108,7 @@ import { useRouter } from 'vue-router'
 import MapViewer from '@/components/MapViewer.vue'
 import WeatherCard from '@/components/WeatherCard.vue'
 import BaiduPanoramaViewer from '@/components/BaiduPanoramaViewer.vue'
+import { loadGreenwayDataByName, buildGreenwayInfo } from '@/utils/greenwayHelper'
 
 const router = useRouter()
 
@@ -181,7 +182,7 @@ const layers = ref([
     visible: true,
     fitExtent: true,
     style: {
-      lineColor: '#4CAF50',
+      lineColor: '#2196F3',
       lineWidth: 4
     }
   }
@@ -229,26 +230,16 @@ const onPointChange = (index) => {
 // 加载绿道数据
 const loadGreenwayData = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/greenways?name=常营半马绿道')
-    if (!response.ok) {
-      console.error('[ChangyingDetail] API请求失败:', response.status)
-      return
-    }
-    const geojson = await response.json()
-    console.log('[ChangyingDetail] 绿道数据加载成功:', geojson)
+    const greenwayData = await loadGreenwayDataByName('常营半马绿道', (data) => {
+      // 更新界面显示的属性
+      const info = buildGreenwayInfo(data)
+      Object.assign(greenwayInfo.value, info)
+    })
     
-    // 从第一个要素中提取属性信息并更新界面
-    if (geojson.features && geojson.features.length > 0) {
-      const props = geojson.features[0].properties
-      if (props.total_length) greenwayInfo.value.total_length = props.total_length
-      if (props.coverage_area) greenwayInfo.value.coverage_area = props.coverage_area
-      if (props.construction_area) greenwayInfo.value.construction_area = props.construction_area
-      if (props.features) greenwayInfo.value.features = props.features
-      if (props.description) greenwayInfo.value.description = props.description
+    if (greenwayData) {
+      // 更新图层数据
+      layers.value[0].data = greenwayData.geojson
     }
-    
-    // 更新图层数据
-    layers.value[0].data = geojson
   } catch (err) {
     console.error('[ChangyingDetail] 加载绿道数据失败:', err)
   }
