@@ -1,0 +1,61 @@
+@use './variables' as oltb;
+
+// @Override : default attribution style from ol
+body #map .ol-attribution {
+    padding: .25rem;
+    background-color: oltb.$background-theme-light;
+    bottom: 1rem;
+    right: 1rem;
+    border-radius: oltb.$border-radius;
+    box-shadow: oltb.$box-shadow-mid;
+    
+    ul, a {
+        color: oltb.$background-theme-dark;
+        text-shadow: none;
+    }
+
+    &-expand,
+    &-collapse {
+        margin: 0;
+        display: block;
+    }
+
+    &-collapse {
+        height: 10px;
+    }
+
+    button {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: normal;
+        cursor: pointer;
+        background-color: oltb.$background-theme-light;
+        color: oltb.$background-theme-dark;
+
+        &:hover,
+        &:focus {
+            background-color: oltb.$color-blue-200;
+            outline: none;
+        }
+    }
+}
+
+body.oltb-dark #map .ol-attribution {
+    background-color: oltb.$background-theme-dark;
+    font-weight: normal;
+
+    ul, a {
+        color: oltb.$background-theme-light;
+    }
+
+    button {
+        background-color: oltb.$background-theme-dark;
+        color: oltb.$background-theme-light;
+
+        &:hover,
+        &:focus {
+            background-color: oltb.$color-blue-300;
+        }
+    }
+}

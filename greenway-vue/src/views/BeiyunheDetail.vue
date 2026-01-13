@@ -4,8 +4,10 @@
       <button @click="goBack" class="back-btn">
         <i class="fas fa-arrow-left"></i> 返回
       </button>
-      <h1>北京北运河绿道</h1>
-      <p><i class="fas fa-leaf"></i> 运河古韵，水岸新貌</p>
+      <div class="title-container">
+        <h1>北京北运河绿道</h1>
+        <p><i class="fas fa-leaf"></i> 运河古韵，水岸新貌</p>
+      </div>
     </header>
 
     <div class="content">
@@ -23,19 +25,19 @@
           <ul>
             <li>
               <strong>总长度：</strong>
-              <span>36公里</span>
+              <span>{{ greenwayInfo.total_length }}</span>
             </li>
             <li>
               <strong>覆盖区域：</strong>
-              <span>通州区北运河沿岸</span>
+              <span>{{ greenwayInfo.coverage_area }}</span>
             </li>
             <li>
               <strong>建设面积：</strong>
-              <span>180公顷</span>
+              <span>{{ greenwayInfo.construction_area }}</span>
             </li>
             <li>
               <strong>特色：</strong>
-              <span>运河文化、滨水生态</span>
+              <span>{{ greenwayInfo.features }}</span>
             </li>
           </ul>
         </div>
@@ -43,9 +45,7 @@
         <div class="highlights">
           <h3><i class="fas fa-info-circle"></i>绿道简介</h3>
           <p class="description">
-            北运河绿道依托千年京杭大运河文化带建设，是通州区重点打造的滨水绿道系统。
-            绿道沿线串联多处历史文化遗迹和生态景观节点，展现运河古韵与现代生态文明的完美融合，
-            是体验大运河文化、感受水岸风光的重要休闲廊道。
+            {{ greenwayInfo.description }}
           </p>
           <div class="badges">
             <span class="badge badge-green">
@@ -74,10 +74,10 @@
           :center="mapConfig.center"
           :zoom="mapConfig.zoom"
           :layers="layers"
-          :interactive="false"
+          :interactive="true"
           height="100%"
           @map-ready="onMapReady"
-        />
+        :restrict-navigation="true" />
       </div>
     </div>
 
@@ -154,15 +154,24 @@ const mapConfig = reactive({
 
 const weatherLocation = ref(null)
 
+// 绿道详细信息
+const greenwayInfo = ref({
+  total_length: '加载中...',
+  coverage_area: '加载中...',
+  construction_area: '加载中...',
+  features: '加载中...',
+  description: '正在获取绿道简介信息...'
+})
+
 const layers = ref([
   {
     id: 'beiyunhe-greenway',
     type: 'geojson',
-    url: '/数据/绿道/北运河绿道.geojson',
+    data: null,  // 将通过fetch动态设置
     visible: true,
     fitExtent: true,
     style: {
-      lineColor: '#2196F3',
+      lineColor: '#4CAF50',
       lineWidth: 4
     }
   }
@@ -191,8 +200,37 @@ const onPointChange = (index) => {
   console.log('[BeiyunheDetail] 切换到观景点:', panoramaPoints.value[index].name)
 }
 
-onMounted(() => {
+// 加载绿道数据
+const loadGreenwayData = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/greenways?name=北运河绿道')
+    if (!response.ok) {
+      console.error('[BeiyunheDetail] API请求失败:', response.status)
+      return
+    }
+    const geojson = await response.json()
+    console.log('[BeiyunheDetail] 绿道数据加载成功:', geojson)
+    
+    // 从第一个要素中提取属性信息并更新界面
+    if (geojson.features && geojson.features.length > 0) {
+      const props = geojson.features[0].properties
+      if (props.total_length) greenwayInfo.value.total_length = props.total_length
+      if (props.coverage_area) greenwayInfo.value.coverage_area = props.coverage_area
+      if (props.construction_area) greenwayInfo.value.construction_area = props.construction_area
+      if (props.features) greenwayInfo.value.features = props.features
+      if (props.description) greenwayInfo.value.description = props.description
+    }
+
+    // 更新图层数据
+    layers.value[0].data = geojson
+  } catch (err) {
+    console.error('[BeiyunheDetail] 加载绿道数据失败:', err)
+  }
+}
+
+onMounted(async () => {
   console.log('[BeiyunheDetail] 组件已挂载')
+  await loadGreenwayData()
 })
 </script>
 
@@ -205,16 +243,24 @@ onMounted(() => {
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(15px);
-  color: #2c3e50;
-  padding: 1rem 1.5rem;
-  text-align: center;
-  margin: 0;
-  box-shadow: 0 2px 12px rgba(76, 175, 80, 0.15);
-  position: relative;
-  overflow: hidden;
-  border-bottom: 2px solid rgba(76, 175, 80, 0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 480px; /* 地图区域居中 */
+  box-sizing: border-box;
+}
+
+.header h1,
+.header p,
+.back-btn {
+  pointer-events: auto;
 }
 
 .back-btn {
@@ -242,31 +288,28 @@ onMounted(() => {
 }
 
 .header h1 {
-  margin: 0;
-  font-size: 1.8rem;
+  margin: 0 0 0.2rem 0;
+  font-size: 2.2rem; margin: 0 0 0.2rem 0;
   font-weight: 700;
-  background: linear-gradient(135deg, #2E7D32, #4CAF50, #66BB6A);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #1B5E20;
 }
 
 .header p {
   margin: 0.5rem 0 0 0;
-  color: #4CAF50;
+  color: #1B5E20;
   font-size: 1rem;
   font-weight: 500;
 }
 
 .content {
   display: flex;
-  height: calc(100vh - 90px);
+  height: 100vh;
   gap: 0;
 }
 
 .left-sidebar {
-  width: 400px;
-  padding: 1.5rem;
+  width: 480px;
+  padding: 110px 1.5rem 1.5rem 1.5rem;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   overflow-y: auto;
@@ -323,41 +366,59 @@ onMounted(() => {
 }
 
 .highlights h3 {
-  margin: 0 0 1rem 0;
   color: #2E7D32;
+  margin-bottom: 1rem;
   font-size: 1.1rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
+}
+
+.highlights h3::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 1em;
+  background: linear-gradient(180deg, #4CAF50, #2196F3);
+  border-radius: 2px;
 }
 
 .highlights ul {
-  list-style: none;
+  list-style-type: none;
   padding: 0;
-  margin: 0;
 }
 
 .highlights li {
-  padding: 0.6rem 0;
-  border-bottom: 1px solid rgba(76, 175, 80, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-.highlights li:last-child {
-  border-bottom: none;
+.highlights li:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.8);
 }
 
-.highlights strong {
-  color: #1B5E20;
-  font-weight: 600;
-}
-
-.highlights span {
+.highlights li::before {
+  content: "\f058";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
   color: #4CAF50;
-  font-weight: 500;
+  position: absolute;
+  left: 0.8rem;
+  opacity: 0.8;
+}
+
+.highlights li strong {
+  color: #2196F3;
+}
+
+.highlights li span {
+  color: #666;
 }
 
 .description {
@@ -448,4 +509,17 @@ onMounted(() => {
     height: 60vh;
   }
 }
+
+.title-container {
+  background: transparent;
+  padding: 0.8rem 2rem;
+  text-align: center;
+  pointer-events: auto;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.title-container:hover {
+  transform: translateY(-2px);
+}
+
 </style>

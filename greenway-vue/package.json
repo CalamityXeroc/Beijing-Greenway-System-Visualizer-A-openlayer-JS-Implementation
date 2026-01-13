@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:weather-proxy": "node weather-proxy.js",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -12,7 +13,11 @@
     "@photo-sphere-viewer/markers-plugin": "^5.14.0",
     "@photo-sphere-viewer/virtual-tour-plugin": "^5.14.0",
     "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "ol": "^8.2.0",
+    "pg": "^8.16.3",
     "pinia": "^2.1.7",
     "vue": "^3.4.0",
     "vue-router": "^4.2.5"

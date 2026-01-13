@@ -1,8 +1,11 @@
 <template>
   <div class="greenroad-page">
     <header class="header">
-      <h1>北京绿道系统可视化平台</h1>
-      <p><i class="fas fa-map-marked-alt"></i> 探索城市绿色网络，享受健康生活</p>
+      
+      <div class="title-container">
+        <h1>北京绿道系统可视化平台</h1>
+        <p><i class="fas fa-map-marked-alt"></i> 探索城市绿色网络，享受健康生活</p>
+      </div>
     </header>
 
     <div class="map-container">
@@ -904,25 +907,18 @@ onBeforeUnmount(() => {
 }
 
 .header {
-  background: transparent;
-  backdrop-filter: none;
-  color: #2c3e50;
-  padding: 1.2rem 2rem;
-  text-align: center;
-  margin: 0;
-  box-shadow: none;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  flex-shrink: 0;
   pointer-events: none;
-  /* 硬件加速优化 */
-  transform: translateZ(0);
-  will-change: transform;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 0; /* 地图区域居中 */
+  box-sizing: border-box;
 }
 
 .header h1,
@@ -939,11 +935,8 @@ onBeforeUnmount(() => {
 
 .header h1 {
   font-size: 2.2rem;
-  margin: 0 0 0.3rem 0;
-  background: linear-gradient(120deg, #1B5E20, #2E7D32, #4CAF50, #66BB6A);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  margin: 0 0 0.2rem 0;
+  color: #1B5E20;
   font-weight: 800;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   letter-spacing: 3px;
@@ -963,7 +956,7 @@ onBeforeUnmount(() => {
 }
 
 .header i {
-  color: #4CAF50;
+  color: #1B5E20;
   margin-right: 0.5rem;
   filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.8))
           drop-shadow(0 2px 4px rgba(76, 175, 80, 0.6));
@@ -1285,6 +1278,7 @@ onBeforeUnmount(() => {
 
 /* 响应式 */
 @media (max-width: 1200px) {
+  .header { padding-left: 0; }
   .info-cards {
     grid-template-columns: 1fr;
   }
@@ -1292,12 +1286,23 @@ onBeforeUnmount(() => {
 
 @media (max-width: 768px) {
   .header {
-    padding: 1rem;
-  }
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 0; /* 地图区域居中 */
+  box-sizing: border-box;
+}
 
   .header h1 {
     font-size: 1.5rem;
-  }
+  margin: 0 0 0.2rem 0;}
 
   .header p {
     font-size: 0.875rem;
@@ -1419,4 +1424,17 @@ onBeforeUnmount(() => {
     font-size: 0.8125rem;
   }
 }
+
+.title-container {
+  background: transparent;
+  padding: 0.8rem 2rem;
+  text-align: center;
+  pointer-events: auto;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.title-container:hover {
+  transform: translateY(-2px);
+}
+
 </style>

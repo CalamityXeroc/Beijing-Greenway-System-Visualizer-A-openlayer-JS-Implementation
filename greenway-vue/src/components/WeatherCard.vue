@@ -217,46 +217,48 @@ const fetchWeather = async () => {
   error.value = null
 
   try {
-    // 1. 逆地理编码获取城市代码
-    const geoResponse = await fetch(
-      `https://restapi.amap.com/v3/geocode/regeo?key=${props.apiKey}&location=${props.longitude},${props.latitude}`
-    )
+    console.log('[WeatherCard] 开始获取天气数据，坐标:', props.longitude, props.latitude)
+    
+    // 从环境变量读取 API Key（不硬编码在代码中）
+    const apiKey = import.meta.env.VITE_AMAP_KEY || props.apiKey
+    
+    const geoUrl = `https://restapi.amap.com/v3/geocode/regeo?key=${apiKey}&location=${props.longitude},${props.latitude}`
+    console.log('[WeatherCard] 逆地理编码...')
+    
+    const geoResponse = await fetch(geoUrl)
     const geoData = await geoResponse.json()
 
     if (geoData.status !== '1' || !geoData.regeocode) {
-      throw new Error('位置解析失败')
+      throw new Error(`逆地理编码失败: ${geoData.info}`)
     }
 
     const adcode = geoData.regeocode.addressComponent.adcode
-    let cityName = geoData.regeocode.addressComponent.city || 
-                   geoData.regeocode.addressComponent.province
+    let cityName = geoData.regeocode.addressComponent.city || geoData.regeocode.addressComponent.province
     
-    // 修复：如果 cityName 是数组，取第一个元素
     if (Array.isArray(cityName)) {
-      cityName = cityName[0] || '未知城市'
+      cityName = cityName[0] || '北京市'
     }
-    // 如果是空数组或空字符串，使用省份名称
-    if (!cityName || cityName.length === 0) {
-      cityName = geoData.regeocode.addressComponent.province || '北京市'
+    if (!cityName) {
+      cityName = '北京市'
     }
 
-    // 2. 获取天气数据
-    const weatherResponse = await fetch(
-      `https://restapi.amap.com/v3/weather/weatherInfo?key=${props.apiKey}&city=${adcode}&extensions=base`
-    )
+    // 获取天气
+    const weatherUrl = `https://restapi.amap.com/v3/weather/weatherInfo?key=${apiKey}&city=${adcode}&extensions=base`
+    console.log('[WeatherCard] 天气查询...')
+    
+    const weatherResponse = await fetch(weatherUrl)
     const weatherData = await weatherResponse.json()
 
     if (weatherData.status !== '1' || !weatherData.lives || weatherData.lives.length === 0) {
-      throw new Error('天气数据获取失败')
+      throw new Error(`天气查询失败: ${weatherData.info}`)
     }
 
     weather.value = {
       ...weatherData.lives[0],
       city: cityName
     }
-
     emit('weather-loaded', weather.value)
-    console.log('[WeatherCard] 天气数据加载成功:', weather.value)
+    console.log('[WeatherCard] 天气数据加载成功')
   } catch (err) {
     error.value = err.message || '天气数据加载失败'
     emit('weather-error', err)

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>直接API测试</title>
+  <style>
+    body { font-family: monospace; margin: 20px; }
+    #output { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; background: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <h1>天气 API 直接测试</h1>
+  <button onclick="test()">发送请求</button>
+  <button onclick="clearOutput()">清空输出</button>
+  
+  <h2>输出日志：</h2>
+  <div id="output"></div>
+
+  <script>
+    function log(msg) {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toLocaleTimeString();
+      output.innerHTML += `[${timestamp}] ${msg}\n`;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    async function test() {
+      log('========== 开始测试 ==========');
+      
+      try {
+        const url = 'http://localhost:3001/api/weather/complete?lon=116.397&lat=40.018';
+        log('URL: ' + url);
+        log('发送请求中...');
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(url, {
+          signal: controller.signal,
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        clearTimeout(timeoutId);
+        
+        log('收到响应: ' + response.status + ' ' + response.statusText);
+        
+        const data = await response.json();
+        log('返回数据: ' + JSON.stringify(data, null, 2));
+        
+      } catch (error) {
+        log('❌ 错误: ' + error.message);
+        log('错误类型: ' + error.name);
+      }
+      
+      log('========== 测试完毕 ==========\n');
+    }
+
+    function clearOutput() {
+      document.getElementById('output').innerHTML = '';
+    }
+
+    // 自动测试
+    window.addEventListener('load', () => {
+      log('页面已加载');
+      setTimeout(() => test(), 500);
+    });
+  </script>
+</body>
+</html>

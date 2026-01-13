@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>天气代理测试</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    pre { background: #fff; border: 1px solid #ccc; padding: 10px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>天气代理服务测试</h1>
+  
+  <h2>测试端点</h2>
+  <button onclick="testHealth()">测试健康检查</button>
+  <button onclick="testWeather()">测试天气 API</button>
+  <button onclick="clear()">清空结果</button>
+  
+  <h3>结果：</h3>
+  <div id="result" class="result"></div>
+
+  <script>
+    const baseUrl = 'http://localhost:3001';
+
+    async function testHealth() {
+      try {
+        const response = await fetch(`${baseUrl}/health`);
+        const data = await response.json();
+        showResult('✓ 健康检查成功', data);
+      } catch (error) {
+        showResult('✗ 健康检查失败', error.message);
+      }
+    }
+
+    async function testWeather() {
+      try {
+        const lon = 116.397;
+        const lat = 40.018;
+        const url = `${baseUrl}/api/weather/complete?lon=${lon}&lat=${lat}`;
+        console.log('请求 URL:', url);
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        showResult('✓ 天气 API 响应', data);
+      } catch (error) {
+        showResult('✗ 天气 API 失败', error.message);
+      }
+    }
+
+    function showResult(title, data) {
+      const resultDiv = document.getElementById('result');
+      const timestamp = new Date().toLocaleTimeString();
+      const content = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      resultDiv.innerHTML += `<div><strong>[${timestamp}] ${title}</strong><pre>${content}</pre></div>`;
+    }
+
+    function clear() {
+      document.getElementById('result').innerHTML = '';
+    }
+
+    // 页面加载时自动测试
+    window.addEventListener('load', () => {
+      console.log('页面已加载，准备测试...');
+      testHealth();
+      setTimeout(testWeather, 1000);
+    });
+  </script>
+</body>
+</html>

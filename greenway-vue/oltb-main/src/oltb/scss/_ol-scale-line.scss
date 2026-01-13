@@ -1,0 +1,27 @@
+@use './variables' as oltb;
+
+// @Override : default scale-line style from ol
+body .ol-scale-line {
+    border-radius: oltb.$border-radius;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: oltb.$background-theme-light;
+    padding: .5rem;
+    box-shadow: oltb.$box-shadow-mid;
+
+    &-inner {
+        border-width: 2px;
+        padding-bottom: 4px;
+        border-color: oltb.$background-theme-dark;
+        color: oltb.$background-theme-dark;
+    }
+}
+
+body.oltb-dark .ol-scale-line {
+    background-color: oltb.$background-theme-dark;
+
+    &-inner {
+        border-color: oltb.$background-theme-light;
+        color: oltb.$color-light;
+    }
+}

@@ -4,8 +4,10 @@
       <button @click="goBack" class="back-btn">
         <i class="fas fa-arrow-left"></i> 返回
       </button>
-      <h1>北京环二环城市绿道</h1>
-      <p><i class="fas fa-leaf"></i> 环绕二环，感受城市绿色脉络</p>
+      <div class="title-container">
+        <h1>北京环二环城市绿道</h1>
+        <p><i class="fas fa-leaf"></i> 环绕二环，感受城市绿色脉络</p>
+      </div>
     </header>
 
     <div class="content">
@@ -23,19 +25,19 @@
           <ul>
             <li>
               <strong>总长度：</strong>
-              <span>87公里</span>
+              <span>{{ greenwayInfo.total_length }}</span>
             </li>
             <li>
               <strong>覆盖区域：</strong>
-              <span>东城、西城、朝阳、海淀四区</span>
+              <span>{{ greenwayInfo.coverage_area }}</span>
             </li>
             <li>
               <strong>建设面积：</strong>
-              <span>230公顷</span>
+              <span>{{ greenwayInfo.construction_area }}</span>
             </li>
             <li>
               <strong>特色：</strong>
-              <span>城市环线绿道、历史文化走廊</span>
+              <span>{{ greenwayInfo.features }}</span>
             </li>
           </ul>
         </div>
@@ -43,10 +45,7 @@
         <div class="highlights">
           <h3><i class="fas fa-info-circle"></i>绿道简介</h3>
           <p class="description">
-            环二环城市绿道是北京首条环形城市绿道，沿二环路两侧建设，
-            串联多处历史文化景点和城市公园。绿道设计融入慢行系统，
-            为市民提供了一条环绕核心城区的绿色健身休闲通道，
-            是体验北京历史文化与现代城市风貌的理想路线。
+            {{ greenwayInfo.description }}
           </p>
           <div class="badges">
             <span class="badge badge-green">
@@ -75,10 +74,10 @@
           :center="mapConfig.center"
           :zoom="mapConfig.zoom"
           :layers="layers"
-          :interactive="false"
+          :interactive="true"
           height="100%"
           @map-ready="onMapReady"
-        />
+        :restrict-navigation="true" />
       </div>
     </div>
 
@@ -165,15 +164,24 @@ const mapConfig = reactive({
 const weatherLocation = ref(null)
 
 // 图层配置
+// 绿道详细信息
+const greenwayInfo = ref({
+  total_length: '加载中...',
+  coverage_area: '加载中...',
+  construction_area: '加载中...',
+  features: '加载中...',
+  description: '正在获取绿道简介信息...'
+})
+
 const layers = ref([
   {
     id: 'huanerhuan-greenway',
     type: 'geojson',
-    url: '/数据/绿道/环二环城市绿道.geojson',
+    data: null,  // 将通过fetch动态设置
     visible: true,
     fitExtent: true,
     style: {
-      lineColor: '#2196F3',
+      lineColor: '#4CAF50',
       lineWidth: 4
     }
   }
@@ -218,8 +226,37 @@ const onPointChange = (index) => {
   console.log('[HuanerhuanDetail] 切换到观景点:', panoramaPoints.value[index].name)
 }
 
-onMounted(() => {
+// 加载绿道数据
+const loadGreenwayData = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/greenways?name=环二环城市绿道')
+    if (!response.ok) {
+      console.error('[HuanerhuanDetail] API请求失败:', response.status)
+      return
+    }
+    const geojson = await response.json()
+    console.log('[HuanerhuanDetail] 绿道数据加载成功:', geojson)
+    
+    // 从第一个要素中提取属性信息并更新界面
+    if (geojson.features && geojson.features.length > 0) {
+      const props = geojson.features[0].properties
+      if (props.total_length) greenwayInfo.value.total_length = props.total_length
+      if (props.coverage_area) greenwayInfo.value.coverage_area = props.coverage_area
+      if (props.construction_area) greenwayInfo.value.construction_area = props.construction_area
+      if (props.features) greenwayInfo.value.features = props.features
+      if (props.description) greenwayInfo.value.description = props.description
+    }
+    
+    // 更新图层数据
+    layers.value[0].data = geojson
+  } catch (err) {
+    console.error('[HuanerhuanDetail] 加载绿道数据失败:', err)
+  }
+}
+
+onMounted(async () => {
   console.log('[HuanerhuanDetail] 组件已挂载')
+  await loadGreenwayData()
 })
 </script>
 
@@ -232,16 +269,24 @@ onMounted(() => {
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(15px);
-  color: #2c3e50;
-  padding: 1rem 1.5rem;
-  text-align: center;
-  margin: 0;
-  box-shadow: 0 2px 12px rgba(76, 175, 80, 0.15);
-  position: relative;
-  overflow: hidden;
-  border-bottom: 2px solid rgba(76, 175, 80, 0.1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 480px; /* 地图区域居中 */
+  box-sizing: border-box;
+}
+
+.header h1,
+.header p,
+.back-btn {
+  pointer-events: auto;
 }
 
 .back-btn {
@@ -268,41 +313,38 @@ onMounted(() => {
 }
 
 .header h1 {
-  font-size: 1.5rem;
-  margin: 0 0 0.15rem 0;
-  background: linear-gradient(120deg, #2E7D32, #4CAF50, #66BB6A);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-size: 2.2rem; margin: 0 0 0.2rem 0;
+  margin: 0 0 0.2rem 0;
+  color: #1B5E20;
   font-weight: 700;
 }
 
 .header p {
-  color: #558B2F;
+  color: #1B5E20;
   font-size: 0.85rem;
   font-weight: 500;
   margin: 0;
 }
 
 .header i {
-  color: #4CAF50;
+  color: #1B5E20;
   margin-right: 0.4rem;
 }
 
 .content {
   display: flex;
-  height: calc(100vh - 80px);
+  height: 100vh;
   gap: 0;
 }
 
 /* 左侧信息栏 */
 .left-sidebar {
-  width: 400px;
+  width: 480px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   overflow-y: auto;
-  padding: 1.5rem;
+  padding: 110px 1.5rem 1.5rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -500,6 +542,7 @@ onMounted(() => {
 
 /* 响应式 */
 @media (max-width: 1200px) {
+  .header { padding-left: 0; }
   .content {
     flex-direction: column;
     height: auto;
@@ -516,13 +559,24 @@ onMounted(() => {
 
   .header h1 {
     font-size: 1.3rem;
-  }
+  margin: 0 0 0.2rem 0;}
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 1rem 1.5rem;
-  }
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 480px; /* 地图区域居中 */
+  box-sizing: border-box;
+}
 
   .back-btn {
     left: 1rem;
@@ -542,4 +596,17 @@ onMounted(() => {
     height: 50vh;
   }
 }
+
+.title-container {
+  background: transparent;
+  padding: 0.8rem 2rem;
+  text-align: center;
+  pointer-events: auto;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.title-container:hover {
+  transform: translateY(-2px);
+}
+
 </style>

@@ -1,32 +1,36 @@
 @echo off
 chcp 65001 >nul
 echo.
-echo ====================================
-echo   北京绿道系统 Vue 版本
-echo   启动开发服务器...
-echo ====================================
+echo ╔════════════════════════════════════════════════════╗
+echo ║     北京绿道系统 - 前端开发服务器启动             ║
+echo ╚════════════════════════════════════════════════════╝
 echo.
 
-REM 进入项目目录
-cd /d "%~dp0"
-
-REM 检查 node_modules 是否存在
-if not exist "node_modules" (
-    echo [错误] 依赖未安装
-    echo 请先运行 "安装依赖.bat"
+rem 检查 Node.js
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo ✗ 错误：未检测到 Node.js，请先安装 Node.js
+    echo   下载地址：https://nodejs.org/
     pause
     exit /b 1
 )
 
-echo [√] 正在启动开发服务器...
+rem 检查依赖
+if not exist node_modules (
+    echo ⏳ 首次运行，正在安装依赖...
+    call npm install
+    if %errorlevel% neq 0 (
+        echo ✗ 依赖安装失败
+        pause
+        exit /b 1
+    )
+)
+
 echo.
-echo 浏览器会自动打开 http://localhost:5173
-echo.
-echo 按 Ctrl+C 停止服务器
-echo.
-echo ====================================
+echo ✓ 启动前端开发服务器...
+echo   访问地址: http://localhost:5173
+echo   按 Ctrl+C 可停止服务器
 echo.
 
 call npm run dev
-
 pause

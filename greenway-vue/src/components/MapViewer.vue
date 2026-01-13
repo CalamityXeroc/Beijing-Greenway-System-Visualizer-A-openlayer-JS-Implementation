@@ -299,12 +299,24 @@ async function syncLayers(layersConfig = []) {
       if (config.fitExtent) {
         const source = created.layer.getSource?.()
         if (source) {
-          source.once('change', () => {
+          const fit = () => {
             if (source.getState() === 'ready') {
               const extent = source.getExtent()
-              mapManager.fitExtent(extent)
+              if (extent && extent.every(v => Number.isFinite(v))) {
+                 try {
+                    mapManager.fitExtent(extent)
+                 } catch (e) {
+                    console.warn('[MapViewer] Zoom to extent failed', e)
+                 }
+              }
             }
-          })
+          }
+          
+          if (source.getState() === 'ready') {
+            fit()
+          } else {
+            source.once('change', fit)
+          }
         }
       }
     } else {

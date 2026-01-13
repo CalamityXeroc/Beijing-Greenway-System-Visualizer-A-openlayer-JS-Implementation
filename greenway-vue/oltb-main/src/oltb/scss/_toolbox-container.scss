@@ -1,0 +1,47 @@
+@use './variables' as oltb;
+
+.oltb-toolbox-container {
+    // Note:
+    // min-width is help for collision detection
+    min-width: 320px;
+    max-width: 380px;
+    position: absolute;
+    pointer-events: auto;
+    z-index: 800;
+    top: 1rem;
+    right: 1rem;
+    max-height: calc(100% - 2rem);
+    border-radius: oltb.$border-radius;
+    background-color: oltb.$background-theme-light;
+    box-shadow: oltb.$box-shadow-mid;
+    padding: 0 1rem;
+    transition: transform 450ms ease-in-out;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    &--collision {
+        top: 4.5rem;
+        max-height: calc(100% - 5.5rem);
+    }
+
+    &--hidden {
+        transform: translateX(100%) translateX(1rem);
+    }
+}
+
+body.oltb-dark .oltb-toolbox-container {
+    background-color: oltb.$background-theme-dark;
+}
+
+@media only screen and (max-width: oltb.$breakpoint-sm) {
+    .oltb-toolbox-container {
+        width: calc(100% - 2rem);
+        top: 4.5rem;
+        max-height: calc(100% - 5.5rem);
+    }
+}

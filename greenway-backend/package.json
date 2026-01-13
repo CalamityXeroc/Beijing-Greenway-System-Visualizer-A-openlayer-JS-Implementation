@@ -1,0 +1,26 @@
+{
+  "name": "greenway-backend",
+  "version": "1.0.0",
+  "description": "Backend service for Beijing Greenway GIS platform",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:init": "node scripts/init-db.js",
+    "db:import": "node scripts/import-geojson.js",
+    "check": "node scripts/check-env.js"
+  },
+  "keywords": ["greenway", "gis", "geospatial", "postgresql", "postgis"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

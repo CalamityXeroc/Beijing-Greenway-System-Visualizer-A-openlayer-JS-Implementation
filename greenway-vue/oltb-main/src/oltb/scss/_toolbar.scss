@@ -1,0 +1,134 @@
+@use './variables' as oltb;
+
+#oltb {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    max-height: calc(100% - 2rem);
+    display: inline-flex;
+    flex-direction: column;
+    padding: .25rem;
+    padding-top: 0;
+    background-color: oltb.$background-theme-light;
+    border-radius: oltb.$border-radius;
+    box-shadow: oltb.$box-shadow-mid;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    transition: transform 450ms ease-in-out;
+    transform: translateX(-100%) translateX(-1.25rem);
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    &:empty {
+        display: none;
+    }
+
+    &.init-visible {
+        transform: translate(0) !important;
+    }
+
+    &.row {
+        max-width: calc(100% - 2rem);
+        flex-direction: row;
+        padding-top: .25rem;
+        transform: translateY(-100%) translateY(-1.25rem);
+
+        .oltb-tool-button {
+            margin: 0 0 0 .25rem;
+    
+            &:first-child {
+                margin: 0;
+            }
+        }
+    }
+
+    &.dark {
+        background-color: oltb.$background-theme-dark;
+
+        .oltb-tool-button {
+            color: oltb.$color-light;
+            
+            &:hover,
+            &--active {
+                background-color: oltb.$color-blue-300;
+                color: oltb.$color-light;
+            }
+        }
+    }
+}
+
+.oltb-tool-button {
+    flex-shrink: 0;
+    border-radius: oltb.$border-radius;
+    margin: .25rem 0 0 0;
+    color: oltb.$color-dark;
+    height: 2.25rem;
+    width: 2.25rem;
+    padding: 0;
+    background-color: transparent;
+    transition: background-color 100ms ease-in-out;
+    border: none;
+    cursor: pointer;
+    position: relative;
+
+    &:hover,
+    &--active {
+        background-color: oltb.$color-blue-200;
+        color: oltb.$color-blue-400;
+    }
+
+    &--hidden {
+        display: none;
+    }
+
+    &__icon {
+        display: inline-block;
+        vertical-align: middle;
+        filter: oltb.$drop-shadow-filter-light;
+    }
+}
+
+// Note:
+// JavaScript adds the class .using-keyboard to the body tag if the user presses the keyboard
+// If .using-keyboard then enable focus-style to the buttons
+body.oltb-using-keyboard #oltb {
+    &.dark {
+        .oltb-tool-button {
+            &:focus,
+            &:active {
+                background-color: oltb.$color-blue-300;
+                color: oltb.$color-light;
+            }
+        }
+    }
+
+    .oltb-tool-button {
+        &:focus,
+        &:active {
+            background-color: oltb.$color-blue-200;
+            color: oltb.$color-blue-400;
+        }
+    }
+}
+
+// Note:
+// Always use horizontal toolbar for mobiles
+@media only screen and (max-width: oltb.$breakpoint-sm) {
+    #oltb {
+        max-width: calc(100% - 2rem);
+        flex-direction: row;
+        margin-right: 1rem;
+        padding-top: .25rem;
+    }
+
+    .oltb-tool-button {
+        margin: 0 0 0 .25rem;
+
+        &:first-child {
+            margin: 0;
+        }
+    }
+}
