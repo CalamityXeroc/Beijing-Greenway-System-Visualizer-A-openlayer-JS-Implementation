@@ -1,16 +1,57 @@
 # 北京绿道可视化平台
 
+![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 一个基于 Vue 3 + OpenLayers + PostgreSQL/PostGIS 的现代 WebGIS 平台，用于探索北京绿道网络。
 
-**[English Documentation](./README.md)**
+**[English Version](./README.md)**
 
 ## 🎯 项目概览
 
 - ✅ **10条绿道**：北京主要绿道路线的交互式可视化
 - ✅ **完整技术栈**：Vue 3 前端 + Node.js/Express 后端 + PostgreSQL 数据库
-- ✅ **丰富功能**：地图可视化、天气集成、全景查看
+- ✅ **丰富功能**：地图可视化、天气集成、全景查看、绘制测量工具
 - ✅ **响应式设计**：支持桌面端和移动设备
-- ✅ **生产就绪**：性能优化、API 安全、完整文档
+- ✅ **生产就绪**：性能优化、API 完整、文档齐全
+
+## 🚀 快速开始
+
+### 一键启动
+
+**Windows:**
+```bash
+.\启动完整系统.bat
+```
+
+**Linux/macOS:**
+```bash
+bash 启动完整系统.bat
+```
+
+此命令会同时启动后端（端口 3000）和前端（端口 5173）。
+
+### 手动启动
+
+**启动后端：**
+```bash
+cd greenway-backend
+npm install
+npm run db:init      # 初始化数据库
+npm run db:import    # 导入GeoJSON数据
+npm run dev          # 启动开发服务器
+```
+
+**启动前端（新终端）：**
+```bash
+cd greenway-vue
+npm install
+npm run dev
+```
+
+**访问应用：** http://localhost:5173
 
 ## ✨ 主要特性
 
@@ -27,52 +68,16 @@
 - 绿道特色介绍和描述
 - 沿线观景点及其坐标
 
+### 🛠️ 专业 GIS 工具
+- **绘制工具**：在地图上直接创建点、线、多边形
+- **测量工具**：精确计算距离（米/公里）和面积（平方米/平方公里）
+- **自定义图层**：导入您自己的 GeoJSON 数据进行分析
+- **交互式弹窗**：点击要素查看详细信息
+
 ### 🌡️ 集成服务
 - **实时天气组件**，显示当前天气状况
 - **百度全景集成**，支持 360° 街景浏览
-- **天气 API**，使用公开数据源
 - **可拖拽/可折叠**组件，提升用户体验
-
-## 🚀 快速开始指南
-
-### 系统需求
-```
-Node.js >= 18.0
-PostgreSQL 18 + PostGIS 3.6
-npm 或 yarn
-```
-
-### 一键启动
-
-**Windows:**
-```bash
-.\启动完整系统.bat
-```
-
-**Linux/macOS:**
-```bash
-bash 启动完整系统.bat
-```
-
-此命令会同时启动后端（端口 3000）和前端（端口 5174）。
-
-### 手动启动
-
-**启动后端：**
-```bash
-cd greenway-backend
-npm install
-npm start
-```
-
-**启动前端：**
-```bash
-cd greenway-vue
-npm install
-npm run dev
-```
-
-**访问应用：** http://localhost:5174
 
 ## 📁 项目结构
 
@@ -83,10 +88,10 @@ tryyyyyy/
 │   │   ├── index.js              # 主服务程序
 │   │   └── db.js                 # PostgreSQL 连接
 │   ├── scripts/
-│   │   ├── init-db.js            # 初始化数据库表结构
-│   │   ├── import-geometry.js    # 导入 GeoJSON 几何数据
-│   │   ├── sync-frontend-data.js # 同步前端数据
-│   │   └── check-env.js          # 检查环境配置
+│   │   ├── init-db.js            # 初始化数据库
+│   │   ├── import-geometry.js    # 导入几何数据
+│   │   ├── check-env.js          # 检查环境
+│   │   └── sync-frontend-data.js # 同步数据
 │   └── package.json
 │
 ├── greenway-vue/                  # Vue 3 前端应用
@@ -97,7 +102,72 @@ tryyyyyy/
 │   │   ├── components/           # 可复用组件
 │   │   ├── utils/               # 工具函数
 │   │   └── config/              # 配置文件
-│   ├── public/
+│   └── package.json
+│
+├── README.md                      # 英文文档
+├── README_zh-CN.md               # 中文文档（本文件）
+└── 启动完整系统.bat              # 一键启动脚本
+```
+
+## 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| 前端 | Vue 3.4, OpenLayers 8.2, Vite 5.0 |
+| 后端 | Node.js, Express 4.18 |
+| 数据库 | PostgreSQL 18, PostGIS 3.6 |
+| 数据格式 | GeoJSON, MultiLineString |
+
+## 系统需求
+
+```
+Node.js >= 18.0
+PostgreSQL 18 + PostGIS 3.6
+npm 或 yarn
+```
+
+## API 接口
+
+### 获取绿道数据
+
+```bash
+GET /api/greenways
+GET /api/greenways?name=南沙绿道
+```
+
+返回包含 MultiLineString 几何的 GeoJSON FeatureCollection。
+
+### 健康检查
+
+```bash
+GET /health
+```
+
+## 数据库架构
+
+```sql
+CREATE TABLE greenways (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  total_length DECIMAL(10, 2),
+  coverage_area VARCHAR(255),
+  construction_area DECIMAL(10, 2),
+  features TEXT,
+  description TEXT,
+  geometry geometry(MultiLineString, 4326),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 文档指南
+
+- **前端设置：** 查看 [greenway-vue/README.md](./greenway-vue/README.md)
+- **后端设置：** 查看 [greenway-backend/README.md](./greenway-backend/README.md)
+- **英文完整指南：** 查看 [README.md](./README.md)
+
+## 许可证
+
+MIT
 │   │   └── 数据/绿道/           # GeoJSON 几何数据
 │   └── package.json
 │
@@ -166,18 +236,28 @@ CREATE TABLE greenways (
 
 ## 🔧 配置文件
 
-### 后端环境配置 (.env)
+### 环境变量配置
+
+所有敏感信息必须通过 `.env.local` 文件配置（不提交到 Git）：
+
+**后端环境变量** (`greenway-backend/.env.local`)
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=greenway
+DB_NAME=greenway_db
 DB_USER=postgres
-DB_PASSWORD=123456
+DB_PASSWORD=your_secure_password
 PORT=3000
 ```
 
-### 前端配置 (vite.config.js)
-- 构建输出：`dist/`
+**前端环境变量** (`greenway-vue/.env.local`)
+```env
+VITE_AMAP_KEY=your_amap_api_key
+VITE_BAIDU_MAP_KEY=your_baidu_map_key
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+详见各目录中的 `.env.example` 作为模板。
 - API 代理：`/api` → `http://localhost:3000/api`
 - 开发模式热更新启用
 - 生产环境优化启用

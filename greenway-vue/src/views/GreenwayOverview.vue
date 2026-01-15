@@ -145,10 +145,6 @@
           <i class="fas fa-map-marked-alt"></i>
           <span>覆盖区域：{{ tooltip.data.area }}</span>
         </div>
-        <div class="tooltip-item" v-if="tooltip.data.description">
-          <i class="fas fa-info-circle"></i>
-          <span>{{ tooltip.data.description }}</span>
-        </div>
       </div>
       <div class="tooltip-footer">
         <small><i class="fas fa-mouse-pointer"></i> 点击查看详情</small>
@@ -412,6 +408,46 @@ const layerConfig = ref([
       description: '历史文化古迹串联绿道，全长42公里',
       length: 42,
       area: '西城区、东城区'
+    }
+  },
+  {
+    id: 'sanshan-greenway',
+    name: '三山五园绿道',
+    type: 'geojson',
+    url: '/数据/绿道/三山五园绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '三山五园绿道',
+      description: '皇家园林文化展示绿道，连接颐和园、圆明园、清华、北大等文化胜地',
+      length: 36.09,
+      area: '海淀区'
+    }
+  },
+  {
+    id: 'chaoyang-greenway',
+    name: '朝阳绿道',
+    type: 'geojson',
+    url: '/数据/绿道/朝阳绿道.geojson',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#4CAF50',
+      lineWidth: 5
+    },
+    info: {
+      name: '朝阳绿道',
+      description: '繁华都市中的绿色休闲长廊，汇聚商务、文化、艺术等多种元素',
+      length: 18,
+      area: '朝阳区'
     }
   }
 ])
@@ -860,12 +896,27 @@ const viewPopupDetail = () => {
     }).catch(err => {
       console.error('[GreenwayOverview] ❌ 导航失败:', err)
     })
+  } else if (targetLayerId === 'sanshan-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到三山五园绿道 /sanshan')
+    router.push('/sanshan').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
+  } else if (targetLayerId === 'chaoyang-greenway') {
+    console.log('[GreenwayOverview] ✅ 导航到朝阳绿道 /chaoyang')
+    router.push('/chaoyang').then(() => {
+      console.log('[GreenwayOverview] ✅ 导航成功')
+    }).catch(err => {
+      console.error('[GreenwayOverview] ❌ 导航失败:', err)
+    })
   } else {
     console.warn('[GreenwayOverview] ⚠️ 未找到匹配的图层ID:', targetLayerId)
     console.warn('[GreenwayOverview] 📋 所有支持的图层:', [
       'wenyu-greenway', 'huanerhuan-greenway', 'liangmahe-greenway',
       'changying-greenway', 'changping42-greenway', 'lidu-greenway',
-      'beiyunhe-greenway', 'nansha-greenway', 'aosen-greenway', 'yingcheng-greenway'
+      'beiyunhe-greenway', 'nansha-greenway', 'aosen-greenway', 'yingcheng-greenway',
+      'sanshan-greenway', 'chaoyang-greenway'
     ])
   }
 }

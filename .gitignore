@@ -1,50 +1,99 @@
-# Dependencies
+# 环境变量和敏感信息（绝不提交）
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# 依赖
 node_modules/
 .pnp
 .pnp.js
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Testing
+# 测试和覆盖率
 coverage/
+.nyc_output/
 
-# Production
+# 构建产物
 dist/
+dist-ssr/
 build/
+*.local
+.vuepress/dist
 
-# Misc
-.DS_Store
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# 日志
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.log
+logs/
 
-# IDE
+# IDE 和编辑器
 .vscode/
+!.vscode/extensions.json
 .idea/
+.DS_Store
 *.suo
+*.ntvs*
+*.njsproj
 *.sln
+*.sw?
 *.swp
-*.swc
-*.bak
+*.swo
+*.swn
+*~
+.sublime-project
+.sublime-workspace
 
-# Resources (不提交资料文件夹)
+# 隐私数据和资料（论文和软著保护）
+资料/
+绿道数据/
+高德数据/
 /greenway-vue/public/数据/资料/
 /greenway-vue/resources/
 
-# Database backups
+# 数据库文件和备份
+*.db
+*.sqlite
+*.sqlite3
 *.sql
 !init-db.sql
 !postgis-init.sql
+*.sql.bak
+*.sql.backup
 
-# Temporary files
+# 临时文件
 *.tmp
+*.temp
+*.bak
+*.backup
 tmp/
 temp/
+.tmp/
+.cache/
+.parcel-cache
 
-# OS files
-Thumbs.db
+# 本地启动脚本（可选）
+启动*.bat
+启动*.sh
+
+# OS 系统文件
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.AppleDouble
+.LSOverride
+.apdisk
+.AppleDesktop
+Network\ Trash\ Folder
+Temporary\ Items
+
+# 其他
+.vuepress/dist/
+site/
+.versionrc_changelog.json

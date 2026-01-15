@@ -66,6 +66,18 @@ const routes = [
     name: 'YingchengDetail',
     component: () => import('@/views/YingchengDetail.vue'),
     meta: { title: '营城建都绿道详情' }
+  },
+  {
+    path: '/sanshan',
+    name: 'SanshanDetail',
+    component: () => import('@/views/SanshanDetail.vue'),
+    meta: { title: '三山五园绿道详情' }
+  },
+  {
+    path: '/chaoyang',
+    name: 'ChaoyangDetail',
+    component: () => import('@/views/ChaoyangDetail.vue'),
+    meta: { title: '朝阳绿道详情' }
   }
 ]
 

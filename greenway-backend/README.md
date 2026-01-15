@@ -1,41 +1,44 @@
-# 绿道数据后端服务
+# Backend Service - 后端服务
 
-中文部署指南 | [English Guide](./README_en.md)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
+![Express](https://img.shields.io/badge/Express-4.18-blue.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-orange.svg)
 
-## 项目介绍
+English | [中文](./README_zh-CN.md)
 
-这是绿道地理信息系统的后端服务，使用 Node.js + Express + PostgreSQL + PostGIS 构建。
+Backend service for Beijing Greenway GIS platform using Node.js + Express + PostgreSQL + PostGIS.
 
-**主要功能：**
-- ✅ 将 GeoJSON 绿道数据存储到 PostgreSQL
-- ✅ 提供 RESTful API 查询绿道数据
-- ✅ 支持空间查询和地理空间操作
-- ✅ 兴趣点(POI)管理（停靠站、洗手间等）
-- ✅ GeoJSON 导出支持
+## Features
 
-## 系统需求
+- ✅ RESTful API for greenway data queries
+- ✅ GeoJSON storage and spatial queries
+- ✅ PostgreSQL/PostGIS integration
+- ✅ Environment configuration management
+- ✅ Development and production ready
 
-- **Node.js** v16+ ([下载](https://nodejs.org))
-- **PostgreSQL** 12+ 带 PostGIS 扩展 ([安装指南](#postgresql-安装))
-- **npm** 或 **yarn** 包管理器
+## System Requirements
 
-## 快速开始
+- **Node.js** >= 18.0
+- **PostgreSQL** 18 with PostGIS 3.6
+- **npm** or **yarn**
 
-### 1. 安装依赖
+## Quick Start
+
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. 配置环境变量
+### 2. Configure Environment
 
-复制 `.env.example` 到 `.env.local`：
+Copy `.env.example` to `.env.local`:
 
 ```bash
 cp .env.example .env.local
 ```
 
-编辑 `.env.local`，填入你的 PostgreSQL 连接信息：
+Edit `.env.local` with your PostgreSQL connection:
 
 ```env
 DB_HOST=localhost
@@ -43,20 +46,17 @@ DB_PORT=5432
 DB_NAME=greenway_db
 DB_USER=postgres
 DB_PASSWORD=your_password
-
 PORT=3000
 NODE_ENV=development
 ```
 
-### 3. 初始化数据库
-
-创建数据库和表结构：
+### 3. Initialize Database
 
 ```bash
 npm run db:init
 ```
 
-**预期输出：**
+Expected output:
 ```
 [数据库] ✓ 数据库已创建
 [数据库] ✓ PostGIS 扩展已启用
@@ -64,40 +64,107 @@ npm run db:init
 [数据库] ✓ 空间索引已创建
 ```
 
-### 4. 导入 GeoJSON 数据
-
-将前端项目的 GeoJSON 文件导入数据库：
+### 4. Import GeoJSON Data
 
 ```bash
 npm run db:import
 ```
 
-**预期输出：**
+Expected output:
 ```
 [导入数据] ✓ 开始导入 GeoJSON 文件...
-[导入数据] ✓ 导入 温榆河绿道
-[导入数据] ✓ 导入 朝阳绿道
-...
 [导入数据] ✓ 成功导入 10 个绿道
 ```
 
-### 5. 启动开发服务器
+### 5. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-**预期输出：**
+Expected output:
 ```
 ============================================================
 [服务器] ✓ 后端已启动
 [服务器] 地址: http://localhost:3000
 [服务器] 健康检查: http://localhost:3000/health
-[服务器] API 文档: http://localhost:3000/api/greenways
 ============================================================
 ```
 
-## API 端点
+## Available Scripts
+
+- `npm run dev` - Start development server with auto-reload
+- `npm start` - Start production server
+- `npm run db:init` - Initialize database schema
+- `npm run db:import` - Import GeoJSON data
+- `npm run check` - Verify environment configuration
+
+## API Endpoints
+
+### Health Check
+```bash
+GET /health
+```
+
+### Get All Greenways
+```bash
+GET /api/greenways
+```
+
+### Get Specific Greenway
+```bash
+GET /api/greenways?name=南沙绿道
+```
+
+### Get GeoJSON Collection
+```bash
+GET /api/greenways/geojson/collection
+```
+
+## Project Structure
+
+```
+greenway-backend/
+├── src/
+│   ├── index.js           # Main server entry point
+│   └── db.js              # Database connection pool
+├── scripts/
+│   ├── init-db.js         # Database initialization
+│   ├── import-geometry.js # GeoJSON data import
+│   ├── check-env.js       # Environment verification
+│   └── sync-frontend-data.js
+├── .env.example           # Example environment variables
+├── package.json
+└── README.md              # This file
+```
+
+## Common Issues
+
+### Q: Cannot connect to database?
+A: Check PostgreSQL is running and verify connection settings in `.env.local`.
+
+### Q: PostGIS extension not found?
+A: Run: `psql -U postgres -c "CREATE EXTENSION postgis;"`
+
+### Q: GeoJSON import fails?
+A: Ensure GeoJSON files exist in the expected location and check file paths in import script.
+
+## Troubleshooting
+
+Run the environment check script:
+```bash
+npm run check
+```
+
+This will verify:
+- PostgreSQL connectivity
+- Node.js dependencies
+- Environment configuration
+- Database schema
+
+## License
+
+MIT
 
 ### 绿道数据接口
 
