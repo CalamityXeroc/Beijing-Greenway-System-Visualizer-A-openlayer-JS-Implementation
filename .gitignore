@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 .env.production.local
+.env.development
 
 # 依赖
 node_modules/
@@ -47,6 +48,17 @@ logs/
 *~
 .sublime-project
 .sublime-workspace
+
+# 数据和资源（不上传）
+资料/
+public/
+greenway-vue/public/
+
+# 操作系统
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
 
 # 隐私数据和资料（论文和软著保护）
 资料/

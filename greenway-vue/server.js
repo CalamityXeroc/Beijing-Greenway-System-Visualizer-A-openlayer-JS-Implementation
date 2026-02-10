@@ -30,8 +30,8 @@ pool.on('error', (err) => {
 app.use(cors());
 app.use(express.json());
 
-// 高德 API Key
-const AMAP_API_KEY = process.env.VITE_AMAP_KEY || 'd9dd334682ca1fc6537ffaaccf795fbd';
+// 高德 API Key - 从环境变量读取
+const AMAP_API_KEY = process.env.VITE_AMAP_KEY || process.env.AMAP_API_KEY;
 
 // 绿道数据接口 - 从数据库读取
 app.get('/api/greenways', async (req, res) => {

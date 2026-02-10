@@ -9,6 +9,10 @@ A modern WebGIS platform for exploring Beijing's greenway network using Vue 3 + 
 
 **[中文版本](./README_zh-CN.md)**
 
+## ⚠️ Important Notice
+
+This project uses environment variables to manage all sensitive information (API keys, database passwords, etc.). Never commit real credentials to the repository. See [Configuration](#configuration) section for details.
+
 ## Quick Start
 
 ### One-Command Startup
@@ -60,6 +64,41 @@ npm run dev
 - **Node.js** >= 18.0
 - **PostgreSQL** 18 with PostGIS 3.6
 - **npm** or **yarn**
+- **Memory**: At least 2GB RAM
+- **Disk Space**: At least 500MB
+
+## Configuration
+
+### Environment Variables
+
+All sensitive information must be configured via `.env.local` files (never commit to Git):
+
+**Backend** (`greenway-backend/.env.local`)
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=greenway_db
+DB_USER=postgres
+DB_PASSWORD=your_secure_password
+PORT=3000
+```
+
+**Frontend** (`greenway-vue/.env.local`)
+```env
+VITE_AMAP_KEY=your_amap_api_key
+VITE_BAIDU_MAP_KEY=your_baidu_map_key
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+See `.env.example` files in each directory for templates.
+
+### .gitignore Configuration
+
+The following are excluded from version control:
+- All `.env` files and sensitive credentials
+- `node_modules/` and build artifacts
+- `resources/` and `public/` directories (data folders)
+- IDE and OS specific files
 
 ## Project Structure
 
@@ -95,130 +134,96 @@ tryyyyyy/
 | Database | PostgreSQL 18, PostGIS 3.6 |
 | Data Format | GeoJSON, MultiLineString |
 
-## API Overview
+## API Endpoints
 
 ### Get Greenway Data
-
 ```bash
 GET /api/greenways
-GET /api/greenways?name=南沙绿道
+GET /api/greenways?name=Wenyu
 ```
 
 Returns GeoJSON FeatureCollection with MultiLineString geometry.
 
 ### Health Check
-
 ```bash
 GET /health
 ```
 
-## Configuration
-
-All sensitive information (API keys, database passwords) must be configured via environment variables in `.env.local` files:
-
-- **Frontend**: `greenway-vue/.env.local`
-- **Backend**: `greenway-backend/.env.local`
-
-See `.env.example` files in each directory for configuration template.
-
 ## Documentation
 
-- **Frontend Setup:** See [greenway-vue/README.md](./greenway-vue/README.md)
-- **Backend Setup:** See [greenway-backend/README.md](./greenway-backend/README.md)
-- **Chinese Full Guide:** See [README_zh-CN.md](./README_zh-CN.md)
+- **Frontend Setup:** [greenway-vue/README.md](./greenway-vue/README.md)
+- **Backend Setup:** [greenway-backend/README.md](./greenway-backend/README.md)  
+- **Chinese Guide:** [README_zh-CN.md](./README_zh-CN.md)
 
 ## License
 
-MIT
+MIT License - See LICENSE file for details
 
-## 10 Greenways
+## 10 Greenways Included
 
 1. **温榆河绿道** - Wenyu River (108km)
-2. **环二环城市绿道** - Ring Road No.2 (87km)
+2. **环二环城市绿道** - Ring Road No.2 (87km)  
 3. **亮马河绿道** - Liangma River (5.5km)
-4. **常营半马绿道** - Changying (21km)
+4. **常营半马绿道** - Changying Half Marathon (21km)
 5. **昌平42绿道** - Changping 42 (42km)
-6. **丽都商圈绿道** - Lido (6.8km)
+6. **丽都商圈绿道** - Lido Commercial District (6.8km)
 7. **北运河绿道** - Bei Yunhe (36km)
 8. **南沙绿道** - Nansha (15km)
-9. **奥林匹克森林公园绿道** - Olympic Forest (23km)
-10. **营城建都绿道** - Yingcheng (42km)
+9. **奥林匹克森林公园绿道** - Olympic Forest Park (23km)
+10. **营城建都绿道** - Yingcheng Historic Route (42km)
 
-## Configuration
+## Security & Best Practices
 
-### .env (Backend)
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=greenway
-DB_USER=postgres
-DB_PASSWORD=123456
-PORT=3000
-```
-
-### Color Scheme
-- Main Map: Green (#4CAF50)
-- Detail Pages: Blue (#2196F3)
-
-## Utility Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `init-db.js` | Initialize database |
-| `import-geometry.js` | Import GeoJSON to PostGIS |
-| `sync-frontend-data.js` | Sync greenway data |
-| `check-env.js` | Validate environment |
+- ✅ API keys loaded from environment variables only
+- ✅ Database passwords never stored in code
+- ✅ CORS properly configured for development
+- ✅ SQL injection prevention with parameterized queries
+- ✅ No sensitive data in frontend code
 
 ## Troubleshooting
 
-**Greenway not visible?**
+**Port Already In Use?**
 ```bash
-curl "http://localhost:3000/api/greenways?name=南沙绿道"
-# Check response in browser DevTools (F12)
+# Kill process on port 3000
+lsof -ti:3000 | xargs kill -9
+
+# Kill process on port 5173
+lsof -ti:5173 | xargs kill -9
 ```
 
-**API connection failed?**
+**Database Connection Failed?**
 ```bash
-curl http://localhost:3000/api/greenways
-# Verify backend is running
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Verify connection string
+cd greenway-backend
+node scripts/check-env.js
 ```
 
-**Build errors?**
+**Build Issues?**
 ```bash
 cd greenway-vue
 rm -rf node_modules dist
-npm install && npm run build
+npm install
+npm run build
 ```
-
-## Performance
-
-- Initial Load: ~2-3s
-- Map Zoom/Pan: 60 FPS
-- API Response: <100ms
-- Bundle Size: ~500KB (gzipped)
-
-## Deployment
-
-See [SETUP_ENVIRONMENT.md](./SETUP_ENVIRONMENT.md) for environment configuration and [README_zh-CN.md](./README_zh-CN.md) for detailed deployment instructions.
-
-## License
-
-MIT License - See LICENSE file
 
 ## Contributing
 
+Contributions welcome! Please:
 1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## Support
+## Support & Documentation
 
-- Check [GETTING_STARTED.md](./GETTING_STARTED.md) for setup help
-- Open GitHub issues for bugs/features
-- Review console errors (F12 DevTools)
+- 📖 [Chinese Documentation](./README_zh-CN.md)
+- 🐛 [GitHub Issues](https://github.com/your-repo/issues)
+- 💬 Discussions for questions and suggestions
 
 ---
-
-**For Academic Use**: See [README_zh-CN.md](./README_zh-CN.md) for complete technical documentation.
 
 **Built with ❤️ to explore Beijing's green spaces**
