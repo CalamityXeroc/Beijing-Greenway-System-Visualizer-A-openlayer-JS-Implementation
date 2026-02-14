@@ -17,6 +17,7 @@ class MapManager {
     this._layersMap = new Map()
     this._controlsMap = new Map()
     this._interactionsMap = new Map()
+    this._mapContainer = null
   }
 
   init(target, options = {}) {
@@ -142,7 +143,34 @@ class MapManager {
       this._interactionsMap.clear()
       this._mapInstance = null
       this._viewInstance = null
+      
       console.log('[MapManager] 地图已销毁')
+    }
+  }
+
+  /**
+   * 设置地图容器（用于主题切换）
+   */
+  setMapContainer(container) {
+    this._mapContainer = container
+    console.log('[MapManager] 地图容器已设置')
+  }
+
+  /**
+   * 设置地图夜间模式（被全局主题管理调用）
+   * @param {string} mode - 'day' 或 'night'
+   */
+  setBaseTheme(mode) {
+    const isNight = mode === 'night'
+    
+    if (this._mapContainer) {
+      if (isNight) {
+        this._mapContainer.classList.add('night-mode')
+        console.log('[MapManager] 🌙 已应用夜间滤镜')
+      } else {
+        this._mapContainer.classList.remove('night-mode')
+        console.log('[MapManager] ☀️ 已移除夜间滤镜')
+      }
     }
   }
 }

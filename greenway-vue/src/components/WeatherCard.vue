@@ -310,7 +310,7 @@ defineExpose({
 <style scoped>
 .weather-card {
   position: fixed;
-  top: 1rem;
+  top: 4rem;
   right: 1rem;
   z-index: 1000;
   transition: all 0.3s ease;

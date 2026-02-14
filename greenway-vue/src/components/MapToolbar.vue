@@ -210,7 +210,9 @@ const filteredLayerConfig = computed(() => {
            layer.id !== 'beiyunhe-greenway' &&
            layer.id !== 'nansha-greenway' &&
            layer.id !== 'aosen-greenway' &&
-           layer.id !== 'yingcheng-greenway'
+           layer.id !== 'yingcheng-greenway' &&
+           layer.id !== 'sanshan-greenway' &&
+           layer.id !== 'chaoyang-greenway'
   })
 })
 
@@ -586,16 +588,33 @@ const clearMeasurements = () => {
   position: relative;
   width: 240px;
   background: rgba(255, 255, 255, 0.95);
+  
+  /* --- 修复点 1：加强 backdrop-filter 兼容性 --- */
+  -webkit-backdrop-filter: blur(10px); /* 兼容 iOS */
   backdrop-filter: blur(10px);
+  
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(76, 175, 80, 0.2);
-  max-height: calc(100vh - 2rem);
+  
+  /* --- 修复点 2：优化移动端高度计算 --- */
+  max-height: calc(100vh - 2rem); /* 桌面端默认 */
+  max-height: 80vh; /* 覆盖为更安全的移动端高度，避免被导航栏遮挡 */
+  
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* 增加移动端滚动回弹 */
+
   animation: slideIn 0.3s ease;
   /* 移除 !important */
   pointer-events: auto;
   z-index: 2001;
+}
+
+/* 额外适配：小屏手机强制限制较低高度 */
+@media screen and (max-height: 600px) {
+  .map-toolbar {
+    max-height: 60vh;
+  }
 }
 
 @keyframes slideIn {

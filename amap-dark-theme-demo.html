@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>高德地图 - 暗色主题完整示例</title>
+    
+    <!-- 高德地图 API -->
+    <script type="text/javascript" 
+            src="https://webapi.amap.com/maps?v=2.0&key=YOUR_AMAP_API_KEY">
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+            transition: filter 0.3s ease;
+        }
+
+        /* 主题切换面板 */
+        .theme-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            min-width: 280px;
+        }
+
+        .theme-panel h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .theme-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            padding: 10px 12px;
+            border: 2px solid #e8e8e8;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .theme-btn.active {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        /* 主题标签 */
+        .theme-indicator {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e8e8e8;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .theme-indicator strong {
+            color: #333;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            min-width: 200px;
+        }
+
+        .control-panel label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .control-panel input[type="checkbox"] {
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .control-panel input[type="checkbox"]:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 信息面板 */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            min-width: 250px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-panel h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        /* 深色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .theme-panel,
+            .control-panel,
+            .info-panel {
+                background: #1f1f1f;
+                color: #e0e0e0;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            }
+
+            .theme-panel h3,
+            .info-panel h4,
+            .control-panel label,
+            .info-item strong {
+                color: #fff;
+            }
+
+            .theme-btn {
+                background: #2a2a2a;
+                border-color: #404040;
+                color: #b0b0b0;
+            }
+
+            .theme-btn:hover {
+                border-color: #1890ff;
+                color: #1890ff;
+            }
+
+            .theme-btn.active {
+                background: #1890ff;
+                border-color: #1890ff;
+                color: white;
+            }
+
+            .info-panel,
+            .control-panel {
+                border-top: 1px solid #404040;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 地图容器 -->
+    <div id="map"></div>
+
+    <!-- 主题切换面板 -->
+    <div class="theme-panel">
+        <h3>🎨 主题选择</h3>
+        <div class="theme-group">
+            <button class="theme-btn" data-theme="amap://styles/blue" title="蓝色主题">
+                蓝色
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/dark" title="暗色主题">
+                暗色
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/darkblue" title="深蓝主题">
+                深蓝
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/light" title="浅色主题">
+                浅色
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/normal" title="标准主题">
+                标准
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/macnight" title="Mac夜间主题">
+                Mac夜间
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/fresh" title="清新主题">
+                清新
+            </button>
+            <button class="theme-btn" data-theme="amap://styles/wine" title="酒红主题">
+                酒红
+            </button>
+        </div>
+        <div class="theme-indicator">
+            当前主题: <strong id="current-theme">蓝色</strong>
+        </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <label>
+            <input type="checkbox" id="auto-theme" />
+            自动跟随系统主题
+        </label>
+        <label>
+            <input type="checkbox" id="show-info" checked />
+            显示信息面板
+        </label>
+        <label>
+            <input type="checkbox" id="show-controls" checked />
+            显示控制工具
+        </label>
+    </div>
+
+    <!-- 信息面板 -->
+    <div class="info-panel" id="info-panel">
+        <h4>ℹ️ 信息</h4>
+        <div class="info-item">
+            <strong>缩放级别:</strong> <span id="zoom-level">6</span>
+        </div>
+        <div class="info-item">
+            <strong>中心坐标:</strong> <span id="center-coords">112.03956, 26.063677</span>
+        </div>
+        <div class="info-item">
+            <strong>当前主题:</strong> <span id="current-theme-info">蓝色</span>
+        </div>
+        <div class="info-item">
+            <strong>系统主题:</strong> <span id="system-theme">浅色</span>
+        </div>
+    </div>
+
+    <script>
+        // ========================
+        // 主题管理类
+        // ========================
+        class MapThemeManager {
+            constructor(mapElementId) {
+                this.mapElementId = mapElementId;
+                this.map = null;
+                this.currentTheme = 'amap://styles/blue';
+                this.themeNames = {
+                    'amap://styles/blue': '蓝色',
+                    'amap://styles/dark': '暗色',
+                    'amap://styles/darkblue': '深蓝',
+                    'amap://styles/light': '浅色',
+                    'amap://styles/normal': '标准',
+                    'amap://styles/macnight': 'Mac夜间',
+                    'amap://styles/fresh': '清新',
+                    'amap://styles/wine': '酒红'
+                };
+                this.init();
+            }
+
+            init() {
+                // 初始化地图
+                this.map = new AMap.Map(this.mapElementId, {
+                    zoom: 6,
+                    center: [112.03956, 26.063677],
+                    mapStyle: this.currentTheme
+                });
+
+                // 设置初始主题
+                this.setTheme(this.currentTheme);
+
+                // 监听地图事件
+                this.map.on('zoomchange', () => this.updateInfo());
+                this.map.on('mapmove', () => this.updateInfo());
+
+                // 检测系统主题
+                this.updateSystemThemeDisplay();
+            }
+
+            setTheme(themeStyle) {
+                this.currentTheme = themeStyle;
+                this.map.setMapStyle(themeStyle);
+                this.updateThemeDisplay();
+            }
+
+            getThemeName(themeStyle) {
+                return this.themeNames[themeStyle] || '未知';
+            }
+
+            updateThemeDisplay() {
+                const themeName = this.getThemeName(this.currentTheme);
+                document.getElementById('current-theme').textContent = themeName;
+                document.getElementById('current-theme-info').textContent = themeName;
+
+                // 更新按钮状态
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    if (btn.dataset.theme === this.currentTheme) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            updateInfo() {
+                const zoom = this.map.getZoom();
+                const center = this.map.getCenter();
+                document.getElementById('zoom-level').textContent = zoom;
+                document.getElementById('center-coords').textContent = 
+                    `${center.lng.toFixed(2)}, ${center.lat.toFixed(2)}`;
+            }
+
+            updateSystemThemeDisplay() {
+                const isDark = window.matchMedia && 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.getElementById('system-theme').textContent = 
+                    isDark ? '暗色' : '浅色';
+            }
+
+            autoSwitchBySystemTheme() {
+                if (window.matchMedia) {
+                    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                    
+                    // 初始设置
+                    if (mediaQuery.matches) {
+                        this.setTheme('amap://styles/dark');
+                    } else {
+                        this.setTheme('amap://styles/light');
+                    }
+
+                    // 监听变化
+                    mediaQuery.addEventListener('change', (e) => {
+                        if (e.matches) {
+                            this.setTheme('amap://styles/dark');
+                        } else {
+                            this.setTheme('amap://styles/light');
+                        }
+                        this.updateSystemThemeDisplay();
+                    });
+                }
+            }
+        }
+
+        // ========================
+        // 初始化和事件绑定
+        // ========================
+        document.addEventListener('DOMContentLoaded', () => {
+            // 创建地图主题管理器
+            const themeManager = new MapThemeManager('map');
+
+            // 主题按钮事件
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const theme = btn.dataset.theme;
+                    themeManager.setTheme(theme);
+                });
+            });
+
+            // 自动主题切换
+            const autoThemeCheckbox = document.getElementById('auto-theme');
+            autoThemeCheckbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    themeManager.autoSwitchBySystemTheme();
+                }
+            });
+
+            // 显示/隐藏信息面板
+            const showInfoCheckbox = document.getElementById('show-info');
+            const infoPanel = document.getElementById('info-panel');
+            showInfoCheckbox.addEventListener('change', (e) => {
+                infoPanel.style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            // 显示/隐藏控制工具
+            const showControlsCheckbox = document.getElementById('show-controls');
+            showControlsCheckbox.addEventListener('change', (e) => {
+                document.querySelector('.control-panel').style.display = 
+                    e.target.checked ? 'block' : 'none';
+            });
+
+            // 初始化信息显示
+            themeManager.updateInfo();
+        });
+
+        // ========================
+        // 键盘快捷键支持
+        // ========================
+        document.addEventListener('keydown', (e) => {
+            // Alt + D: 暗色主题
+            if (e.altKey && e.key === 'd') {
+                document.querySelector('[data-theme="amap://styles/dark"]').click();
+            }
+            // Alt + L: 浅色主题
+            if (e.altKey && e.key === 'l') {
+                document.querySelector('[data-theme="amap://styles/light"]').click();
+            }
+        });
+    </script>
+</body>
+</html>

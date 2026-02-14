@@ -5,6 +5,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { rafThrottle, scheduleIdleTask } from '@/utils/performance'
+import { useGlobalTheme } from '@/utils/useTheme'
 
 const POINTER_MOVE_THRESHOLD = 0.75
 
@@ -71,6 +72,9 @@ let lastPointerPixel = null
 const deferredLayerConfigs = new Map()
 const deferredCreationTasks = new Map()
 
+// 获取全局主题管理
+const { theme: globalTheme } = useGlobalTheme()
+
 // 初始化地图
 onMounted(async () => {
   await nextTick()
@@ -92,6 +96,18 @@ onMounted(async () => {
   // 添加底图
   const baseLayer = layerManager.createGaodeLayer(props.baseLayerStyle)
   mapManager.addLayer('base', baseLayer)
+  
+  // 设置地图容器用于主题切换
+  mapManager.setMapContainer(mapContainer.value)
+  
+  // 立即应用当前全局主题
+  const isNight = globalTheme.value === 'night'
+  if (isNight) {
+    mapContainer.value.classList.add('night-mode')
+  } else {
+    mapContainer.value.classList.remove('night-mode')
+  }
+  
   loadedLayers.set('base', { layer: baseLayer, type: 'base', styleSignature: STYLE_SIGNATURE_EMPTY })
   layerIdLookup.set(baseLayer, 'base')
 
@@ -117,6 +133,19 @@ watch(
     syncLayers(newLayers)
   },
   { deep: true }
+)
+
+// 监听全局主题变化
+watch(
+  () => globalTheme.value,
+  (newTheme) => {
+    if (!mapContainer.value) return
+    if (newTheme === 'night') {
+      mapContainer.value.classList.add('night-mode')
+    } else {
+      mapContainer.value.classList.remove('night-mode')
+    }
+  }
 )
 
 const getStyleSignature = (styleConfig) => {
@@ -551,5 +580,46 @@ onBeforeUnmount(() => {
 :deep(.ol-attribution) {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(10px);
+}
+
+/* 夜间模式滤镜 - 模拟高德极夜蓝主题 (amap://styles/blue) */
+.map-viewer.night-mode {
+  transition: filter 0.5s ease-in-out;
+  background-color: #020918;
+}
+
+.map-viewer.night-mode :deep(.gaode-base-layer) {
+  /* 
+   * 滤镜原理 - 单色蓝调风格 (Monochromatic Blue):
+   * 仅应用于底图图层，不影响绿道等矢量图层
+   * 1. grayscale(100%): 去除所有原始颜色
+   * 2. invert(100%): 反转亮度，白底变黑底
+   * 3. sepia(100%): 叠加上深褐色/黄色调
+   * 4. hue-rotate(190deg): 将褐色调旋转为深蓝色 (科技蓝)
+   * 5. saturate(400%): 增强蓝色的饱和度
+   * 6. brightness(90%) + contrast(85%): 调整整体明暗对比
+   */
+  filter: grayscale(100%) invert(100%) sepia(100%) hue-rotate(190deg) saturate(400%) brightness(90%) contrast(85%) !important;
+}
+
+/* 增强绿道图层在夜间模式下的显示效果 */
+.map-viewer.night-mode :deep(.ol-layer:not(.gaode-base-layer)) {
+  filter: brightness(1.2) drop-shadow(0 0 5px rgba(132, 237, 132, 0.6));
+}
+
+.map-viewer.night-mode :deep(.ol-control) {
+  /* 控件保持反白清晰，微调蓝调以融合背景 */
+  background: rgba(16, 35, 60, 0.9);
+  color: #c7d2e6;
+  border: 1px solid rgba(50, 100, 180, 0.3);
+}
+
+.map-viewer.night-mode :deep(.ol-control button) {
+  color: #c7d2e6;
+  background: rgba(20, 40, 70, 0.8);
+}
+
+.map-viewer.night-mode :deep(.ol-control button:hover) {
+  background: rgba(40, 80, 140, 0.9);
 }
 </style>

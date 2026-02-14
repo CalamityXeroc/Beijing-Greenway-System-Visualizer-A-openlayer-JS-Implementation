@@ -580,4 +580,137 @@ onMounted(async () => {
   transform: translateY(-2px);
 }
 
+/* 夜间模式样式覆盖 */
+[data-theme="night"] .wenyu-page {
+  background: var(--bg-primary);
+}
+
+[data-theme="night"] .header h1,
+[data-theme="night"] .header p,
+[data-theme="night"] .header i {
+  color: var(--text-primary);
+}
+
+[data-theme="night"] .back-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .back-btn:hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .left-sidebar {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+[data-theme="night"] .highlights {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+[data-theme="night"] .highlights h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="night"] .highlights li {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .highlights li:hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .highlights li strong {
+  color: var(--theme-blue);
+}
+
+[data-theme="night"] .highlights li span {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .description {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .badge-green {
+  background: var(--bg-tertiary);
+  color: var(--theme-green);
+}
+
+[data-theme="night"] .badge-blue {
+  background: var(--bg-tertiary);
+  color: var(--theme-blue);
+}
+
+[data-theme="night"] .badge-purple {
+  background: var(--bg-tertiary);
+  color: #a78bfa;
+}
+
 </style>
+
+<!-- 全局主题样式 - 处理scoped样式中无法应用的全局选择器 -->
+<style>
+[data-theme="night"] .wenyu-page {
+  background: var(--bg-primary) !important;
+}
+
+[data-theme="night"] .wenyu-page .header h1,
+[data-theme="night"] .wenyu-page .header p,
+[data-theme="night"] .wenyu-page .header i {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .wenyu-page .back-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .wenyu-page .left-sidebar {
+  background: var(--bg-secondary) !important;
+  border-right: 1px solid var(--border-color) !important;
+}
+
+[data-theme="night"] .wenyu-page .highlights {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+[data-theme="night"] .wenyu-page .highlights h3 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .wenyu-page .highlights li {
+  background: var(--bg-tertiary) !important;
+}
+
+[data-theme="night"] .wenyu-page .highlights li strong {
+  color: var(--theme-blue) !important;
+}
+
+[data-theme="night"] .wenyu-page .highlights li span {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .wenyu-page .description {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .wenyu-page .badge-green {
+  background: var(--bg-tertiary) !important;
+  color: var(--theme-green) !important;
+}
+
+[data-theme="night"] .wenyu-page .badge-blue {
+  background: var(--bg-tertiary) !important;
+  color: var(--theme-blue) !important;
+}
+
+[data-theme="night"] .wenyu-page .badge-purple {
+  background: var(--bg-tertiary) !important;
+  color: #a78bfa !important;
+}
+</style>
+

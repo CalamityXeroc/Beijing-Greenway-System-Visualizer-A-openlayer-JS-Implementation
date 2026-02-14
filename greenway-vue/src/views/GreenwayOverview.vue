@@ -1488,4 +1488,238 @@ onBeforeUnmount(() => {
   transform: translateY(-2px);
 }
 
+/* 夜间模式样式覆盖 */
+[data-theme="night"] .greenroad-page {
+  background: var(--bg-primary);
+}
+
+[data-theme="night"] .header h1,
+[data-theme="night"] .header p,
+[data-theme="night"] .header i {
+  color: var(--text-primary);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="night"] .popup-content {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="night"] .popup-header {
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+[data-theme="night"] .popup-header h4 {
+  color: var(--text-primary);
+}
+
+[data-theme="night"] .popup-content > p {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .popup-close {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .info-section {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .info-card {
+  background: var(--card-bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="night"] .info-card-header {
+  border-bottom: 2px solid var(--border-color);
+}
+
+[data-theme="night"] .info-card-title {
+  color: var(--text-primary);
+}
+
+[data-theme="night"] .info-card-content {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .stat-item {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .stat-value {
+  color: var(--theme-blue);
+}
+
+[data-theme="night"] .stat-label {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .feature-tag {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .feature-tag:hover {
+  background: var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="night"] .feature-tag i {
+  color: var(--theme-green);
+}
+
+[data-theme="night"] .guide-item {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .guide-item:hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .guide-item:nth-child(1) {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .guide-item:nth-child(1):hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .guide-item:nth-child(2) {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .guide-item:nth-child(2):hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .guide-item:nth-child(3) {
+  background: var(--bg-tertiary);
+}
+
+[data-theme="night"] .guide-item:nth-child(3):hover {
+  background: var(--bg-secondary);
+}
+
+[data-theme="night"] .hover-tooltip {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="night"] .tooltip-header {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+[data-theme="night"] .tooltip-body {
+  background: var(--card-bg);
+}
+
+[data-theme="night"] .tooltip-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="night"] .tooltip-item strong {
+  color: var(--text-primary);
+}
+
+[data-theme="night"] .tooltip-footer {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+}
 </style>
+
+<!-- 全局主题样式 - 处理scoped样式中无法应用的全局选择器 -->
+<style>
+[data-theme="night"] .greenroad-page {
+  background: var(--bg-primary) !important;
+}
+
+[data-theme="night"] .greenroad-page .header h1,
+[data-theme="night"] .greenroad-page .header p,
+[data-theme="night"] .greenroad-page .header i {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .greenroad-page .popup-content {
+  background: var(--card-bg) !important;
+  border: 2px solid var(--card-border) !important;
+}
+
+[data-theme="night"] .greenroad-page .popup-header {
+  background: var(--bg-secondary) !important;
+  border-bottom: 2px solid var(--border-color) !important;
+}
+
+[data-theme="night"] .greenroad-page .popup-header h4 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .greenroad-page .popup-content > p {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .info-section {
+  background: var(--bg-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .info-card {
+  background: var(--card-bg) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="night"] .greenroad-page .info-card-title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .greenroad-page .info-card-content {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .stat-item {
+  background: var(--bg-tertiary) !important;
+}
+
+[data-theme="night"] .greenroad-page .stat-value {
+  color: var(--theme-blue) !important;
+}
+
+[data-theme="night"] .greenroad-page .stat-label {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .feature-tag {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .guide-item {
+  background: var(--bg-tertiary) !important;
+}
+
+[data-theme="night"] .greenroad-page .hover-tooltip {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+[data-theme="night"] .greenroad-page .tooltip-header {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="night"] .greenroad-page .tooltip-item {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="night"] .greenroad-page .tooltip-footer {
+  background: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+</style>
+
