@@ -83,6 +83,31 @@
         </div>
       </div>
 
+<!-- 主题切换 -->
+      <div class="tool-section">
+        <h4><i class="fas fa-adjust"></i> 地图主题</h4>
+        <div class="tool-buttons">
+          <button 
+            class="tool-btn"
+            :class="{ active: currentTheme === 'day' }"
+            @click="switchTheme('day')"
+            title="日间模式"
+          >
+            <i class="fas fa-sun"></i>
+            <span>日间</span>
+          </button>
+          <button 
+            class="tool-btn"
+            :class="{ active: currentTheme === 'night' }"
+            @click="switchTheme('night')"
+            title="夜间模式"
+          >
+            <i class="fas fa-moon"></i>
+            <span>夜间</span>
+          </button>
+        </div>
+      </div>
+
 <!-- 图层管理 -->
       <div class="tool-section">
         <h4><i class="fas fa-layer-group"></i> 图层控制</h4>
@@ -197,6 +222,7 @@ const collapsed = ref(true) // 默认折叠状态
 const activeTool = ref(null)
 const showLayerUpload = ref(false)
 const customLayers = ref([])
+const currentTheme = ref('day') // 主题状态：day 或 night
 
 // 图层控制列表(排除绿道图层,它们始终可见)
 const filteredLayerConfig = computed(() => {
@@ -226,6 +252,20 @@ const fileInput = ref(null)
 onMounted(() => {
   initDrawLayer()
   initMeasureLayer()
+  
+  // 同步当前主题状态
+  if (props.mapManager && props.mapManager.currentTheme) {
+    currentTheme.value = props.mapManager.currentTheme
+    console.log('[MapToolbar] 初始化主题:', currentTheme.value)
+  }
+  
+  // 监听主题变化
+  if (props.mapManager && props.mapManager.onThemeChange) {
+    props.mapManager.onThemeChange((newTheme) => {
+      currentTheme.value = newTheme
+      console.log('[MapToolbar] 主题已更新:', newTheme)
+    })
+  }
 })
 
 // 清理
@@ -502,6 +542,19 @@ const removeCustomLayer = (index) => {
 // 切换基础图层
 const toggleBaseLayer = (layerId, visible) => {
   emit('layer-toggled', { layerId, visible })
+}
+
+// 切换地图主题
+const switchTheme = (theme) => {
+  if (!props.mapManager) {
+    console.warn('[MapToolbar] MapManager 未初始化')
+    return
+  }
+  
+  currentTheme.value = theme
+  // 传入 true 表示这是用户手动切换
+  props.mapManager.setBaseTheme(theme, true)
+  console.log(`[MapToolbar] 用户切换主题: ${theme}`)
 }
 
 // 清除功能
