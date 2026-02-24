@@ -19,7 +19,7 @@ const pool = new pg.Pool({
 const config = {
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 5432,
-  dbName: process.env.DB_NAME || 'greenway_db',
+  dbName: process.env.DB_NAME || 'greenway',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres'
 };

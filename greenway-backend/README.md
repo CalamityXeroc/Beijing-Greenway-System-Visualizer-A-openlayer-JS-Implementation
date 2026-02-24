@@ -43,10 +43,10 @@ Edit `.env.local` with your PostgreSQL connection:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=greenway_db
+DB_NAME=greenway
 DB_USER=postgres
 DB_PASSWORD=your_password
-PORT=3000
+PORT=3001
 NODE_ENV=development
 ```
 
@@ -86,8 +86,8 @@ Expected output:
 ```
 ============================================================
 [服务器] ✓ 后端已启动
-[服务器] 地址: http://localhost:3000
-[服务器] 健康检查: http://localhost:3000/health
+[服务器] 地址: http://localhost:3001
+[服务器] 健康检查: http://localhost:3001/health
 ============================================================
 ```
 
@@ -375,11 +375,11 @@ npm run db:import
 
 ```javascript
 // 获取所有绿道
-const response = await fetch('http://localhost:3000/api/greenways');
+const response = await fetch('http://localhost:3001/api/greenways');
 const greenways = await response.json();
 
 // 获取 GeoJSON FeatureCollection（用于地图）
-const geoResponse = await fetch('http://localhost:3000/api/greenways/geojson/collection');
+const geoResponse = await fetch('http://localhost:3001/api/greenways/geojson/collection');
 const featureCollection = await geoResponse.json();
 ```
 

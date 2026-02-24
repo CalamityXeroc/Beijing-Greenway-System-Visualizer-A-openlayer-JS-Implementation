@@ -7,7 +7,7 @@ import authRouter from './auth.js';
 dotenv.config({ path: '.env.local' });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;  // 后端端口：3001（非 3000）
 
 // 中间件
 app.use(cors());
@@ -19,7 +19,7 @@ const pool = new pg.Pool({
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'greenway'
+  database: process.env.DB_NAME || 'greenway'  // 数据库名称：greenway（非 greenway_db）
 });
 
 // 将 pool 注入 req 对象，供各路由使用

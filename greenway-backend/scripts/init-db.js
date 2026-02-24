@@ -19,7 +19,7 @@ async function initDatabase() {
     console.log('[数据库] 连接到 PostgreSQL...');
 
     // 创建数据库
-    const dbName = process.env.DB_NAME || 'greenway_db';
+    const dbName = process.env.DB_NAME || 'greenway';
     const res = await client.query(`SELECT 1 FROM pg_database WHERE datname = '${dbName}'`);
     
     if (res.rowCount === 0) {
@@ -61,6 +61,9 @@ async function initDatabase() {
         cover_image VARCHAR(255),
         introduction TEXT,
         location VARCHAR(255),
+        coverage_area TEXT,
+        construction_area TEXT,
+        features TEXT,
         geometry GEOMETRY(LineString, 4326),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

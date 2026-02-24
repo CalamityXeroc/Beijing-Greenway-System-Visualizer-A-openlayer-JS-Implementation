@@ -37,8 +37,9 @@ export const greenwayColorMap = {
  */
 export async function loadGreenwayDataByName(greenwayName, updateCallback) {
   try {
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
     const response = await fetch(
-      `http://localhost:3000/api/greenways?name=${encodeURIComponent(greenwayName)}`
+      `${apiBase}/api/greenways?name=${encodeURIComponent(greenwayName)}`
     );
     
     if (!response.ok) {

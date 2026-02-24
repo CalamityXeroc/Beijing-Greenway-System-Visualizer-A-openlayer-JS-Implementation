@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- 主题初始化：在任何 JS bundle 加载前执行，彻底防止白屏闪烁 -->
+    <script>
+      (function() {
+        // 迁移：删除旧版保存在 localStorage 的锁定状态（一次性清理）
+        if (localStorage.getItem('appThemeLock')) {
+          localStorage.removeItem('appThemeLock')
+          console.log('[index.html] 已清理旧版 appThemeLock (localStorage -> sessionStorage 迁移)')
+        }
+        var pref = localStorage.getItem('appTheme')
+        var locked = sessionStorage.getItem('appThemeLock') === 'locked'  // 只在当前会话锁定
+        var mode
+        if (pref && locked) {
+          mode = pref
+        } else {
+          var h = new Date().getHours()
+          mode = (h >= 6 && h < 18) ? 'day' : 'night'
+        }
+        document.documentElement.setAttribute('data-theme', mode)
+        console.log('[index.html] 早期主题: ' + mode + ' (hour=' + h + ', locked=' + locked + ')')
+      })()
+    </script>
     <!-- 移动端优化 meta 标签 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="true" />

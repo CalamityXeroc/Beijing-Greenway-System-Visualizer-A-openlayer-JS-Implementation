@@ -109,7 +109,7 @@ Create `.env.local` in each directory (reference `.env.example`):
 **Backend (`greenway-backend/.env.local`):**
 ```env
 DB_HOST=localhost
-DB_NAME=greenway_db
+DB_NAME=greenway
 DB_USER=postgres
 DB_PASSWORD=your_password
 PORT=3001

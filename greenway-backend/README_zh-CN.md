@@ -43,10 +43,10 @@ cp .env.example .env.local
 ```env
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=greenway_db
+DB_NAME=greenway
 DB_USER=postgres
 DB_PASSWORD=your_password
-PORT=3000
+PORT=3001
 NODE_ENV=development
 ```
 
