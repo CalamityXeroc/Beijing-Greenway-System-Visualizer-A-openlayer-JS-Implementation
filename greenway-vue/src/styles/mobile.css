@@ -1,0 +1,434 @@
+/**
+ * 移动端样式优化
+ * 处理iOS安全区域、触摸优化、性能优化
+ */
+
+/* ============================================
+   1. 全局移动端优化
+   ============================================ */
+
+html, body {
+  /* 防止缩放 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  
+  /* 禁用文本选择长按菜单 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 用户可选择的元素 */
+.user-selectable,
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="search"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   2. iOS安全区域处理
+   ============================================ */
+
+:root {
+  /* 定义CSS变量以支持iOS安全区域 */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
+/* 处理固定定位元素的安全区域 */
+.mobile-safe-top {
+  padding-top: max(16px, var(--safe-area-inset-top));
+}
+
+.mobile-safe-bottom {
+  padding-bottom: max(16px, var(--safe-area-inset-bottom));
+}
+
+.mobile-safe-left {
+  padding-left: max(16px, var(--safe-area-inset-left));
+}
+
+.mobile-safe-right {
+  padding-right: max(16px, var(--safe-area-inset-right));
+}
+
+/* ============================================
+   3. 触摸交互优化
+   ============================================ */
+
+/* 增加触摸按钮尺寸 */
+button, 
+a,
+input[type="button"],
+input[type="submit"],
+.clickable {
+  /* 最小触摸区域44x44px */
+  min-height: 44px;
+  min-width: 44px;
+  padding: 12px 16px;
+}
+
+/* 移除默认点击反馈延迟 */
+button,
+a,
+input[type="button"] {
+  cursor: pointer;
+}
+
+/* ============================================
+   4. 输入字段优化
+   ============================================ */
+
+input,
+textarea,
+select {
+  /* 防止在iOS上自动放大 */
+  font-size: 16px;
+  border-radius: 4px;
+  padding: 12px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #1a5c20;
+  box-shadow: 0 0 0 3px rgba(26, 92, 32, 0.1);
+}
+
+/* ============================================
+   5. 小屏幕优化 (< 481px)
+   ============================================ */
+
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  /* 移除桌面端固定定位元素 */
+  .desktop-only,
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* 图片响应式 */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* 覆盖固定宽度为100% */
+  .container,
+  .content {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 顶部导航栏安全区域处理 */
+  .navbar,
+  .header {
+    padding-top: max(8px, var(--safe-area-inset-top));
+    padding-left: max(8px, var(--safe-area-inset-left));
+    padding-right: max(8px, var(--safe-area-inset-right));
+  }
+
+  /* 底部导航栏安全区域处理 */
+  .bottom-nav,
+  .footer {
+    padding-bottom: max(8px, var(--safe-area-inset-bottom));
+    padding-left: max(8px, var(--safe-area-inset-left));
+    padding-right: max(8px, var(--safe-area-inset-right));
+  }
+
+  /* 触摸友好的按钮 */
+  button,
+  .btn,
+  .menu-item {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin: 4px;
+  }
+
+  /* 地图容器优化 */
+  #map,
+  .map-container,
+  .ol-viewport {
+    width: 100% !important;
+    height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 60px);
+  }
+
+  /* 弹窗/模态框优化 */
+  .modal,
+  .dialog {
+    width: 100% !important;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 8px 8px 0 0;
+    max-height: 90vh;
+  }
+
+  /* 禁用水平滚动 */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* 优化文本大小 */
+  h1 { font-size: 20px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 16px; }
+  h4 { font-size: 14px; }
+  p, span { font-size: 14px; }
+
+  /* 列表项优化 */
+  li {
+    padding: 12px 16px;
+  }
+
+  /* 表格应用垂直滚动 */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 输入框全宽 */
+  input,
+  textarea,
+  select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 卡片/面板优化 */
+  .card,
+  .panel,
+  .details {
+    margin: 8px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+}
+
+/* ============================================
+   6. 中等屏幕优化 (481px - 768px)
+   ============================================ */
+
+@media (min-width: 481px) and (max-width: 768px) {
+  html {
+    font-size: 15px;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+
+  /* 平板优化 */
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* 顶部导航栏安全区域处理 */
+  .navbar,
+  .header {
+    padding-top: max(12px, var(--safe-area-inset-top));
+  }
+
+  /* 地图容器优化 */
+  #map,
+  .map-container,
+  .ol-viewport {
+    height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 80px);
+  }
+
+  /* 按钮间距 */
+  button,
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  /* 网格优化 */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+/* ============================================
+   7. 横屏模式优化
+   ============================================ */
+
+@media (orientation: landscape) {
+  html {
+    font-size: 13px;
+  }
+
+  /* 导航栏高度调整 */
+  .navbar,
+  .header {
+    height: auto;
+    padding-top: max(4px, var(--safe-area-inset-top));
+    padding-bottom: 4px;
+  }
+
+  /* 地图全屏处理 */
+  #map,
+  .map-container,
+  .ol-viewport {
+    height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 40px);
+  }
+
+  /* 隐藏不必要的信息 */
+  .description,
+  .details-info {
+    display: none;
+  }
+}
+
+/* ============================================
+   8. 高分辨率屏幕优化 (retina)
+   ============================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* 边框优化 */
+  button,
+  input,
+  textarea {
+    border-width: 0.5px;
+  }
+
+  /* SVG优化 */
+  img[src*=".svg"] {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* ============================================
+   9. 性能优化 - 减少重绘和重排
+   ============================================ */
+
+/* 启用GPU加速 */
+.map-container,
+.slider,
+.carousel,
+.animated-element {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+}
+
+/* 文本渲染优化 */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   10. 主题切换按钮移动端适配
+   ============================================ */
+
+@media (max-width: 768px) {
+  .theme-switcher {
+    position: fixed;
+    top: max(12px, var(--safe-area-inset-top));
+    left: max(12px, var(--safe-area-inset-left));
+    z-index: 9999;
+  }
+
+  .theme-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .theme-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-btn i {
+    font-size: 20px;
+  }
+}
+
+/* ============================================
+   11. 诺奇缺口处理（刘海屏）
+   ============================================ */
+
+@supports (padding: max(0px)) {
+  .app-container {
+    padding-left: max(16px, var(--safe-area-inset-left));
+    padding-right: max(16px, var(--safe-area-inset-right));
+  }
+
+  .fixed-top {
+    padding-top: max(16px, var(--safe-area-inset-top));
+  }
+
+  .fixed-bottom {
+    padding-bottom: max(16px, var(--safe-area-inset-bottom));
+  }
+}
+
+/* ============================================
+   12. 黑暗模式支持
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .navbar,
+  .header {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  button {
+    background-color: #2d2d2d;
+    color: #ffffff;
+  }
+
+  input,
+  textarea {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-color: #404040;
+  }
+}
+
+/* ============================================
+   13. 减少动画以提升性能
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

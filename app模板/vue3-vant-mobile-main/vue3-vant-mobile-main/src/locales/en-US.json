@@ -1,0 +1,133 @@
+{
+  "app": {
+    "name": "Vue3 Vant Mobile",
+    "description": "An mobile web apps template based on the Vue 3 ecosystem"
+  },
+
+  "navbar": {
+    "Home": "Home",
+    "Profile": "Profile",
+    "Mock": "🗂️ Mock",
+    "Charts": "📊 Charts",
+    "UnoCSS": "⚡ UnoCSS",
+    "Counter": "🍍 Persistent State",
+    "KeepAlive": "♻️ Page Cache",
+    "ScrollCache": "📍 Scroll Cache",
+    "Login": "🧑‍💻 Login",
+    "Register": "🧑‍💻 Register",
+    "ForgotPassword": "❓ Forgot Password",
+    "Settings": "⚙️ Settings",
+    "404": "⚠️ Page 404",
+    "Undefined": "🤷 Undefined title"
+  },
+
+  "tabbar": {
+    "home": "HOME",
+    "profile": "PROFILE"
+  },
+
+  "home": {
+    "darkMode": "🌗 Dark Mode",
+    "language": "📚 Language",
+    "settings": "Settings",
+    "examples": "Examples"
+  },
+
+  "profile": {
+    "login": "Login",
+    "settings": "Settings",
+    "docs": "Docs"
+  },
+
+  "mock": {
+    "fromAsyncData": "Data from asynchronous requests",
+    "noData": "No data",
+    "pull": "Pull",
+    "reset": "Reset"
+  },
+
+  "charts": {
+    "January": "Jan",
+    "February": "Feb",
+    "March": "Mar",
+    "April": "Apr",
+    "May": "May",
+    "June": "Jun"
+  },
+
+  "counter": {
+    "description": "This counter's state is persisted via Pinia. Try refreshing the page to see it in action."
+  },
+
+  "unocss": {
+    "title": "Hello, Unocss!",
+    "description": "This is a simple example of Unocss in action.",
+    "button": "Button"
+  },
+
+  "keepAlive": {
+    "label": "The current component will be cached"
+  },
+
+  "scrollCache": {
+    "sectionTitle": "Section title",
+    "sectionText": "Section text text text text text text text text text text",
+    "finished": "Already at the bottom ~",
+    "loading": "Loading..."
+  },
+
+  "login": {
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "pleaseEnterEmail": "Please enter email",
+    "pleaseEnterPassword": "Please enter password",
+    "signUp": "Click to sign up",
+    "forgotPassword": "Forgot password?"
+  },
+
+  "forgotPassword": {
+    "email": "Email",
+    "code": "Code",
+    "password": "Password",
+    "confirmPassword": "Password again",
+    "pleaseEnterEmail": "Please enter email",
+    "pleaseEnterCode": "Please enter code",
+    "pleaseEnterPassword": "Please enter password",
+    "pleaseEnterConfirmPassword": "Please enter password again",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "confirm": "Confirm",
+    "backToLogin": "Back to login",
+    "getCode": "Get code",
+    "gettingCode": "Getting code",
+    "sendCodeSuccess": "Sent, the code is",
+    "passwordResetSuccess": "Password reset succeeded"
+  },
+
+  "register": {
+    "email": "Email",
+    "code": "Code",
+    "nickname": "Nickname",
+    "password": "Password",
+    "confirmPassword": "Password again",
+    "pleaseEnterEmail": "Please enter email",
+    "pleaseEnterCode": "Please enter code",
+    "pleaseEnterNickname": "Please enter nickname",
+    "pleaseEnterPassword": "Please enter password",
+    "pleaseEnterConfirmPassword": "Please enter password again",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "confirm": "Confirm",
+    "backToLogin": "Back to login",
+    "getCode": "Get code",
+    "gettingCode": "Getting code",
+    "sendCodeSuccess": "Sent, the code is",
+    "registerSuccess": "Register succeeded"
+  },
+
+  "settings": {
+    "logout": "Sign Out",
+    "currentVersion": "Current Version",
+    "confirmTitle": "Confirm Exit?"
+  }
+}

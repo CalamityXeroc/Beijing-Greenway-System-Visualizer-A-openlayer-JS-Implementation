@@ -6,9 +6,24 @@
     "dev": "vite",
     "dev:weather-proxy": "node weather-proxy.js",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:mobile": "vite build && capacitor copy",
+    "mobile:android": "npm run build:mobile && capacitor open android",
+    "mobile:sync": "capacitor sync",
+    "mobile:run:android": "capacitor run android -l --host=192.168.1.100",
+    "mobile:build:android": "capacitor build android --release"
   },
   "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/device": "^6.0.0",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/geolocation": "^6.0.0",
+    "@capacitor/network": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.4",
+    "@capacitor/status-bar": "^6.0.0",
     "@photo-sphere-viewer/core": "^5.14.0",
     "@photo-sphere-viewer/markers-plugin": "^5.14.0",
     "@photo-sphere-viewer/virtual-tour-plugin": "^5.14.0",
@@ -23,6 +38,7 @@
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
     "@vitejs/plugin-vue": "^5.0.0",
     "terser": "^5.44.1",
     "vite": "^5.0.0"

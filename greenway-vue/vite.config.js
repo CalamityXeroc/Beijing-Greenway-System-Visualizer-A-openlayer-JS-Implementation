@@ -24,12 +24,18 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    // 移动端性能优化
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 600,
+    // CSS代码分割
+    cssCodeSplit: true,
     // 性能优化
     rollupOptions: {
       output: {
         manualChunks: {
           'ol': ['ol'],
-          'vue-router': ['vue-router']
+          'vue-router': ['vue-router'],
+          'vendor': ['axios', 'pinia']
         }
       }
     },
@@ -41,5 +47,9 @@ export default defineConfig({
         drop_debugger: true
       }
     }
+  },
+  // 移动端优化 - 支持iOS安全区域
+  define: {
+    __VITE_APP_VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0')
   }
 })

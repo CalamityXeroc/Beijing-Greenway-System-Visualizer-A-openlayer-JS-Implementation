@@ -3,10 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 移动端优化 meta 标签 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="true" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="北京绿道系统" />
+    <meta name="theme-color" content="#1a5c20" />
     <meta name="description" content="北京绿道系统 - 探索城市绿色网络" />
+    
+    <!-- iOS启动屏幕 -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- 禁用电话识别和邮箱识别 -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="format-detection" content="email=no" />
+    
     <!-- Font Awesome 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- 移动端 CSS -->
+    <link rel="stylesheet" href="/src/styles/mobile.css" />
+    
     <title>北京绿道系统</title>
   </head>
   <body>

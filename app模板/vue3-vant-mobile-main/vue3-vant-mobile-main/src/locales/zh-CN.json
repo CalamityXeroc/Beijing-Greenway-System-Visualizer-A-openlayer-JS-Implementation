@@ -1,0 +1,133 @@
+{
+  "app": {
+    "name": "Vue3 移动端模板",
+    "description": "一个基于 Vue 3 生态系统的移动 web 应用模板"
+  },
+
+  "navbar": {
+    "Home": "主页",
+    "Profile": "我的",
+    "Mock": "🗂️ Mock",
+    "Charts": "📊 图表",
+    "UnoCSS": "⚡ UnoCSS",
+    "Counter": "🍍 状态持久化",
+    "KeepAlive": "♻️ 页面缓存",
+    "ScrollCache": "📍 滚动缓存",
+    "Login": "🧑‍💻 登录",
+    "Register": "🧑‍💻 注册",
+    "ForgotPassword": "❓ 忘记密码",
+    "Settings": "⚙️ 设置",
+    "404": "⚠️ 404 页面",
+    "Undefined": "🤷 未定义标题"
+  },
+
+  "tabbar": {
+    "home": "首页",
+    "profile": "我的"
+  },
+
+  "home": {
+    "darkMode": "🌗 深色模式",
+    "language": "📚 多语言",
+    "settings": "设置",
+    "examples": "示例"
+  },
+
+  "profile": {
+    "login": "登录",
+    "settings": "设置",
+    "docs": "文档"
+  },
+
+  "mock": {
+    "fromAsyncData": "来自异步请求的数据",
+    "noData": "暂无数据",
+    "pull": "请求",
+    "reset": "清空"
+  },
+
+  "charts": {
+    "January": "1月",
+    "February": "2月",
+    "March": "3月",
+    "April": "4月",
+    "May": "5月",
+    "June": "6月"
+  },
+
+  "counter": {
+    "description": "该计数器的状态通过 Pinia 持久化。刷新页面试试看！"
+  },
+
+  "unocss": {
+    "title": "你好, Unocss!",
+    "description": "这是一个简单的 Unocss 使用示例。",
+    "button": "按钮"
+  },
+
+  "keepAlive": {
+    "label": "当前组件将会被缓存"
+  },
+
+  "scrollCache": {
+    "sectionTitle": "段落标题",
+    "sectionText": "段落内容段落内容段落内容段落内容段落内容段落内容",
+    "finished": "已经到底啦 ~",
+    "loading": "加载中..."
+  },
+
+  "login": {
+    "login": "登录",
+    "logout": "退出登录",
+    "email": "邮箱",
+    "password": "密码",
+    "pleaseEnterEmail": "请输入邮箱",
+    "pleaseEnterPassword": "请输入密码",
+    "signUp": "还没有账号？点击注册",
+    "forgotPassword": "忘记密码？"
+  },
+
+  "forgotPassword": {
+    "email": "邮箱",
+    "code": "验证码",
+    "password": "密码",
+    "confirmPassword": "再次输入密码",
+    "pleaseEnterEmail": "请输入邮箱",
+    "pleaseEnterCode": "请输入验证码",
+    "pleaseEnterPassword": "请输入密码",
+    "pleaseEnterConfirmPassword": "请再次输入密码",
+    "passwordsDoNotMatch": "两次输入的密码不一致",
+    "confirm": "确认",
+    "backToLogin": "返回登录",
+    "getCode": "获取验证码",
+    "gettingCode": "获取中",
+    "sendCodeSuccess": "已发送，验证码为",
+    "passwordResetSuccess": "密码重置成功"
+  },
+
+  "register": {
+    "email": "邮箱",
+    "code": "验证码",
+    "nickname": "昵称",
+    "password": "密码",
+    "confirmPassword": "再次输入密码",
+    "pleaseEnterEmail": "请输入邮箱",
+    "pleaseEnterCode": "请输入验证码",
+    "pleaseEnterNickname": "请输入昵称",
+    "pleaseEnterPassword": "请输入密码",
+    "pleaseEnterConfirmPassword": "请再次输入密码",
+    "passwordsDoNotMatch": "两次输入的密码不一致",
+    "confirm": "确认",
+    "backToLogin": "返回登录",
+    "getCode": "获取验证码",
+    "gettingCode": "获取中",
+    "sendCodeSuccess": "已发送，验证码为",
+    "registerSuccess": "注册成功"
+  },
+
+  "settings": {
+    "logout": "退出登录",
+    "currentVersion": "当前版本",
+    "confirmTitle": "确认退出？"
+  }
+}

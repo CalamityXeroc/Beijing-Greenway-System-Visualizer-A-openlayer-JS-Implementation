@@ -1,0 +1,33 @@
+{
+  "appId": "com.greenway.mobile",
+  "appName": "北京绿道系统",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "url": "http://192.168.1.6:5173"
+  },
+  "android": {
+    "buildOptions": {
+      "minifyEnabled": true,
+      "shrinkResources": true
+    }
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#1a5c20",
+      "overlaysWebView": false
+    },
+    "Camera": {
+      "permissions": [
+        "camera",
+        "photos"
+      ]
+    },
+    "Geolocation": {
+      "permissions": [
+        "location"
+      ]
+    }
+  }
+}

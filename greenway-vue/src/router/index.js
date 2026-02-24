@@ -1,6 +1,47 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { isMobileDevice } from '@/utils/useMobileOptimization'
+import { Capacitor } from '@capacitor/core'
 
 const routes = [
+  // 移动端路由
+  {
+    path: '/mobile',
+    component: () => import('@/mobile/MobileLayout.vue'),
+    meta: { title: '北京绿道 - 移动版' },
+    children: [
+      {
+        path: 'map',
+        name: 'MobileMap',
+        component: () => import('@/mobile/views/MapView.vue'),
+        meta: { title: '地图' }
+      },
+      {
+        path: 'list',
+        name: 'MobileList',
+        component: () => import('@/mobile/views/ListView.vue'),
+        meta: { title: '绿道列表' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'MobileDetail',
+        component: () => import('@/mobile/views/DetailView.vue'),
+        meta: { title: '绿道详情' }
+      },
+      {
+        path: 'favorites',
+        name: 'MobileFavorites',
+        component: () => import('@/mobile/views/FavoritesView.vue'),
+        meta: { title: '我的收藏' }
+      },
+      {
+        path: 'profile',
+        name: 'MobileProfile',
+        component: () => import('@/mobile/views/ProfileView.vue'),
+        meta: { title: '个人中心' }
+      }
+    ]
+  },
+  // 桌面端路由
   {
     path: '/',
     name: 'Home',
@@ -86,9 +127,16 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫 - 更新页面标题
+// 路由守卫 - 更新页面标题 + 原生App自动跳转移动端
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title || '北京绿道系统'
+
+  // 在 Capacitor 原生 App 中，根路径自动跳转到移动端首页
+  if (Capacitor.isNativePlatform() && to.path === '/') {
+    next('/mobile/map')
+    return
+  }
+
   next()
 })
 
