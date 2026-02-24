@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
 import dotenv from 'dotenv';
+import authRouter from './auth.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -18,8 +19,14 @@ const pool = new pg.Pool({
   port: process.env.DB_PORT || 5432,
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'greenway_db'
+  database: process.env.DB_NAME || 'greenway'
 });
+
+// 将 pool 注入 req 对象，供各路由使用
+app.use((req, _res, next) => { req.pool = pool; next(); });
+
+// 挂载认证与用户管理路由
+app.use('/api', authRouter);
 
 // 健康检查
 app.get('/health', async (req, res) => {

@@ -310,7 +310,7 @@ defineExpose({
 <style scoped>
 .weather-card {
   position: fixed;
-  top: 4rem;
+  top: 9rem;
   right: 1rem;
   z-index: 1000;
   transition: all 0.3s ease;
@@ -531,5 +531,28 @@ defineExpose({
 .retry-btn:hover {
   background: #1976D2;
   transform: translateY(-1px);
+}
+
+/* ===== 夜间模式 ===== */
+[data-theme="night"] .weather-card-expanded {
+  background: rgba(18, 28, 18, 0.98);
+  border-color: rgba(76, 175, 80, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+[data-theme="night"] .weather-main {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+[data-theme="night"] .temp-large { color: #64B5F6; }
+[data-theme="night"] .weather-desc { color: #a0aec0; }
+[data-theme="night"] .detail-item {
+  color: #b0bec5;
+  background: rgba(255, 255, 255, 0.04);
+}
+[data-theme="night"] .detail-item i { color: #64B5F6; }
+[data-theme="night"] .loading { color: #9ca3af; }
+[data-theme="night"] .loading i { color: #64B5F6; }
+[data-theme="night"] .collapsed-tab {
+  background: rgba(30, 60, 50, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 </style>

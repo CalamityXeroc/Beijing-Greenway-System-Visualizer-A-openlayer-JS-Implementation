@@ -195,7 +195,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import Draw from 'ol/interaction/Draw'
 import { Vector as VectorLayer } from 'ol/layer'
 import { Vector as VectorSource } from 'ol/source'
@@ -203,6 +203,7 @@ import { Style, Stroke, Fill, Circle as CircleStyle, Text } from 'ol/style'
 import { getLength, getArea } from 'ol/sphere'
 import { LineString, Polygon } from 'ol/geom'
 import GeoJSON from 'ol/format/GeoJSON'
+import { useGlobalTheme } from '@/utils/useTheme'
 
 const props = defineProps({
   mapManager: {
@@ -217,12 +218,15 @@ const props = defineProps({
 
 const emit = defineEmits(['tool-activated', 'layer-added', 'layer-toggled'])
 
+// 全局主题系统（控制 data-theme 属性和整站深色）
+const { theme: globalTheme, setTheme: setGlobalTheme } = useGlobalTheme()
+
 // 状态
 const collapsed = ref(true) // 默认折叠状态
 const activeTool = ref(null)
 const showLayerUpload = ref(false)
 const customLayers = ref([])
-const currentTheme = ref('day') // 主题状态：day 或 night
+const currentTheme = ref(globalTheme.value) // 主题状态：从全局主题初始化
 
 // 图层控制列表(排除绿道图层,它们始终可见)
 const filteredLayerConfig = computed(() => {
@@ -253,18 +257,10 @@ onMounted(() => {
   initDrawLayer()
   initMeasureLayer()
   
-  // 同步当前主题状态
-  if (props.mapManager && props.mapManager.currentTheme) {
-    currentTheme.value = props.mapManager.currentTheme
-    console.log('[MapToolbar] 初始化主题:', currentTheme.value)
-  }
-  
-  // 监听主题变化
-  if (props.mapManager && props.mapManager.onThemeChange) {
-    props.mapManager.onThemeChange((newTheme) => {
-      currentTheme.value = newTheme
-      console.log('[MapToolbar] 主题已更新:', newTheme)
-    })
+  // 地图初始化后，将地图底图同步到全局主题
+  if (props.mapManager && globalTheme.value === 'night') {
+    props.mapManager.setBaseTheme('night', false)
+    console.log('[MapToolbar] 初始同步地图底图为 night')
   }
 })
 
@@ -544,18 +540,27 @@ const toggleBaseLayer = (layerId, visible) => {
   emit('layer-toggled', { layerId, visible })
 }
 
-// 切换地图主题
+// 切换地图主题（同时同步全局主题）
 const switchTheme = (theme) => {
   if (!props.mapManager) {
     console.warn('[MapToolbar] MapManager 未初始化')
     return
   }
-  
   currentTheme.value = theme
-  // 传入 true 表示这是用户手动切换
+  // 同时更新全局主题（设置 data-theme 属性，返回整个站深色）
+  setGlobalTheme(theme, true)
+  // 更新地图底图滤镜
   props.mapManager.setBaseTheme(theme, true)
   console.log(`[MapToolbar] 用户切换主题: ${theme}`)
 }
+
+// 监听全局主题内部自动切换（时间自动），同步地图底图
+watch(globalTheme, (newTheme) => {
+  if (props.mapManager && newTheme !== currentTheme.value) {
+    currentTheme.value = newTheme
+    props.mapManager.setBaseTheme(newTheme, false)
+  }
+})
 
 // 清除功能
 const clearDrawings = () => {
@@ -571,6 +576,24 @@ const clearMeasurements = () => {
     removeCurrentInteraction()
   }
 }
+
+// 暴露给父组件通过 ref 调用
+defineExpose({
+  activateDrawTool,
+  activateMeasureTool,
+  switchTheme,
+  toggleBaseLayer,
+  clearDrawings,
+  clearMeasurements,
+  toggleCustomLayer,
+  removeCustomLayer,
+  handleFileUpload,
+  filteredLayerConfig,
+  customLayers,
+  activeTool,
+  currentTheme,
+  showLayerUpload,
+})
 </script>
 
 <style scoped>

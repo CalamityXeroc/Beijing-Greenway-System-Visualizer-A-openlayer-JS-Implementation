@@ -34,9 +34,17 @@ echo [X] 后端配置缺失，请先配置 greenway-backend\.env.local
 echo [OK] 后端配置已找到
 echo.
 
+rem 清理旧的后端进程（防止端口占用）
+echo ⏳ 检查并清理旧的后端进程...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3001 " ^| findstr "LISTENING"') do (
+    echo    关闭旧进程 PID: %%a
+    taskkill /PID %%a /F >nul 2>nul
+)
+timeout /t 1 /nobreak >nul
+
 rem 启动后端
 cd greenway-backend
-echo ⏳ 启动后端服务器 (http://localhost:3000)...
+echo ⏳ 启动后端服务器 (http://localhost:3001)...
 start "Greenway Backend" cmd /k npm run dev
 
 cd ..
@@ -53,7 +61,7 @@ echo ========================================================
 echo [OK] 前后端服务器已启动！
 echo.
 echo     前端地址：http://localhost:5173
-echo     后端地址：http://localhost:3000
+echo     后端地址：http://localhost:3001
 echo.
 echo 提示：
 echo    - 两个新窗口分别运行前后端服务

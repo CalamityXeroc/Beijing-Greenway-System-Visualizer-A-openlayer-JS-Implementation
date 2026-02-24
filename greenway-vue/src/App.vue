@@ -5,16 +5,6 @@
     
     <!-- 桌面端应用 -->
     <div v-else class="desktop-app">
-      <!-- 主题切换按钮 - 仅在主页面显示 -->
-      <div v-if="isHomePage" class="theme-switcher">
-        <button 
-          class="theme-btn"
-          @click="toggleTheme"
-          :title="theme === 'day' ? '切换到夜间模式' : '切换到日间模式'"
-        >
-          <i :class="theme === 'day' ? 'fas fa-moon' : 'fas fa-sun'"></i>
-        </button>
-      </div>
 
       <!-- 路由视图 -->
       <router-view v-slot="{ Component }">
@@ -39,8 +29,8 @@ import {
   isMobileDevice
 } from '@/utils/useMobileOptimization'
 
-// 使用全局主题管理
-const { theme, toggleTheme } = useGlobalTheme()
+// 使用全局主题管理（供 useTheme 内部同步用）
+const { theme } = useGlobalTheme()
 
 // 获取当前路由
 const route = useRoute()
@@ -54,9 +44,6 @@ const viewportSize = ref({})
 
 // 判断是否在移动端路由
 const isMobileRoute = computed(() => route.path.startsWith('/mobile'))
-
-// 判断是否在主页面
-const isHomePage = computed(() => route.path === '/')
 
 // 生命周期 - 初始化移动端优化
 onMounted(() => {
@@ -105,7 +92,6 @@ onMounted(() => {
 .app-container {
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -119,16 +105,5 @@ onMounted(() => {
 .desktop-app {
   width: 100%;
   min-height: 100vh;
-}
-
-.theme-switcher {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 9999;
-  
-  /* iOS安全区域处理 */
-  top: max(20px, env(safe-area-inset-top));
-  left: max(20px, env(safe-area-inset-left));
 }
 </style>

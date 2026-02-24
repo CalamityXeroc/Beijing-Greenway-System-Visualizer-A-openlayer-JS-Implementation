@@ -75,6 +75,7 @@ html {
 body {
   width: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   font-family: 'Noto Sans SC', "Microsoft YaHei", sans-serif;
   color: var(--text-primary);
   line-height: 1.6;
@@ -91,9 +92,6 @@ body {
 #app {
   width: 100%;
   min-height: 100vh;
-  /* GPU加速 */
-  transform: translateZ(0);
-  will-change: contents;
   isolation: isolate;
 }
 

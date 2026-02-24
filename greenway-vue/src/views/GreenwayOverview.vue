@@ -1,35 +1,36 @@
 <template>
   <div class="greenroad-page">
-    <header class="header">
-      
-      <div class="title-container">
-        <h1>北京绿道系统可视化平台</h1>
-        <p><i class="fas fa-map-marked-alt"></i> 探索城市绿色网络，享受健康生活</p>
-      </div>
-    </header>
+    <!-- 导航栏：sticky 吸顶，不参与页面滚动但始终可见 -->
+    <div class="navbar-sticky">
+      <TopNavbar :toolbarRef="toolbarRef"/>
+    </div>
 
+    <!-- 地图容器：精确占满视口剩余高度，滚动后变为普通内容区 -->
     <div class="map-container">
       <MapViewer
         ref="mapViewer"
         :center="mapConfig.center"
         :zoom="mapConfig.zoom"
         :layers="layers"
-        height="100vh"
+        height="calc(100vh - 64px)"
         @map-ready="onMapReady"
         @feature-click="onFeatureClick"
         @feature-hover="onFeatureHover"
       />
     </div>
-    
-    <!-- 地图工具栏 - 移到容器外以确保层级正确 -->
-    <MapToolbar
-      v-if="mapManager"
-      :mapManager="mapManager"
-      :layerConfig="layerConfig"
-      @tool-activated="onToolActivated"
-      @layer-added="onLayerAdded"
-      @layer-toggled="onLayerToggled"
-    />
+
+    <!-- MapToolbar 保持在 DOM 中以维持 OpenLayers 交互逻辑，视觉上隐藏 -->
+    <div style="display:none" aria-hidden="true">
+      <MapToolbar
+        v-if="mapManager"
+        ref="toolbarRef"
+        :mapManager="mapManager"
+        :layerConfig="layerConfig"
+        @tool-activated="onToolActivated"
+        @layer-added="onLayerAdded"
+        @layer-toggled="onLayerToggled"
+      />
+    </div>
 
     <!-- 信息卡片区域 -->
     <div class="info-section">
@@ -175,8 +176,10 @@ import { useRouter } from 'vue-router'
 import { Style, Stroke } from 'ol/style'
 import MapViewer from '@/components/MapViewer.vue'
 import MapToolbar from '@/components/MapToolbar.vue'
+import TopNavbar from '@/components/TopNavbar.vue'
 
 const router = useRouter()
+const toolbarRef = ref(null)
 
 // 地图配置
 const mapConfig = reactive({
@@ -951,79 +954,23 @@ onBeforeUnmount(() => {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
-  padding-top: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
+  /* 允许垂直滚动，信息区域在地图下方自然流动 */
 }
 
-.header {
-  position: absolute;
+/* 导航栏粘性容器：吸顶显示 */
+.navbar-sticky {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.5rem;
-  padding-left: 0; /* 地图区域居中 */
-  box-sizing: border-box;
+  z-index: 3000;
 }
 
-.header h1,
-.header p {
-  pointer-events: auto;
-}
-
-/* 删除顶部绿色装饰线 */
-
-@keyframes gradientMove {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.header h1 {
-  font-size: 2.2rem;
-  margin: 0 0 0.2rem 0;
-  color: #1B5E20;
-  font-weight: 800;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 3px;
-  /* 硬件加速 */
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.header p {
-  color: #1B5E20;
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.9),
-               0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.header i {
-  color: #1B5E20;
-  margin-right: 0.5rem;
-  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.8))
-          drop-shadow(0 2px 4px rgba(76, 175, 80, 0.6));
-}
-
+/* 地图容器：精确占满视口扣除导航栏后的高度，不随页面滚动 */
 .map-container {
   position: relative;
+  width: 100%;
+  height: calc(100vh - 64px);
   overflow: hidden;
-  min-height: 100vh;
-  flex-shrink: 0;
-  /* 硬件加速优化 */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  contain: layout style paint;
 }
 
 /* 弹窗样式 */
@@ -1142,10 +1089,6 @@ onBeforeUnmount(() => {
   border-radius: 0;
   margin: 0;
   backdrop-filter: blur(10px);
-  flex-shrink: 0;
-  content-visibility: auto;
-  contain: layout style paint;
-  contain-intrinsic-size: 600px 520px;
 }
 
 .info-cards {
@@ -1330,35 +1273,13 @@ onBeforeUnmount(() => {
 
 /* 响应式 */
 @media (max-width: 1200px) {
-  .header { padding-left: 0; }
   .info-cards {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.5rem;
-  padding-left: 0; /* 地图区域居中 */
-  box-sizing: border-box;
-}
-
-  .header h1 {
-    font-size: 1.5rem;
-  margin: 0 0 0.2rem 0;}
-
-  .header p {
-    font-size: 0.875rem;
-  }
+  /* 移动端: TopNavbar 组件自行处理响应式 */
 }
 
 /* 悬停提示框 - 性能优化 */
@@ -1492,13 +1413,6 @@ onBeforeUnmount(() => {
 /* 夜间模式样式覆盖 */
 [data-theme="night"] .greenroad-page {
   background: var(--bg-primary);
-}
-
-[data-theme="night"] .header h1,
-[data-theme="night"] .header p,
-[data-theme="night"] .header i {
-  color: var(--text-primary);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 [data-theme="night"] .popup-content {
@@ -1639,12 +1553,6 @@ onBeforeUnmount(() => {
 <style>
 [data-theme="night"] .greenroad-page {
   background: var(--bg-primary) !important;
-}
-
-[data-theme="night"] .greenroad-page .header h1,
-[data-theme="night"] .greenroad-page .header p,
-[data-theme="night"] .greenroad-page .header i {
-  color: var(--text-primary) !important;
 }
 
 [data-theme="night"] .greenroad-page .popup-content {
