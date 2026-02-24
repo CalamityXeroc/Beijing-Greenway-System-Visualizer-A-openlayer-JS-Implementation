@@ -51,6 +51,8 @@ logs/
 
 # 数据和资源（不上传）
 资料/
+app模板/
+skills/
 public/
 greenway-vue/public/
 
@@ -61,7 +63,6 @@ Thumbs.db
 .LSOverride
 
 # 隐私数据和资料（论文和软著保护）
-资料/
 绿道数据/
 高德数据/
 /greenway-vue/public/数据/资料/
