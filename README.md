@@ -40,8 +40,6 @@ cd greenway-vue
 npm install && npm run dev
 ```
 
-**Access:** http://localhost:5173 (frontend) | http://localhost:3001 (backend API)
-
 ## ✨ Core Features
 
 - 🗺️ **Interactive Map** - OpenLayers high-performance rendering
@@ -55,11 +53,16 @@ npm install && npm run dev
 
 ```
 ├── greenway-backend/       # Express backend + database
-├── greenway-vue/           # Vue 3 frontend application
+├── greenway-vue/           # Vue 3 web frontend application
+│   └── android/            # Mobile app (experimental)
 ├── README.md               # English documentation (this file)
 ├── README_zh-CN.md         # Chinese documentation
 └── 启动完整系统.bat       # One-command startup script
 ```
+
+**Platform Support:**
+- 🌐 **Web:** Desktop browser at [http://localhost:5173](http://localhost:5173)
+- 📱 **Mobile:** React Native / Capacitor app (experimental)
 
 ## 📚 Documentation
 
@@ -126,10 +129,20 @@ VITE_BAIDU_MAP_KEY=your_key
 - CORS configured for development
 - Parameterized queries to prevent SQL injection
 
+## 🏆 Competition & Intellectual Property
+
+This project is developed for participation in technical competitions and is prepared for software copyright registration (软著申请).
+
+**Usage Terms:**
+- Educational and research use freely permitted
+- For commercial purposes or derivative works, please contact the author
+- Patent/software copyright protection pending
+
 ## 📄 License
 
 MIT - See LICENSE file for details
 
 ---
 
-**Built with ❤️ to explore Beijing's green spaces**
+**Built with ❤️ to explore Beijing's green spaces**  
+*Designed for competition submission and software copyright protection*

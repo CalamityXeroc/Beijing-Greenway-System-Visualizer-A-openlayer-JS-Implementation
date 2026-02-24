@@ -40,8 +40,6 @@ cd greenway-vue
 npm install && npm run dev
 ```
 
-**访问：** http://localhost:5173（前端）| http://localhost:3001（后端 API）
-
 ## ✨ 核心功能
 
 - 🗺️ **交互式地图** - OpenLayers 高性能渲染
@@ -55,11 +53,16 @@ npm install && npm run dev
 
 ```
 ├── greenway-backend/       # Express 后端 + 数据库
-├── greenway-vue/           # Vue 3 前端应用
+├── greenway-vue/           # Vue 3 网页前端应用
+│   └── android/            # 移动应用（试验阶段）
 ├── README.md               # 英文文档（本项目概览）
 ├── README_zh-CN.md         # 中文文档（本文件）
 └── 启动完整系统.bat       # 一键启动脚本
 ```
+
+**平台支持：**
+- 🌐 **网页**：桌面浏览器访问 [http://localhost:5173](http://localhost:5173)
+- 📱 **移动应用**：React Native / Capacitor 应用（试验阶段）
 
 ## 📚 完整文档
 
@@ -192,7 +195,7 @@ OpenLayers 地图查看器
 浏览器显示
 ```
 
-## � 10 条绿道
+##  10 条绿道
 
 | # | 名称 | 长度 | 描述 |
 |----|------|------|------|
@@ -207,10 +210,20 @@ OpenLayers 地图查看器
 - [前端常见问题](./greenway-vue/README.md#troubleshooting)
 - [后端常见问题](./greenway-backend/README.md#troubleshooting)
 
+## 🏆 竞赛与知识产权
+
+本项目是为技术竞赛参赛而开发设计，准备申请软件著作权（软著）。
+
+**使用条款：**
+- ✅ 教育科研用途可自由使用
+- ⚠️ 商业用途或衍生作品需联系作者
+- 🔒 软件著作权保护申请中
+
 ## 📄 许可证
 
 MIT - 详见 LICENSE 文件
 
 ---
 
-**用 ❤️ 为北京城市绿道而开发**
+**用 ❤️ 为北京城市绿道而开发**  
+*面向竞赛提交和软件著作权保护而设计*
