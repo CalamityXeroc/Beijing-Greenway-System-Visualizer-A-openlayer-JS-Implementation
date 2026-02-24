@@ -577,7 +577,7 @@ const clearMeasurements = () => {
 /* 容器 */
 .toolbar-container {
   position: absolute;
-  top: 1rem;
+  top: calc(1rem + 100px);
   right: 1rem;
   z-index: 2000;
   /* 移除 pointer-events: none，让容器正常响应点击 */

@@ -67,7 +67,14 @@
 }
 
 /* 全局字体和颜色 - 性能优化 */
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 body {
+  width: 100%;
+  overflow-x: hidden;
   font-family: 'Noto Sans SC', "Microsoft YaHei", sans-serif;
   color: var(--text-primary);
   line-height: 1.6;
@@ -75,13 +82,8 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 硬件加速 */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
   /* 优化渲染 */
   text-rendering: optimizeLegibility;
-  /* 减少重绘 */
-  contain: layout style paint;
   /* 平滑过渡 */
   transition: background-color 0.3s ease, color 0.3s ease;
 }

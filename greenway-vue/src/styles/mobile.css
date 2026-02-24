@@ -383,9 +383,12 @@ body {
    ============================================ */
 
 @supports (padding: max(0px)) {
-  .app-container {
-    padding-left: max(16px, var(--safe-area-inset-left));
-    padding-right: max(16px, var(--safe-area-inset-right));
+  /* 仅在移动端刘海屏处理安全区域，桌面端不添加额外内边距 */
+  @media (max-width: 768px) {
+    .app-container {
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+    }
   }
 
   .fixed-top {

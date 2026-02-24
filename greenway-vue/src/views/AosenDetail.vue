@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="aosen-page">
     <header class="header">
       <button @click="goBack" class="back-btn">
@@ -256,6 +256,7 @@ onMounted(async () => {
 
 <style scoped>
 .aosen-page {
+  width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
   padding-top: 0;

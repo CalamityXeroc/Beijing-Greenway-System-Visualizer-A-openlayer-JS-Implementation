@@ -540,7 +540,7 @@ onBeforeUnmount(() => {
 .map-viewer {
   width: 100%;
   position: relative;
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
   /* 硬件加速优化 */
   transform: translateZ(0);

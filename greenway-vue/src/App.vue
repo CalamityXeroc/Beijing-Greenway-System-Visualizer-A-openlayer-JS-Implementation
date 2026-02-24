@@ -105,6 +105,7 @@ onMounted(() => {
 .app-container {
   width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -113,6 +114,11 @@ onMounted(() => {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.desktop-app {
+  width: 100%;
+  min-height: 100vh;
 }
 
 .theme-switcher {

@@ -948,7 +948,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .greenroad-page {
-  position: relative; /* 确保子元素绝对定位相对于此容器 */
+  position: relative;
+  width: 100%;
   min-height: 100vh;
   background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
   padding-top: 0;
