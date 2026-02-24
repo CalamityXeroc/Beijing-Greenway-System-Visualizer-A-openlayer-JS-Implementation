@@ -145,4 +145,4 @@ MIT - See LICENSE file for details
 ---
 
 **Built with ❤️ to explore Beijing's green spaces**  
-*Designed for competition submission and software copyright protection*
+
