@@ -45,6 +45,12 @@ const routes = [
   // 桌面端路由
   {
     path: '/',
+    name: 'Landing',
+    component: () => import('@/views/LandingPage.vue'),
+    meta: { title: '北京绿道信息系统 - 探索城市绿色廊道' }
+  },
+  {
+    path: '/map',
     name: 'Home',
     component: () => import('@/views/GreenwayOverview.vue'),
     meta: { title: '北京绿道系统总览' }

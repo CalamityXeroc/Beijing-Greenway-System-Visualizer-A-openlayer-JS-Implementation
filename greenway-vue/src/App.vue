@@ -20,6 +20,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGlobalTheme } from '@/utils/useTheme'
+import { useAdminAuth } from '@/stores/adminAuth'
 import { 
   useMobileOptimization,
   disabledDoubleClickZoom,
@@ -44,6 +45,16 @@ const viewportSize = ref({})
 
 // 判断是否在移动端路由
 const isMobileRoute = computed(() => route.path.startsWith('/mobile'))
+
+// App 启动时向服务端验证管理员 token 有效性。
+// 若 token 已过期或伪造，apiFetch 收到 401 会自动调用 clearSession()，
+// 前台"进入后台"按钮随即消失，路由守卫也无法再通过。
+const { apiFetch: adminApiFetch, isLoggedIn: adminIsLoggedIn } = useAdminAuth()
+if (adminIsLoggedIn.value) {
+  adminApiFetch('/api/admin/stats').catch(() => {
+    // 401 已在 apiFetch 内处理（clearSession），其他错误（如后端未启动）静默忽略
+  })
+}
 
 // 生命周期 - 初始化移动端优化
 onMounted(() => {

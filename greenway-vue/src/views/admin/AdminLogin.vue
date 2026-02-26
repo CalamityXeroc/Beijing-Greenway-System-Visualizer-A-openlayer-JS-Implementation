@@ -108,8 +108,10 @@ import { useAdminAuth } from '@/stores/adminAuth'
 const router = useRouter()
 const { setSession, isLoggedIn } = useAdminAuth()
 
-// 已登录则跳过
-if (isLoggedIn.value) router.replace('/admin/dashboard')
+// 如果已经登录，直接跳转到后台
+if (isLoggedIn.value) {
+  router.replace('/admin/dashboard')
+}
 
 const form = reactive({ username: '', password: '' })
 const errors = reactive({ username: '', password: '' })
@@ -137,8 +139,12 @@ async function handleLogin() {
     const text = await res.text()
     const data = text ? JSON.parse(text) : {}
     if (!res.ok) throw new Error(data.message || '登录失败')
+    
+    // 登录成功，保存 session
     setSession(data.data.token, data.data.user)
-    router.push('/admin/dashboard')
+    
+    // 强制刷新页面并跳转到后台，确保状态完全同步
+    window.location.href = '/admin/dashboard'
   } catch (e) {
     loginError.value = e.message
   } finally {

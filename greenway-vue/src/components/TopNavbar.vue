@@ -244,14 +244,17 @@
               </svg>
               用户注册
             </a>
-            <div class="dd-divider"/>
-            <a class="dd-btn dd-btn--admin" href="/admin/login">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              管理员登录
-            </a>
+            <!-- 仅管理员已登录时显示「进入后台」入口 -->
+            <template v-if="adminIsLoggedIn">
+              <div class="dd-divider"/>
+              <a class="dd-btn dd-btn--admin" href="/admin/dashboard">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                进入管理后台
+              </a>
+            </template>
           </template>
           <template v-else>
             <div class="dd-user-header">
@@ -262,6 +265,17 @@
               </div>
             </div>
             <div class="dd-divider"/>
+            <!-- 管理员同时也登录了前台账号时，在此显示进入后台 -->
+            <template v-if="adminIsLoggedIn">
+              <a class="dd-btn dd-btn--admin" href="/admin/dashboard">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                进入管理后台
+              </a>
+              <div class="dd-divider"/>
+            </template>
             <button class="dd-btn dd-btn--danger" @click="handleLogout">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -279,6 +293,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useUserAuth } from '@/stores/userAuth'
+import { useAdminAuth } from '@/stores/adminAuth'
 import { useGlobalTheme } from '@/utils/useTheme'
 
 const props = defineProps({
@@ -286,6 +301,7 @@ const props = defineProps({
 })
 
 const userAuth = useUserAuth()
+const { isLoggedIn: adminIsLoggedIn } = useAdminAuth()
 const openMenuId = ref(null)
 const fileInputRef = ref(null)
 

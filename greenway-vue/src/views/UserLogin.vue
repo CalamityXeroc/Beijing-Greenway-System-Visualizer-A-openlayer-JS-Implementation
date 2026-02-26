@@ -58,10 +58,12 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
+import { useAdminAuth } from '@/stores/adminAuth'
 
 const router = useRouter()
 const route  = useRoute()
 const { setSession } = useUserAuth()
+const { setSession: setAdminSession } = useAdminAuth()
 
 const form   = ref({ username: '', password: '' })
 const loading = ref(false)
@@ -82,6 +84,14 @@ async function handleSubmit() {
     try { json = JSON.parse(text) } catch { json = {} }
     if (res.ok && json.data?.token) {
       setSession(json.data.token, json.data.user)
+      
+      // 如果是管理员登录前台，同时自动设置后台 session，并直接跳转到后台
+      if (json.data.user.role === 'admin') {
+        setAdminSession(json.data.token, json.data.user)
+        window.location.href = '/admin/dashboard'
+        return
+      }
+
       const redirect = route.query.redirect || '/'
       router.push(redirect)
     } else {

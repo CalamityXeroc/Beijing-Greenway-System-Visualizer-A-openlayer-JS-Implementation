@@ -76,13 +76,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAdminAuth } from '@/stores/adminAuth'
 
 const router = useRouter()
 const route  = useRoute()
-const { adminUser, clearSession } = useAdminAuth()
+const { adminUser, clearSession, isLoggedIn } = useAdminAuth()
+
+// token 被清除后（如任意请求返回 401）自动跳回登录页
+watch(isLoggedIn, (val) => {
+  if (!val) router.push('/admin/login')
+})
 
 const collapsed = ref(false)
 
@@ -123,7 +128,7 @@ function isActive(path) {
 function confirmLogout() {
   if (confirm('确定退出管理后台？')) {
     clearSession()
-    router.push('/admin/login')
+    window.location.href = '/admin/login'
   }
 }
 </script>

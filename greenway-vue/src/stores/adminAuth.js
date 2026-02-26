@@ -5,9 +5,15 @@ import { reactive, computed } from 'vue'
 const KEY_TOKEN = 'greenway_admin_token'
 const KEY_USER  = 'greenway_admin_user'
 
+// 清理旧版遗留的 localStorage，防止干扰
+if (localStorage.getItem(KEY_TOKEN)) {
+  localStorage.removeItem(KEY_TOKEN)
+  localStorage.removeItem(KEY_USER)
+}
+
 const state = reactive({
-  token: localStorage.getItem(KEY_TOKEN) || null,
-  user:  JSON.parse(localStorage.getItem(KEY_USER) || 'null'),
+  token: sessionStorage.getItem(KEY_TOKEN) || null,
+  user:  JSON.parse(sessionStorage.getItem(KEY_USER) || 'null'),
 })
 
 export function useAdminAuth() {
@@ -18,15 +24,15 @@ export function useAdminAuth() {
   function setSession(token, user) {
     state.token = token
     state.user  = user
-    localStorage.setItem(KEY_TOKEN, token)
-    localStorage.setItem(KEY_USER,  JSON.stringify(user))
+    sessionStorage.setItem(KEY_TOKEN, token)
+    sessionStorage.setItem(KEY_USER,  JSON.stringify(user))
   }
 
   function clearSession() {
     state.token = null
     state.user  = null
-    localStorage.removeItem(KEY_TOKEN)
-    localStorage.removeItem(KEY_USER)
+    sessionStorage.removeItem(KEY_TOKEN)
+    sessionStorage.removeItem(KEY_USER)
   }
 
   /** 通用请求封装，自动携带 Bearer token */
@@ -40,7 +46,10 @@ export function useAdminAuth() {
       },
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`)
+    if (!res.ok) {
+      if (res.status === 401) clearSession()   // token 过期/无效，立即清除本地会话
+      throw new Error(data.message || `HTTP ${res.status}`)
+    }
     return data
   }
 
