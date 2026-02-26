@@ -84,7 +84,7 @@ cp .env.example .env.local
 
 ```env
 VITE_AMAP_KEY=your_amap_api_key
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:3001
 ```
 
 ## 可用脚本
@@ -121,8 +121,8 @@ greenway-vue/
 
 运行完整系统时连接到后端：
 
-1. 确保后端在端口 3000 运行
-2. 在 `.env.local` 中设置 `VITE_API_BASE_URL=http://localhost:3000`
+1. 确保后端在端口 3001 运行
+2. 在 `.env.local` 中设置 `VITE_API_BASE_URL=http://localhost:3001`
 3. 前端将从后端 API 获取数据
 
 ## 故障排除

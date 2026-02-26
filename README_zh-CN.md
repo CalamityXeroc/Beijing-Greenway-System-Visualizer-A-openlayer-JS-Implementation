@@ -100,7 +100,7 @@ GET /api/greenways?name=温榆河
 
 ### 使用示例
 ```bash
-curl "http://localhost:3000/api/greenways?name=南沙绿道"
+curl "http://localhost:3001/api/greenways?name=南沙绿道"
 ```
 
 ## 🗄️ 数据库架构

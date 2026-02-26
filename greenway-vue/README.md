@@ -84,7 +84,7 @@ Add your API keys to `.env.local`:
 
 ```env
 VITE_AMAP_KEY=your_amap_api_key
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:3001
 ```
 
 ## Available Scripts
@@ -121,8 +121,8 @@ greenway-vue/
 
 When running the complete system with the backend:
 
-1. Ensure backend is running on port 3000
-2. Set `VITE_API_BASE_URL=http://localhost:3000` in `.env.local`
+1. Ensure backend is running on port 3001
+2. Set `VITE_API_BASE_URL=http://localhost:3001` in `.env.local`
 3. Frontend will fetch data from backend API
 
 ## Troubleshooting
@@ -141,7 +141,7 @@ npm run build
 ```
 
 ### API calls failing?
-- Check if backend is running on port 3000
+- Check if backend is running on port 3001
 - Verify CORS settings on backend
 - Check browser console for errors
 
@@ -149,7 +149,7 @@ npm run build
 
 MIT
 npm run db:import  # Import data
-npm run dev        # Start backend (port 3000)
+npm run dev        # Start backend (port 3001)
 ```
 
 #### Step 2: Start frontend (new terminal)
