@@ -123,7 +123,7 @@
         </button>
         <div class="dropdown dropdown--wide" v-show="openMenuId === 'layers'">
           <div class="dropdown-section">图层控制</div>
-          <div v-for="layer in toolbarRef.filteredLayerConfig?.value || []" :key="layer.id"
+          <div v-for="layer in filteredLayerConfig" :key="layer.id"
                class="dd-layer-item">
             <label class="layer-check">
               <input type="checkbox" :checked="layer.visible !== false"
@@ -132,7 +132,7 @@
               <span>{{ layer.name }}</span>
             </label>
           </div>
-          <div v-if="!(toolbarRef.filteredLayerConfig?.value?.length)" class="dd-empty">暂无图层</div>
+          <div v-if="!filteredLayerConfig.length" class="dd-empty">暂无图层</div>
           <div class="dd-divider"/>
           <!-- 上传自定义 -->
           <div class="dropdown-section">自定义图层</div>
@@ -297,8 +297,20 @@ import { useAdminAuth } from '@/stores/adminAuth'
 import { useGlobalTheme } from '@/utils/useTheme'
 
 const props = defineProps({
-  toolbarRef: { type: Object, default: null }
+  toolbarRef: { type: Object, default: null },
+  layerConfig: { type: Array, default: () => [] }
 })
+
+// 过滤掉所有绿道路线图层，只保留北京市界/面等底图图层
+const GREENWAY_IDS = [
+  'wenyu-greenway', 'huanerhuan-greenway', 'liangmahe-greenway',
+  'changying-greenway', 'changping42-greenway', 'lidu-greenway',
+  'beiyunhe-greenway', 'nansha-greenway', 'aosen-greenway',
+  'yingcheng-greenway', 'sanshan-greenway', 'chaoyang-greenway'
+]
+const filteredLayerConfig = computed(() =>
+  props.layerConfig.filter(l => !GREENWAY_IDS.includes(l.id))
+)
 
 const userAuth = useUserAuth()
 const { isLoggedIn: adminIsLoggedIn } = useAdminAuth()

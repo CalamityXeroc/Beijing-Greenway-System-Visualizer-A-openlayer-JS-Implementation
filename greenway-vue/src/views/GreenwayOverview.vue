@@ -2,7 +2,7 @@
   <div class="greenroad-page">
     <!-- 导航栏：sticky 吸顶，不参与页面滚动但始终可见 -->
     <div class="navbar-sticky">
-      <TopNavbar :toolbarRef="toolbarRef"/>
+      <TopNavbar :toolbarRef="toolbarRef" :layerConfig="layerConfig"/>
     </div>
 
     <!-- 地图容器：精确占满视口剩余高度，滚动后变为普通内容区 -->
@@ -19,8 +19,8 @@
       />
     </div>
 
-    <!-- MapToolbar 保持在 DOM 中以维持 OpenLayers 交互逻辑，视觉上隐藏 -->
-    <div style="display:none" aria-hidden="true">
+    <!-- MapToolbar 保持在 DOM 中维持交互逻辑，视觉上隐藏；图层控制通过顶部工具栏操作 -->
+    <div style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true">
       <MapToolbar
         v-if="mapManager"
         ref="toolbarRef"
