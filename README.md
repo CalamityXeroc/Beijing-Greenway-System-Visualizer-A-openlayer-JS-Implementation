@@ -14,22 +14,22 @@ A modern WebGIS platform for exploring Beijing's greenway network, built with Vu
 
 ##  Screenshots
 
-### Landing Page  Hero Section
+
 ![Landing Page](示例图片/1.png)
 
-### Interactive Map Overview
+
 ![Map Overview](示例图片/2.png)
 
-### Greenway Detail Page
+
 ![Greenway Detail](示例图片/3.png)
 
-### GIS Toolbar & Layer Control
+
 ![GIS Tools](示例图片/4.png)
 
-### Admin Dashboard
+
 ![Admin Panel](示例图片/5.png)
 
-### Mobile-Responsive View
+
 ![Mobile View](示例图片/6.png)
 
 ---
@@ -285,3 +285,4 @@ MIT  see LICENSE for details.
 ---
 
 **Built with  for Beijing's urban green spaces**
+
