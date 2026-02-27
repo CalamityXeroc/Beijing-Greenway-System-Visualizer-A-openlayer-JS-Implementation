@@ -10,6 +10,8 @@
 
 **[English](./README.md) | [中文](./README_zh-CN.md)**
 
+> ⚡ **快速开始？** 请查看 [**快速部署指南.md**](./快速部署指南.md) — 5 分钟内部署完整系统（包含 PostgreSQL、Node.js 配置步骤）
+
 ---
 
 ##  功能截图
