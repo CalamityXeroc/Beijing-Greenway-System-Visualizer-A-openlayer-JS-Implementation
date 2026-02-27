@@ -127,6 +127,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { fetchGreenways as fetchGreenwaysAPI } from '../services/api'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
@@ -164,9 +165,7 @@ async function loadTrail() {
   loading.value = true
   error.value = null
   try {
-    const res = await fetch('/api/greenways')
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
+    const data = await fetchGreenwaysAPI()
     const features = data.features || []
     const found = features.find(f => {
       const p = f.properties

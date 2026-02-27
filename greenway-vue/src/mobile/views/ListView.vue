@@ -108,6 +108,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import TrailCard from '../components/TrailCard.vue'
 import MobileBottomNav from '../components/MobileBottomNav.vue'
+import { fetchGreenways as fetchGreenwaysAPI } from '../services/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -126,9 +127,7 @@ const diffLabel = { easy: '简单', medium: '中等', hard: '困难' }
 const fetchGreenways = async () => {
   try {
     loading.value = true
-    const res = await fetch('/api/greenways')
-    if (!res.ok) throw new Error(`API ${res.status}`)
-    const geojson = await res.json()
+    const geojson = await fetchGreenwaysAPI()
     allTrails.value = (geojson.features || []).map(f => {
       const p = f.properties || {}
       return {

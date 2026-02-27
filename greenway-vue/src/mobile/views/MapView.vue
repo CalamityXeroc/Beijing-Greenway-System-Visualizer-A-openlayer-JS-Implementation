@@ -65,6 +65,7 @@
 import { ref, shallowRef, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MobileBottomNav from '../components/MobileBottomNav.vue'
+import { fetchGreenways } from '../services/api'
 import { Map, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
@@ -119,9 +120,7 @@ const initMap = () => {
 /* ---- 鍔犺浇缁块亾鏁版嵁 ---- */
 const loadAllGreenways = async () => {
   try {
-    const res = await fetch('/api/greenways')
-    if (!res.ok) throw new Error(`API ${res.status}`)
-    const geojson = await res.json()
+    const geojson = await fetchGreenways()
 
     const vectorSource = new VectorSource({
       features: new GeoJSON().readFeatures(geojson, { featureProjection: 'EPSG:3857' })

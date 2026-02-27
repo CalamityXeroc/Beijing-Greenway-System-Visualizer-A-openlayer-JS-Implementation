@@ -34,7 +34,24 @@
         </nav>
 
         <div class="lp-header__actions">
-          <a href="/login" class="btn-ghost">登录</a>
+          <!-- 未登录：显示登录按钮 -->
+          <template v-if="!userAuth.isLoggedIn.value">
+            <a href="/login" class="btn-ghost">登录</a>
+          </template>
+          <!-- 已登录：显示头像+昵称+退出 -->
+          <template v-else>
+            <div class="lp-user-area">
+              <span class="lp-avatar">{{ userAuth.nickname.value?.[0] || 'U' }}</span>
+              <span class="lp-nickname">{{ userAuth.nickname.value }}</span>
+              <button class="lp-logout-btn" @click="handleLogout" title="退出登录">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+              </button>
+            </div>
+          </template>
           <a href="/map" class="btn-primary">进入地图</a>
         </div>
       </div>
@@ -336,6 +353,16 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useUserAuth } from '@/stores/userAuth'
+import { useRouter } from 'vue-router'
+
+const userAuth = useUserAuth()
+const router = useRouter()
+
+function handleLogout() {
+  userAuth.clearSession()
+  router.push('/login')
+}
 
 // ══════════════════════════════════════════════════
 // 全屏分页控制
@@ -590,6 +617,32 @@ onBeforeUnmount(() => {
 .lp-nav__link:hover { color: #CFD8DC; background: rgba(255,255,255,0.05); }
 .lp-nav__link.active { color: #A5D6A7; background: rgba(165,214,167,0.1); }
 .lp-header__actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.lp-user-area {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 12px 0 7px;
+  border-radius: 20px;
+  background: rgba(165,214,167,0.1);
+  border: 1px solid rgba(165,214,167,0.25);
+  vertical-align: middle;
+}
+.lp-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  color: #A5D6A7; font-size: 0.85rem; font-weight: 700; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.lp-nickname {
+  color: #C8E6C9; font-size: 0.9rem; font-weight: 500; line-height: 1;
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lp-logout-btn {
+  background: none; border: none; cursor: pointer;
+  color: #809B82; padding: 2px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; transition: color 0.2s; flex-shrink: 0;
+}
+.lp-logout-btn:hover { color: #EF9A9A; }
 
 /* ── 通用按钮 ── */
 .btn-ghost {
