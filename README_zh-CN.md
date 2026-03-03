@@ -2,7 +2,7 @@
 
 ![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-blue.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)
 ![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -40,15 +40,19 @@
 
 交互式可视化 **12 条北京主要绿道**，集成全屏落地页、OpenLayers 交互地图、GIS 工具集、实时天气、全景街景、管理后台、用户认证及 Capacitor 移动端应用。
 
--  12 条完整绿道路线（新增三山五园绿道、朝阳绿道）
--  Vue 3 + OpenLayers 8 前端，Pinia 状态管理
+-  12 条完整绿道路线
+-  Vue 3 + OpenLayers 8 前端
 -  Node.js + Express REST API 后端
 -  PostgreSQL + PostGIS 地理数据库
--  全屏落地页，鼠标滚轮六屏切换
+-  全屏落地页，防抖鼠标滚轮六屏切换（0.6s 过渡动画）
 -  图层控制集成到顶部导航栏下拉菜单
--  管理后台 JWT 认证（sessionStorage，关闭浏览器自动注销）
+-  管理后台 JWT 认证（localStorage 持久化，仅主动注销才清除）
+-  前台导航栏显示管理员登录状态
+-  绘图工具 RGB 调色板（点 / 线 / 面均支持自定义颜色）
+-  地图画布导出为 PNG 图片
+-  地图界面"返回主界面"快捷按钮
 -  用户注册与登录系统
--  全站深色主题 + 响应式设计
+-  全站深色主题（后台管理深色模式完整支持）
 -  Capacitor 移动端应用（试验阶段）
 
 ---
@@ -84,13 +88,14 @@ npm run dev       # http://localhost:5173
 
 | 功能 | 描述 |
 |------|------|
-|  **落地页** | 鼠标滚轮六屏全屏切换，动态过渡动画 |
+|  **落地页** | 防抖鼠标滚轮六屏全屏切换，0.6s 平滑过渡动画 |
 |  **交互式地图** | OpenLayers 多图层高性能渲染，自定义深色瓦片 |
-|  **GIS 工具集** | 绘图、测量、导入 GeoJSON、基础图层切换 |
+|  **GIS 工具集** | 绘图（支持 RGB 调色板）、测量、导入 GeoJSON、基础图层切换 |
+|  **地图导出** | 将当前地图视图导出为 PNG 图片 |
 |  **12 条绿道** | 每条均有独立详情页、属性信息和全景街景 |
 |  **实时天气** | 可拖动天气组件（高德地图 API） |
-|  **深色主题** | 全站深色配色（`#060d14` 主背景） |
-|  **管理后台** | JWT 认证（sessionStorage）、数据概览、用户管理、系统日志 |
+|  **深色主题** | 全站深色配色（`#060d14` 主背景），后台管理界面深色模式完整支持 |
+|  **管理后台** | JWT 认证（localStorage 持久化）、数据概览、用户管理、系统日志 |
 |  **用户系统** | 公众用户注册与登录 |
 |  **移动端** | Capacitor + Vue 3，原生平台自动跳转移动端布局 |
 
@@ -122,7 +127,8 @@ npm run dev       # http://localhost:5173
           WeatherCard.vue          # 可拖动天气组件
           PanoramaViewer.vue       # 全景街景查看器
        stores/
-          adminAuth.js             # Pinia Store（JWT、sessionStorage）
+          adminAuth.js             # 管理员 Auth（JWT，localStorage 持久化）
+          userAuth.js              # 前台用户 Auth（localStorage 持久化）
        router/index.js              # 路由配置 + 导航守卫
     public/数据/                     # GeoJSON 几何数据文件
 
@@ -251,7 +257,7 @@ VITE_API_BASE=http://localhost:3001
 
 ##  安全机制
 
-- 管理员 JWT 令牌存储于 **sessionStorage**（关闭浏览器自动注销）
+- 管理员 JWT 令牌存储于 **localStorage**（页面刷新、切换标签页均保持登录，仅主动注销或服务端 401 才清除）
 - Vue Router 导航守卫强制校验 `requiresAdmin` 元数据
 - 401 响应自动清除会话并跳转至管理员登录页
 - 所有数据库查询使用参数化语句，防止 SQL 注入
@@ -263,11 +269,11 @@ VITE_API_BASE=http://localhost:3001
 
 | 层级 | 技术 |
 |------|------|
-| 前端框架 | Vue 3.4 + Vite 5 + Pinia |
+| 前端框架 | Vue 3.4 + Vite 5 |
 | 地图引擎 | OpenLayers 8.2 |
 | 后端 | Node.js 18 + Express 4.18 |
-| 数据库 | PostgreSQL 18 + PostGIS 3.6 |
-| 移动端 | Capacitor 5 |
+| 数据库 | PostgreSQL 14+ + PostGIS 3.3+ |
+| 移动端 | Capacitor 6 |
 | 数据格式 | GeoJSON + MultiLineString（SRID 4326） |
 
 ---

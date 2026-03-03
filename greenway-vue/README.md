@@ -18,8 +18,9 @@ A modern, interactive WebGIS platform for exploring Beijing's extensive greenway
 - **Responsive Design**: Optimized for both desktop and mobile devices
 
 ### 🛠️ Advanced GIS Tools
-- **Drawing Tools**: Create points, lines, and polygons directly on the map
+- **Drawing Tools**: Create points, lines, and polygons directly on the map with **RGB color picker**
 - **Measurement Tools**: Accurately measure distances (m/km) and areas (m²/km²)
+- **Map Export**: Export current map view as a PNG image
 - **Custom Layer Upload**: Import your own GeoJSON data for analysis
 - **Interactive Popups**: Click features to view detailed information
 
@@ -27,12 +28,16 @@ A modern, interactive WebGIS platform for exploring Beijing's extensive greenway
 - **Collapsible Weather Widget**: Real-time weather information
 - **Smooth Animations**: Polished transitions and hover effects
 - **Information Cards**: Greenway statistics and highlights
+- **Dark Mode Support**: Full night theme across all pages
+- **Back-to-Homepage Button**: Quick navigation from map view back to landing page
+- **Admin State in Navbar**: When logged into admin, displays admin identity in the top navbar
+- **localStorage Auth**: User and admin sessions persist across browser refreshes
 
 ### 🌄 360° Panoramic Views
 - **Baidu Street View Integration**: Immersive panoramic imagery
 - **Multiple Viewpoints**: Scenic spots along the route
 
-### 🎯 10 Complete Greenway Routes
+### 🎯 12 Complete Greenway Routes
 - **Wenyu River (温榆河)**: 108km waterfront ecological corridor
 - **Ring No.2 (环二环)**: 87km urban greenway
 - **Liangma River (亮马河)**: 8km commercial district greenway
@@ -43,6 +48,8 @@ A modern, interactive WebGIS platform for exploring Beijing's extensive greenway
 - **Nansha (南沙)**: Waterfront ecological greenway
 - **Olympic Forest Park (奥森)**: Olympic legacy park route
 - **Yingcheng Historic (营城建都)**: Historical cultural heritage route
+- **Three Hills & Five Gardens (三山五园)**: Imperial garden heritage greenway
+- **Chaoyang (朝阳)**: Chaoyang district urban greenway
 
 ## 🚀 Quick Start
 
@@ -101,7 +108,7 @@ greenway-vue/
 ├── src/
 │   ├── views/
 │   │   ├── GreenwayOverview.vue    # Main map page
-│   │   └── *Detail.vue             # 10 greenway detail pages
+│   │   └── *Detail.vue             # 12 greenway detail pages
 │   ├── components/
 │   │   ├── MapComponent.vue        # OpenLayers map
 │   │   ├── WeatherWidget.vue       # Weather display
@@ -152,6 +159,8 @@ npm run db:import  # Import data
 npm run dev        # Start backend (port 3001)
 ```
 
+> ⚠️ Backend runs on port **3001**, not 3000.
+
 #### Step 2: Start frontend (new terminal)
 ```bash
 cd ../greenway-vue
@@ -200,12 +209,12 @@ greenway-vue/
 │   │   ├── MapToolbar.vue       # GIS toolbar
 │   │   ├── WeatherCard.vue      # Draggable weather widget
 │   │   └── BaiduPanoramaViewer.vue  # 360° panorama viewer
-│   ├── views/                   # Page components (11 total)
+│   ├── views/                   # Page components (13 total)
 │   │   ├── GreenwayOverview.vue # Main interactive overview
 │   │   ├── WenyuDetail.vue      # Wenyu River detail page
 │   │   ├── HuanerhuanDetail.vue # Ring No.2 detail page
 │   │   ├── LiangmaheDetail.vue  # Liangma River detail page
-│   │   └── ...                  # 7 more greenway pages
+│   │   └── ...                  # 9 more greenway pages
 │   ├── core/                    # Core functionality
 │   │   ├── MapManager.js        # Map management
 │   │   └── LayerManager.js      # Layer management
@@ -221,8 +230,9 @@ greenway-vue/
 ## 🎨 Feature Highlights
 
 ### Map & Interaction Tools
-- **Drawing Tools**: Create points, lines, and polygons on the map
+- **Drawing Tools**: Create points, lines, and polygons on the map with **custom RGB color picker**
 - **Measurement Tools**: Calculate distances (m/km) and areas (m²/km²)
+- **Map Export**: Export the current map view as a PNG file
 - **Layer Controls**: Dynamically show/hide map layers
 - **360° Panoramic Views**: Integrated Baidu street view experience
 
@@ -236,6 +246,9 @@ greenway-vue/
 - **High Performance**: Smooth map rendering and animations
 - **Mobile Responsive**: Optimized for desktop and mobile devices
 - **Clean Design**: Transparent floating headers, clear information hierarchy
+- **Dark Mode**: Full night theme with `[data-theme="night"]` CSS support
+- **Admin State Display**: Admin login reflected in both the landing page header and map navbar
+- **LocalStorage Sessions**: Auth tokens persisted in `localStorage` — survives page refresh
 
 ## 🌈 Development Configuration
 

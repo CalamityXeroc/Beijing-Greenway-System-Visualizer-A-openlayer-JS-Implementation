@@ -2,7 +2,7 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
 ![Express](https://img.shields.io/badge/Express-4.18-blue.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-orange.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-orange.svg)
 
 English | [中文](./README_zh-CN.md)
 
@@ -19,7 +19,7 @@ Backend service for Beijing Greenway GIS platform using Node.js + Express + Post
 ## System Requirements
 
 - **Node.js** >= 18.0
-- **PostgreSQL** 18 with PostGIS 3.6
+- **PostgreSQL** 14+ with PostGIS 3.3+
 - **npm** or **yarn**
 
 ## Quick Start

@@ -2,7 +2,7 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
 ![Express](https://img.shields.io/badge/Express-4.18-blue.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-orange.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-orange.svg)
 
 [English](./README.md) | 中文
 
@@ -19,7 +19,7 @@
 ## 系统需求
 
 - **Node.js** >= 18.0
-- **PostgreSQL** 18 + PostGIS 3.6
+- **PostgreSQL** 14+ + PostGIS 3.3+
 - **npm** 或 **yarn**
 
 ## 快速开始

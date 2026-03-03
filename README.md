@@ -2,7 +2,7 @@
 
 ![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18+-blue.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)
 ![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -41,14 +41,18 @@ A modern WebGIS platform for exploring Beijing's greenway network, built with Vu
 Interactive visualization of **12 major Beijing greenways** featuring a fullscreen landing page, an interactive OpenLayers map, GIS tools, real-time weather, panoramic street view, admin panel, user auth, and a Capacitor-based mobile app.
 
 -  12 complete greenway routes
--  Vue 3 + OpenLayers 8 frontend with Pinia state management
+-  Vue 3 + OpenLayers 8 frontend
 -  Node.js + Express REST API backend
 -  PostgreSQL + PostGIS geospatial database
--  Fullpage landing page with mouse-wheel scroll (6 sections)
+-  Fullpage landing page with debounced mouse-wheel scroll (6 sections)
 -  Layer control integrated into top navigation bar
--  Admin panel with JWT authentication (sessionStorage)
+-  Admin panel with JWT authentication (localStorage, persists across tabs)
+-  Admin login state reflected in frontend navbar
+-  RGB color picker for all drawing tools (point / line / polygon)
+-  Map canvas export to PNG
+-  Back-to-homepage button in map navigation bar
 -  User login / registration system
--  Dark theme throughout + responsive design
+-  Full dark theme + responsive design
 -  Capacitor-based mobile app (experimental)
 
 ---
@@ -84,13 +88,14 @@ npm run dev       # http://localhost:5173
 
 | Feature | Description |
 |---------|-------------|
-|  **Landing Page** | Fullpage mouse-wheel scroll with 6 animated sections |
+|  **Landing Page** | Fullpage debounced mouse-wheel scroll, 6 animated sections, 0.6s transition |
 |  **Interactive Map** | OpenLayers multi-layer rendering with custom dark tile theme |
-|  **GIS Toolkit** | Draw, measure, import GeoJSON, toggle base layers |
+|  **GIS Toolkit** | Draw (with RGB color picker), measure, import GeoJSON, toggle base layers |
+|  **Map Export** | Export current map view as PNG image |
 |  **12 Greenways** | Individual detail pages with attributes & street panorama |
 |  **Real-time Weather** | Draggable weather widget (Amap API) |
-|  **Dark Mode** | Full-site dark theme (`#060d14` base) |
-|  **Admin Panel** | JWT auth (sessionStorage), dashboard, user management, logs |
+|  **Dark Mode** | Full-site dark theme (`#060d14` base), admin panel fully themed |
+|  **Admin Panel** | JWT auth (localStorage), dashboard, user management, logs |
 |  **User Auth** | Public user registration and login |
 |  **Mobile App** | Capacitor + Vue 3, auto-detected on native platform |
 
@@ -251,7 +256,7 @@ VITE_API_BASE=http://localhost:3001
 
 ##  Security
 
-- Admin JWT stored in **sessionStorage** (auto-cleared on tab/browser close)
+- Admin JWT stored in **localStorage** (persists across tabs and page refreshes; cleared only on explicit logout or 401)
 - Vue Router navigation guards enforce `requiresAdmin` meta flag
 - 401 responses auto-clear session and redirect to admin login
 - Parameterized DB queries prevent SQL injection
