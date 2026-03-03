@@ -64,6 +64,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getApiBaseUrl } from '@/mobile/services/api'
 
 const router = useRouter()
 const form = ref({ username: '', nickname: '', email: '', password: '', confirm: '' })
@@ -89,7 +90,7 @@ async function handleSubmit() {
       email:    form.value.email || undefined,
       nickname: form.value.nickname || undefined
     }
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)

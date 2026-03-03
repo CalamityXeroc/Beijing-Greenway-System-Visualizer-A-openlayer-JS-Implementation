@@ -1,4 +1,5 @@
 import { reactive, computed } from 'vue'
+import { getApiBaseUrl } from '../mobile/services/api'
 
 const TOKEN_KEY = 'greenway_user_token'
 const USER_KEY  = 'greenway_user'
@@ -33,7 +34,11 @@ function clearSession() {
 function apiFetch(url, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) }
   if (state.token) headers['Authorization'] = `Bearer ${state.token}`
-  return fetch(url, { ...options, headers })
+  
+  const baseUrl = getApiBaseUrl()
+  const fullPath = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`
+  
+  return fetch(fullPath, { ...options, headers })
 }
 
 export function useUserAuth() {

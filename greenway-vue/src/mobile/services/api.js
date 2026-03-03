@@ -3,12 +3,19 @@
  * 兼容 Capacitor AVD 环境（10.0.2.2:3001）和普通开发环境
  */
 
-const getApiBaseUrl = () => {
-  // 检查是否在 Android AVD 中运行
-  if (typeof window !== 'undefined' && window.location.hostname === '10.0.2.2') {
+export const getApiBaseUrl = () => {
+  // Capacitor 真机/模拟器：window.location 是 capacitor://localhost 或 http://localhost
+  const isCapacitor = typeof window !== 'undefined' &&
+    (window.Capacitor?.isNativePlatform?.() ||
+     window.location.protocol === 'capacitor:' ||
+     (window.location.protocol === 'http:' && window.location.hostname === 'localhost' && !import.meta.env.DEV))
+
+  if (isCapacitor) {
+    // 强制在这个开发阶段使用 10.0.2.2 (模拟器专属) 如果他在用模拟器
+    // 但为了兼顾他手机测试的功能，用一个后备方案
+    // 由于他目前说 "我正在用模拟器查看", 使用 10.0.2.2:3001
     return 'http://10.0.2.2:3001'
   }
-  // 其他环境使用相对路径（依靠 Vite 代理）
   return ''
 }
 

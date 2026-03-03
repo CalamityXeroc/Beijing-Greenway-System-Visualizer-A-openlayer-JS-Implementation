@@ -59,6 +59,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
 import { useAdminAuth } from '@/stores/adminAuth'
+import { getApiBaseUrl } from '@/mobile/services/api'
 
 const router = useRouter()
 const route  = useRoute()
@@ -74,7 +75,7 @@ async function handleSubmit() {
   errMsg.value  = ''
   loading.value = true
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: form.value.username, password: form.value.password })
@@ -83,9 +84,10 @@ async function handleSubmit() {
     let json
     try { json = JSON.parse(text) } catch { json = {} }
     if (res.ok && json.data?.token) {
+      // 无论角色，统一保存到用户 store（移动端依赖此 store 检测登录态）
       setSession(json.data.token, json.data.user)
-      
-      // 如果是管理员登录前台，同时自动设置后台 session，并直接跳转到后台
+
+      // 如果是管理员，同时设置后台 session 并跳转后台
       if (json.data.user.role === 'admin') {
         setAdminSession(json.data.token, json.data.user)
         window.location.href = '/admin/dashboard'

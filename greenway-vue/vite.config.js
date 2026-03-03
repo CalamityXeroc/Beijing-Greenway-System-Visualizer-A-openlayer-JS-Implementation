@@ -11,7 +11,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    open: true,
+    host: true,   // 监听 0.0.0.0，Android 模拟器(10.0.2.2)和真机均可访问
+    open: false,  // 不自动在桌面浏览器打开（移动端开发）
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

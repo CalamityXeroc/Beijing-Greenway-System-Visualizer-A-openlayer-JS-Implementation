@@ -1,9 +1,15 @@
 ﻿<template>
   <div class="map-view">
-    <!-- 鍦板浘鍏ㄥ睆瀹瑰櫒 -->
+    <!-- 地图全屏容器 -->
     <div ref="mapContainer" class="map-container" :class="{ 'night-mode': isDark }"></div>
 
-    <!-- 椤堕儴鎼滅储鏍忥紙鎮诞鍦ㄥ湴鍥句笂鏂癸級 -->
+    <!-- 用户位置标记（CSS 脉冲动画，通过 Overlay 定位） -->
+    <div ref="locationMarkerEl" class="location-marker-wrap" style="display:none">
+      <span class="location-pulse"></span>
+      <span class="location-dot"></span>
+    </div>
+
+    <!-- 顶部悬浮搜索栏（悬浮在地图上方） -->
     <div class="top-bar">
       <div class="search-pill" @click="showSearch">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -13,19 +19,7 @@
       </div>
     </div>
 
-    <!-- 鍙充晶 FAB 鎸夐挳缁?-->
-    <div class="fab-column">
-      <!-- 瀹氫綅 -->
-      <button class="fab fab-surface" title="我的位置" @click="locateUser">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"></path>
-        </svg>
-      </button>
-      <!-- 澶滈棿/鏃ラ棿鍒囨崲 -->
-    </div>
-
-    <!-- 搴曢儴娓愬彉閬僵 + 瀵艰埅鏍?-->
+    <!-- 底部渐变遮罩 + 导航栏 -->
     <div class="bottom-gradient"></div>
 
     <!-- 绿道信息面板 -->
@@ -72,18 +66,23 @@ import VectorLayer from 'ol/layer/Vector'
 import XYZ from 'ol/source/XYZ'
 import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
+import Overlay from 'ol/Overlay'
 import { Style, Stroke } from 'ol/style'
 import { fromLonLat } from 'ol/proj'
-import { getCurrentLocation } from '../composables/useCapacitor'
 import { useAppTheme } from '../composables/useAppTheme'
+import { useLocation } from '../composables/useLocation'
 
 const router = useRouter()
 const mapContainer = ref(null)
+const locationMarkerEl = ref(null)
 let map = null
 const mapInstance = shallowRef(null)
+let locationOverlay = null
 const activeTab = ref('map')
 const { isDark } = useAppTheme()
 const selectedTrail = ref(null)
+const { fetchLocation, isLocating, hasLocation, userLocation, locationStatus } = useLocation()
+
 const goToDetail = (id) => { if (id) router.push(`/mobile/detail/${id}`) }
 
 /* ---- 地图初始化 ---- */
@@ -110,14 +109,27 @@ const initMap = () => {
       center: fromLonLat([116.4074, 39.9042]),
       zoom: 12
     }),
-    controls: []  // 鍘绘帀榛樿 OL 鎺т欢
+    controls: []  // 去掉默认 OL 控件
   })
 
   mapInstance.value = map
+
+  // 设置用户位置 Overlay（HTML 元素，支持 CSS 脉冲动画）
+  // 使用 top-left 定位配合 CSS transform: translate(-50%,-50%) 实现居中
+  locationOverlay = new Overlay({
+    element: locationMarkerEl.value || document.createElement('div'),
+    positioning: 'top-left',
+    stopEvent: false,
+    offset: [0, 0]
+  })
+  map.addOverlay(locationOverlay)
+
   loadAllGreenways()
+  // 地图初始化后自动进行一次静默定位
+  locateUser(true)
 }
 
-/* ---- 鍔犺浇缁块亾鏁版嵁 ---- */
+/* ---- 加载绿道数据 ---- */
 const loadAllGreenways = async () => {
   try {
     const geojson = await fetchGreenways()
@@ -166,12 +178,19 @@ const loadAllGreenways = async () => {
 }
 
 /* ---- 定位 ---- */
-const locateUser = async () => {
-  try {
-    const loc = await getCurrentLocation()
-    map?.getView().animate({ center: fromLonLat([loc.lng, loc.lat]), zoom: 15, duration: 500 })
-  } catch {
-    map?.getView().animate({ center: fromLonLat([116.4074, 39.9042]), zoom: 12, duration: 500 })
+const locateUser = async (silent = false) => {
+  await fetchLocation(silent)
+  if (userLocation.value) {
+    const coord = fromLonLat([userLocation.value.lng, userLocation.value.lat])
+    // 更新位置标记 Overlay 的地理坐标
+    if (locationOverlay) {
+      locationOverlay.setPosition(coord)
+      if (locationMarkerEl.value) locationMarkerEl.value.style.display = 'block'
+    }
+    // 仅手动点击时才移动视图（silent 为自动启动时不移动到位置）
+    if (!silent) {
+      map?.getView().animate({ center: coord, zoom: 15, duration: 500 })
+    }
   }
 }
 
@@ -193,14 +212,48 @@ onUnmounted(() => { map?.dispose() })
   overflow: hidden;
 }
 
-/* 鍦板浘鍏ㄥ睆 */
+/* 地图全屏 */
 .map-container {
   position: absolute;
   inset: 0;
   background: #e8f0e8;
 }
 
-/* 澶滈棿妯″紡婊ら暅 */
+/* ---- 用户位置标记 ---- */
+.location-marker-wrap {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.location-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #007aff;
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,122,255,0.5);
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+.location-pulse {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: rgba(0,122,255,0.2);
+  animation: location-pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+@keyframes location-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50%       { opacity: 0;   transform: scale(2.2); }
+}
+
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 夜间模式滤镜 */
 .map-container.night-mode :deep(.gaode-base-layer) {
   filter: grayscale(100%) invert(100%) sepia(100%)
           hue-rotate(190deg) saturate(400%) brightness(88%) contrast(85%) !important;
@@ -209,7 +262,7 @@ onUnmounted(() => { map?.dispose() })
   filter: brightness(1.3) drop-shadow(0 0 6px rgba(100, 220, 140, 0.5));
 }
 
-/* 椤堕儴鎮诞鎼滅储鏍?*/
+/* 顶部悬浮搜索栏 */
 .top-bar {
   position: absolute;
   top: 0;
@@ -241,42 +294,9 @@ onUnmounted(() => { map?.dispose() })
 .theme-dark  .search-pill { background: rgba(44,44,46,0.92); }
 .search-pill:active { transform: scale(0.97); }
 
-/* 鍙充晶 FAB 鍒?*/
-.fab-column {
-  position: absolute;
-  right: 14px;
-  bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 20px);
-  z-index: var(--z-float);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.fab {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-lg);
-  transition: transform var(--transition-spring);
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.fab:active { transform: scale(0.88); }
 
-.fab-surface {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  border: 0.5px solid var(--color-border);
-}
-.theme-light .fab-surface { background: rgba(255,255,255,0.95); }
-.theme-dark  .fab-surface { background: rgba(44,44,46,0.95); }
-
-/* 搴曢儴娓愬彉閬僵锛堝钩婊戣繃娓″埌搴曢儴瀵艰埅锛?*/
+/* 底部渐变遮罩（平滑过渡到底部导航） */
 .bottom-gradient {
   position: absolute;
   bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) - 1px);

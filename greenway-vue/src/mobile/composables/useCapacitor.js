@@ -22,7 +22,19 @@ export const getCurrentLocation = async () => {
       return await getBrowserLocation()
     }
 
-    // 原生平台使用Capacitor Geolocation
+    // 原生平台：先检查并请求权限
+    const perm = await Geolocation.checkPermissions()
+    if (perm.location === 'denied') {
+      throw new Error('Permission denied: 位置权限被拒绝')
+    }
+    if (perm.location !== 'granted') {
+      const req = await Geolocation.requestPermissions()
+      if (req.location !== 'granted') {
+        throw new Error('Permission denied: 用户拒绝了位置权限')
+      }
+    }
+
+    // 权限已授予，获取位置
     const coordinates = await Geolocation.getCurrentPosition({
       enableHighAccuracy: true,
       timeout: 10000,

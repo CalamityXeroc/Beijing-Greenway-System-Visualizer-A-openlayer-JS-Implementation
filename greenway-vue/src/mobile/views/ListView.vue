@@ -4,6 +4,15 @@
     <div class="list-header">
       <div class="header-inner">
         <h1 class="header-title">北京绿道</h1>
+        <!-- 定位状态指示 -->
+        <div class="loc-badge" :class="{ 'loc-active': hasLocation, 'loc-loading': isLocating }" @click="!isLocating && fetchLocation(false)">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span v-if="isLocating">定位中…</span>
+          <span v-else-if="hasLocation">已定位</span>
+          <span v-else>获取位置</span>
+        </div>
         <button class="icon-btn filter-btn" :class="{ active: showFilter }" @click="toggleFilter" aria-label="筛选">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <line x1="4" y1="6" x2="20" y2="6"></line>
@@ -43,9 +52,20 @@
               </button>
             </div>
           </div>
+          <div class="filter-row" v-if="hasLocation">
+            <span class="filter-label">距您内 {{ maxDistance }}km</span>
+            <input v-model.number="maxDistance" type="range" min="1" max="100" class="range-slider" />
+          </div>
           <div class="filter-row">
-            <span class="filter-label">距离  {{ maxDistance }}km</span>
-            <input v-model.number="maxDistance" type="range" min="1" max="50" class="range-slider" />
+            <span class="filter-label">排序</span>
+            <div class="filter-chips">
+              <button class="filter-chip" :class="{ active: sortByDistance }" @click="sortByDistance = !sortByDistance" :disabled="!hasLocation" :title="!hasLocation ? '需先开启定位' : ''">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                最近优先
+              </button>
+            </div>
           </div>
           <button class="filter-reset" @click="clearFilter">重置筛选</button>
         </div>
@@ -69,6 +89,7 @@
           </div>
           <div class="card-list">
             <TrailCard v-for="trail in featuredTrails" :key="trail.id" :trail="trail"
+              :distanceKm="trail.distKm"
               @click="viewDetail" @toggle-favorite="handleFav" />
           </div>
         </div>
@@ -82,6 +103,7 @@
 
           <div v-if="filteredTrails.length" class="card-list">
             <TrailCard v-for="trail in filteredTrails" :key="trail.id" :trail="trail"
+              :distanceKm="trail.distKm"
               @click="viewDetail" @toggle-favorite="handleFav" />
           </div>
           <div v-else class="empty-state">
@@ -104,11 +126,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import TrailCard from '../components/TrailCard.vue'
 import MobileBottomNav from '../components/MobileBottomNav.vue'
 import { fetchGreenways as fetchGreenwaysAPI } from '../services/api'
+import { useLocation } from '../composables/useLocation'
 
 const router = useRouter()
 const route = useRoute()
@@ -118,11 +141,32 @@ const searchQuery = ref('')
 const showFilter = ref(false)
 const selectedDifficulty = ref('')
 const maxDistance = ref(50)
+const sortByDistance = ref(false)
 const loading = ref(true)
 const allTrails = ref([])
 const scrollEl = ref(null)
 
 const diffLabel = { easy: '简单', medium: '中等', hard: '困难' }
+
+// 实时定位
+const { fetchLocation, hasLocation, isLocating, distanceTo, formatDistance, userLocation } = useLocation()
+
+// 从 LineString 坐标数组估算中心点
+const getLineCentroid = (coords) => {
+  if (!coords || coords.length === 0) return null
+  const mid = coords[Math.floor(coords.length / 2)]
+  return { lng: mid[0], lat: mid[1] }
+}
+
+// 从 GeoJSON Feature 中尽量提取代表坐标（LineString 或 Polygon 中点）
+const extractCentroid = (feature) => {
+  const geom = feature.geometry
+  if (!geom) return null
+  if (geom.type === 'LineString') return getLineCentroid(geom.coordinates)
+  if (geom.type === 'MultiLineString') return getLineCentroid(geom.coordinates[0])
+  if (geom.type === 'Polygon') return getLineCentroid(geom.coordinates[0])
+  return null
+}
 
 const fetchGreenways = async () => {
   try {
@@ -130,17 +174,23 @@ const fetchGreenways = async () => {
     const geojson = await fetchGreenwaysAPI()
     allTrails.value = (geojson.features || []).map(f => {
       const p = f.properties || {}
+      const centroid = extractCentroid(f)
+      // 清洗描述文本（移除非法字符）
+      const rawDesc = p.description || p.introduction || p.features || ''
+      const cleanDesc = rawDesc.replace(/[^\u4e00-\u9fa5a-zA-Z0-9\s，。！？、：；""''（）【】《》…\-\.]+/g, ' ').trim()
       return {
-        id: p.id || Math.random(),
+        id: p.id || p.gid || Math.random(),
         name: p.name || '未知绿道',
-        description: p.description || p.introduction || p.features || '',
+        description: cleanDesc,
         color: p.color,
         image: null,
         difficulty: 'medium',
         length: parseFloat(p.length) || 0,
         duration: '2-3小时',
-        distance: Math.floor(Math.random() * 20) + 1,
-        tags: p.features ? p.features.split('、').slice(0, 2) : ['绿道']
+        lat: centroid?.lat ?? null,
+        lng: centroid?.lng ?? null,
+        tags: p.features ? p.features.split('、').slice(0, 2) : ['绿道'],
+        area: p.area || p.district || ''
       }
     })
   } catch (e) {
@@ -150,10 +200,27 @@ const fetchGreenways = async () => {
   }
 }
 
-const featuredTrails = computed(() => allTrails.value.slice(0, 3))
+// 实时计算用户到各绿道的距离（响应式）
+const trailsWithDistance = computed(() => {
+  return allTrails.value.map(t => {
+    let distKm = null
+    if (hasLocation.value && t.lat != null && t.lng != null) {
+      distKm = distanceTo(t.lat, t.lng)
+    }
+    return { ...t, distKm }
+  })
+})
+
+const featuredTrails = computed(() => {
+  const sorted = [...trailsWithDistance.value]
+    .filter(t => t.distKm != null)
+    .sort((a, b) => a.distKm - b.distKm)
+  // 有定位时推荐最近3条，否则取前3
+  return sorted.length >= 3 ? sorted.slice(0, 3) : trailsWithDistance.value.slice(0, 3)
+})
 
 const filteredTrails = computed(() => {
-  let list = allTrails.value
+  let list = trailsWithDistance.value
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter(t =>
@@ -162,19 +229,38 @@ const filteredTrails = computed(() => {
     )
   }
   if (selectedDifficulty.value) list = list.filter(t => t.difficulty === selectedDifficulty.value)
-  list = list.filter(t => t.distance <= maxDistance.value)
+  // 当有定位时，应用距离筛选
+  if (hasLocation.value) {
+    list = list.filter(t => t.distKm == null || t.distKm <= maxDistance.value)
+  }
+  // 按距离排序
+  if (sortByDistance.value && hasLocation.value) {
+    list = [...list].sort((a, b) => {
+      if (a.distKm == null) return 1
+      if (b.distKm == null) return -1
+      return a.distKm - b.distKm
+    })
+  }
   return list
 })
 
 const toggleFilter = () => { showFilter.value = !showFilter.value }
-const clearFilter = () => { searchQuery.value = ''; selectedDifficulty.value = ''; maxDistance.value = 50; showFilter.value = false }
+const clearFilter = () => {
+  searchQuery.value = ''
+  selectedDifficulty.value = ''
+  maxDistance.value = 50
+  sortByDistance.value = false
+  showFilter.value = false
+}
 const handleSearch = (q) => { searchQuery.value = q }
 const viewDetail = (trail) => router.push(`/mobile/detail/${trail.id}`)
 const handleFav = ({ trail, isFavorite }) => console.log(`${isFavorite ? '收藏' : '取消'}:`, trail.name)
 
-onMounted(() => {
+onMounted(async () => {
   fetchGreenways()
   if (route.query.search === 'true') showFilter.value = true
+  // 静默获取位置（不阻塞加载）
+  fetchLocation(true)
 })
 </script>
 
@@ -221,6 +307,18 @@ onMounted(() => {
 }
 .icon-btn.active { background: var(--fill-primary); color: var(--color-primary); }
 .icon-btn:active { transform: scale(0.9); }
+
+/* 定位状态标签 */
+.loc-badge {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: var(--font-weight-medium);
+  cursor: pointer; border: 1px solid var(--color-border);
+  color: var(--color-text-tertiary); background: var(--color-surface-2);
+  transition: all var(--transition-fast);
+}
+.loc-badge.loc-active { color: var(--color-primary); background: var(--fill-primary); border-color: var(--color-primary); }
+.loc-badge.loc-loading { color: var(--color-warning); border-color: var(--color-warning); }
 
 /* 搜索框 */
 .search-wrap {

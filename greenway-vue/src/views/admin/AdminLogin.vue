@@ -104,6 +104,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminAuth } from '@/stores/adminAuth'
+import { getApiBaseUrl } from '@/mobile/services/api'
 
 const router = useRouter()
 const { setSession, isLoggedIn } = useAdminAuth()
@@ -131,7 +132,7 @@ async function handleLogin() {
   if (!validate()) return
   loading.value = true
   try {
-    const res = await fetch('/api/auth/admin/login', {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: form.username, password: form.password }),
@@ -143,8 +144,8 @@ async function handleLogin() {
     // 登录成功，保存 session
     setSession(data.data.token, data.data.user)
     
-    // 强制刷新页面并跳转到后台，确保状态完全同步
-    window.location.href = '/admin/dashboard'
+    // 强制跳转到后台，确保状态完全同步
+    router.replace('/admin/dashboard')
   } catch (e) {
     loginError.value = e.message
   } finally {

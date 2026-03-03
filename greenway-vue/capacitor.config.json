@@ -4,8 +4,7 @@
   "webDir": "dist",
   "server": {
     "androidScheme": "http",
-    "cleartext": true,
-    "url": "http://10.0.2.2:5173"
+    "cleartext": true
   },
   "android": {
     "buildOptions": {

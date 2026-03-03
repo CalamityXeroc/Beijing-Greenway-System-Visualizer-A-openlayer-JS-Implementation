@@ -30,6 +30,8 @@ export const greenwayColorMap = {
   '营城建都绿道': '#FBC02D'
 };
 
+import { getApiBaseUrl } from '../mobile/services/api'
+
 /**
  * 从 API 加载绿道数据并更新界面
  * @param {string} greenwayName - 绿道名称
@@ -37,7 +39,7 @@ export const greenwayColorMap = {
  */
 export async function loadGreenwayDataByName(greenwayName, updateCallback) {
   try {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+    const apiBase = getApiBaseUrl()
     const response = await fetch(
       `${apiBase}/api/greenways?name=${encodeURIComponent(greenwayName)}`
     );

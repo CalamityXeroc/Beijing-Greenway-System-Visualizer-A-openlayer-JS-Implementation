@@ -14,7 +14,7 @@
       <!-- 左侧信息栏 -->
       <div class="left-sidebar">
         <img 
-          src="/images/wenyu-hero.svg" 
+          src="/49f1f0c245a64fb1970046d610d3f0a5.jpeg" 
           alt="温榆河绿道景观" 
           class="feature-image"
           @error="handleImageError"

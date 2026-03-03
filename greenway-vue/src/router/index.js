@@ -39,6 +39,18 @@ const routes = [
         name: 'MobileProfile',
         component: () => import('@/mobile/views/ProfileView.vue'),
         meta: { title: '个人中心' }
+      },
+      {
+        path: 'login',
+        name: 'MobileLogin',
+        component: () => import('@/mobile/views/LoginView.vue'),
+        meta: { title: '登录' }
+      },
+      {
+        path: 'register',
+        name: 'MobileRegister',
+        component: () => import('@/mobile/views/RegisterView.vue'),
+        meta: { title: '注册' }
       }
     ]
   },

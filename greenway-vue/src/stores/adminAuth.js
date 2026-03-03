@@ -1,6 +1,7 @@
 // src/stores/adminAuth.js
 // 管理员会话状态管理（无 Pinia 依赖，使用 Vue 3 单例 reactive）
 import { reactive, computed } from 'vue'
+import { getApiBaseUrl } from '../mobile/services/api'
 
 const KEY_TOKEN = 'greenway_admin_token'
 const KEY_USER  = 'greenway_admin_user'
@@ -37,7 +38,10 @@ export function useAdminAuth() {
 
   /** 通用请求封装，自动携带 Bearer token */
   async function apiFetch(path, options = {}) {
-    const res = await fetch(path, {
+    const baseUrl = getApiBaseUrl()
+    const fullPath = path.startsWith('http') ? path : `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`
+
+    const res = await fetch(fullPath, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
