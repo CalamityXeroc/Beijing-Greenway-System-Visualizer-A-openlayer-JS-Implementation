@@ -34,11 +34,19 @@
         </nav>
 
         <div class="lp-header__actions">
-          <!-- 未登录：显示登录按钮 -->
-          <template v-if="!userAuth.isLoggedIn.value">
+          <!-- 未登录且非管理员：显示登录按钮 -->
+          <template v-if="!userAuth.isLoggedIn.value && !adminIsLoggedIn">
             <a href="/login" class="btn-ghost">登录</a>
           </template>
-          <!-- 已登录：显示头像+昵称+退出 -->
+          <!-- 管理员已登录，前台用户未登录 -->
+          <template v-else-if="adminIsLoggedIn && !userAuth.isLoggedIn.value">
+            <div class="lp-user-area">
+              <span class="lp-avatar lp-avatar--admin">管</span>
+              <span class="lp-nickname">{{ adminUser?.username || '管理员' }}</span>
+              <a href="/admin/dashboard" class="lp-admin-link" title="进入后台">后台</a>
+            </div>
+          </template>
+          <!-- 前台用户已登录：显示头像+昵称+退出 -->
           <template v-else>
             <div class="lp-user-area">
               <span class="lp-avatar">{{ userAuth.nickname.value?.[0] || 'U' }}</span>
@@ -354,9 +362,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useUserAuth } from '@/stores/userAuth'
+import { useAdminAuth } from '@/stores/adminAuth'
 import { useRouter } from 'vue-router'
 
 const userAuth = useUserAuth()
+const { isLoggedIn: adminIsLoggedIn, adminUser } = useAdminAuth()
 const router = useRouter()
 
 function handleLogout() {
@@ -377,16 +387,24 @@ function goTo(index) {
   if (target === currentPage.value) return
   isAnimating = true
   currentPage.value = target
-  // 与 CSS transition 时长 (0.9s) 对应，留少量余量
-  setTimeout(() => { isAnimating = false }, 950)
+  // 与 CSS transition 时长 (0.6s) 对应，留少量余量
+  setTimeout(() => { isAnimating = false }, 650)
 }
 
 // 鼠标滚轮 —— { passive: false } 才能 preventDefault
+let wheelAccum = 0
+let wheelTimer = null
 function onWheel(e) {
   e.preventDefault()
-  if (isAnimating) return
-  if (e.deltaY > 0) goTo(currentPage.value + 1)
-  else             goTo(currentPage.value - 1)
+  // 累积滚动量，在一个短时间窗口内汇总方向
+  wheelAccum += e.deltaY
+  clearTimeout(wheelTimer)
+  wheelTimer = setTimeout(() => {
+    if (isAnimating) { wheelAccum = 0; return }
+    if (wheelAccum > 0) goTo(currentPage.value + 1)
+    else if (wheelAccum < 0) goTo(currentPage.value - 1)
+    wheelAccum = 0
+  }, 50)
 }
 
 // 键盘方向键 / PageUp / PageDown
@@ -541,6 +559,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (animFrameId) cancelAnimationFrame(animFrameId)
+  if (wheelTimer) clearTimeout(wheelTimer)
   window.removeEventListener('wheel', onWheel)
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('touchstart', onTouchStart)
@@ -643,6 +662,14 @@ onBeforeUnmount(() => {
   border-radius: 4px; transition: color 0.2s; flex-shrink: 0;
 }
 .lp-logout-btn:hover { color: #EF9A9A; }
+.lp-avatar--admin { background: linear-gradient(135deg, #C05621, #92400e); color: #fbd38d; }
+.lp-admin-link {
+  font-size: 0.8rem; font-weight: 600; color: #fbd38d;
+  text-decoration: none; padding: 2px 8px; border-radius: 10px;
+  background: rgba(192,86,33,0.25); border: 1px solid rgba(192,86,33,0.4);
+  transition: background 0.2s;
+}
+.lp-admin-link:hover { background: rgba(192,86,33,0.45); }
 
 /* ── 通用按钮 ── */
 .btn-ghost {
@@ -710,7 +737,7 @@ onBeforeUnmount(() => {
 .fp-slider {
   width: 100%;
   /* 核心：平滑贝塞尔过渡 */
-  transition: transform 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
   will-change: transform;
 }
 /* 每个 Section 恰好占满一屏 */

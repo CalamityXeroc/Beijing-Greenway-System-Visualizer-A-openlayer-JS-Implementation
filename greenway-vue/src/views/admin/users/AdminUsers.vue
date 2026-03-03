@@ -413,7 +413,8 @@ tr:last-child td { border-bottom: none; }
 /* ===== 夜间模式 ===== */
 [data-theme="night"] .page-title { color: #e8e8e8; }
 [data-theme="night"] .page-desc  { color: #9ca3af; }
-[data-theme="night"] .filter-bar {
+[data-theme="night"] .filter-bar,
+[data-theme="night"] .toolbar {
   background: #1e1e1e; border: 1px solid #2a2a2a;
 }
 [data-theme="night"] .search-input {

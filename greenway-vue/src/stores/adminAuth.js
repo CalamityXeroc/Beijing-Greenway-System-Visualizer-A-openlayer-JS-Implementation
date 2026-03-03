@@ -6,15 +6,9 @@ import { getApiBaseUrl } from '../mobile/services/api'
 const KEY_TOKEN = 'greenway_admin_token'
 const KEY_USER  = 'greenway_admin_user'
 
-// 清理旧版遗留的 localStorage，防止干扰
-if (localStorage.getItem(KEY_TOKEN)) {
-  localStorage.removeItem(KEY_TOKEN)
-  localStorage.removeItem(KEY_USER)
-}
-
 const state = reactive({
-  token: sessionStorage.getItem(KEY_TOKEN) || null,
-  user:  JSON.parse(sessionStorage.getItem(KEY_USER) || 'null'),
+  token: localStorage.getItem(KEY_TOKEN) || null,
+  user:  JSON.parse(localStorage.getItem(KEY_USER) || 'null'),
 })
 
 export function useAdminAuth() {
@@ -25,15 +19,15 @@ export function useAdminAuth() {
   function setSession(token, user) {
     state.token = token
     state.user  = user
-    sessionStorage.setItem(KEY_TOKEN, token)
-    sessionStorage.setItem(KEY_USER,  JSON.stringify(user))
+    localStorage.setItem(KEY_TOKEN, token)
+    localStorage.setItem(KEY_USER,  JSON.stringify(user))
   }
 
   function clearSession() {
     state.token = null
     state.user  = null
-    sessionStorage.removeItem(KEY_TOKEN)
-    sessionStorage.removeItem(KEY_USER)
+    localStorage.removeItem(KEY_TOKEN)
+    localStorage.removeItem(KEY_USER)
   }
 
   /** 通用请求封装，自动携带 Bearer token */

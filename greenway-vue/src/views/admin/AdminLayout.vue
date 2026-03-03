@@ -136,8 +136,9 @@ function confirmLogout() {
 <style scoped>
 .admin-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
+  overflow: hidden;
   background: #f0f2f5;
 }
 
@@ -231,18 +232,20 @@ function confirmLogout() {
   transition: margin-left 0.25s;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 .admin-shell.collapsed .main-wrap { margin-left: 64px; }
 
 /* 顶部栏 */
 .topbar {
   height: 56px;
+  flex: 0 0 56px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
   display: flex; align-items: center; gap: 12px;
   padding: 0 20px;
-  position: sticky; top: 0; z-index: 50;
+  z-index: 50;
 }
 .collapse-btn {
   background: none; border: none;

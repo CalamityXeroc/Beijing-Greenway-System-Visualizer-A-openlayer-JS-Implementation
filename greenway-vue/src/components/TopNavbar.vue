@@ -18,6 +18,15 @@
       </div>
     </div>
 
+    <!-- 返回主界面 -->
+    <a href="/" class="back-home-btn" title="返回主界面">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+      <span>主界面</span>
+    </a>
+
     <!-- 中：工具菜单 -->
     <div class="nav-tools" v-if="toolbarRef">
       <!-- 绘制工具 -->
@@ -64,6 +73,87 @@
             </svg>
             清除绘制
           </button>
+
+          <!-- 颜色样式面板：激活工具后出现 -->
+          <template v-if="drawStyles && (localDrawType === 'point' || localDrawType === 'line' || localDrawType === 'polygon')">
+            <div class="dd-divider"/>
+            <div class="dropdown-section">样式设置</div>
+
+            <!-- 点样式 -->
+            <template v-if="localDrawType === 'point'">
+              <div class="dd-style-row">
+                <span class="dd-style-label">填充</span>
+                <label class="dd-color-swatch">
+                  <span class="swatch-dot" :style="{ background: drawStyles.point.fillColor }"/>
+                  <input type="color" :value="drawStyles.point.fillColor"
+                         @input="drawStyles.point.fillColor = $event.target.value" />
+                </label>
+                <span class="dd-style-label" style="margin-left:6px">描边</span>
+                <label class="dd-color-swatch">
+                  <span class="swatch-dot" :style="{ background: drawStyles.point.strokeColor }"/>
+                  <input type="color" :value="drawStyles.point.strokeColor"
+                         @input="drawStyles.point.strokeColor = $event.target.value" />
+                </label>
+              </div>
+              <div class="dd-style-row">
+                <span class="dd-style-label" style="min-width:30px">半径</span>
+                <input type="range" class="dd-range" :value="drawStyles.point.radius" min="3" max="20"
+                       @input="drawStyles.point.radius = +$event.target.value" />
+                <span class="dd-style-val">{{ drawStyles.point.radius }}</span>
+              </div>
+            </template>
+
+            <!-- 线样式 -->
+            <template v-if="localDrawType === 'line'">
+              <div class="dd-style-row">
+                <span class="dd-style-label">颜色</span>
+                <label class="dd-color-swatch">
+                  <span class="swatch-dot" :style="{ background: drawStyles.line.color }"/>
+                  <input type="color" :value="drawStyles.line.color"
+                         @input="drawStyles.line.color = $event.target.value" />
+                </label>
+              </div>
+              <div class="dd-style-row">
+                <span class="dd-style-label" style="min-width:30px">线宽</span>
+                <input type="range" class="dd-range" :value="drawStyles.line.width" min="1" max="12"
+                       @input="drawStyles.line.width = +$event.target.value" />
+                <span class="dd-style-val">{{ drawStyles.line.width }}</span>
+              </div>
+              <div class="dd-style-row">
+                <span class="dd-style-label" style="min-width:30px">线型</span>
+                <select class="dd-select" :value="drawStyles.line.dash"
+                        @change="drawStyles.line.dash = $event.target.value">
+                  <option value="solid">实线</option>
+                  <option value="dash">虚线</option>
+                  <option value="dot">点线</option>
+                </select>
+              </div>
+            </template>
+
+            <!-- 面样式 -->
+            <template v-if="localDrawType === 'polygon'">
+              <div class="dd-style-row">
+                <span class="dd-style-label">填充</span>
+                <label class="dd-color-swatch">
+                  <span class="swatch-dot" :style="{ background: drawStyles.polygon.fillColor }"/>
+                  <input type="color" :value="drawStyles.polygon.fillColor"
+                         @input="drawStyles.polygon.fillColor = $event.target.value" />
+                </label>
+                <span class="dd-style-label" style="margin-left:6px">边线</span>
+                <label class="dd-color-swatch">
+                  <span class="swatch-dot" :style="{ background: drawStyles.polygon.strokeColor }"/>
+                  <input type="color" :value="drawStyles.polygon.strokeColor"
+                         @input="drawStyles.polygon.strokeColor = $event.target.value" />
+                </label>
+              </div>
+              <div class="dd-style-row">
+                <span class="dd-style-label" style="min-width:30px">透明</span>
+                <input type="range" class="dd-range" :value="drawStyles.polygon.fillOpacity" min="0" max="1" step="0.05"
+                       @input="drawStyles.polygon.fillOpacity = +$event.target.value" />
+                <span class="dd-style-val">{{ Math.round(drawStyles.polygon.fillOpacity * 100) }}%</span>
+              </div>
+            </template>
+          </template>
         </div>
       </div>
 
@@ -159,6 +249,17 @@
               </svg>
             </button>
           </div>
+          <!-- 导出 -->
+          <div class="dd-divider"/>
+          <div class="dropdown-section">导出</div>
+          <button class="dd-btn dd-btn--export" @click="callTool('exportMapImage')">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            导出地图图片 PNG
+          </button>
         </div>
       </div>
 
@@ -207,8 +308,8 @@
     <!-- 右：登录入口 -->
     <div class="nav-right">
       <div class="user-menu" @mouseenter="openMenu('user')" @mouseleave="closeMenu('user')">
-        <!-- 未登录 -->
-        <button v-if="!userAuth.isLoggedIn.value" class="user-btn">
+        <!-- 未登录且非管理员 -->
+        <button v-if="!userAuth.isLoggedIn.value && !adminIsLoggedIn" class="user-btn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -218,7 +319,14 @@
           <svg class="chevron" viewBox="0 0 24 24" width="11" height="11" fill="none"
                stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <!-- 已登录 -->
+        <!-- 管理员已登录，前台账号未登录 -->
+        <button v-else-if="adminIsLoggedIn && !userAuth.isLoggedIn.value" class="user-btn user-btn--loggedin">
+          <span class="avatar avatar--admin">管</span>
+          <span>{{ adminUser?.username || '管理员' }}</span>
+          <svg class="chevron" viewBox="0 0 24 24" width="11" height="11" fill="none"
+               stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <!-- 前台用户已登录 -->
         <button v-else class="user-btn user-btn--loggedin">
           <span class="avatar">{{ userAuth.nickname.value?.[0] || 'U' }}</span>
           <span>{{ userAuth.nickname.value }}</span>
@@ -313,18 +421,31 @@ const filteredLayerConfig = computed(() =>
 )
 
 const userAuth = useUserAuth()
-const { isLoggedIn: adminIsLoggedIn } = useAdminAuth()
+const { isLoggedIn: adminIsLoggedIn, adminUser } = useAdminAuth()
 const openMenuId = ref(null)
 const fileInputRef = ref(null)
 
 // 主题状态：读取全局主题，不依赖 toolbarRef
 const { theme: globalTheme } = useGlobalTheme()
 const isNight = computed(() => globalTheme.value === 'night')
-// 绘制激活状态
-const isDrawActive = computed(() => {
-  const t = props.toolbarRef?.activeTool?.value
-  return t === 'point' || t === 'line' || t === 'polygon'
+
+// ---------- 本地绘制状态（可靠响应式）----------
+// 不依赖穿透组件 proxy 读取 toolbarRef.activeTool.value，
+// 而是在 callTool 里主动维护，确保 v-if 条件稳定更新
+const localDrawType = ref(null)  // 'point' | 'line' | 'polygon' | null
+
+// 直接从 toolbarRef 取 drawStyles 响应式对象（用于颜色面板双向绑定）
+// drawStyles 在 MapToolbar 里是 reactive({...})，通过 defineExpose 暴露后直接是响应式对象
+const drawStyles = computed(() => {
+  if (props.toolbarRef && props.toolbarRef.drawStyles) {
+    return props.toolbarRef.drawStyles;
+  }
+  return null;
 })
+
+const isDrawActive = computed(() =>
+  localDrawType.value === 'point' || localDrawType.value === 'line' || localDrawType.value === 'polygon'
+)
 const isMeasureActive = computed(() => {
   const t = props.toolbarRef?.activeTool?.value
   return t === 'measure-length' || t === 'measure-area'
@@ -337,13 +458,21 @@ function openMenu(id) {
   openMenuId.value = id
 }
 function closeMenu() {
-  closeTimer = setTimeout(() => { openMenuId.value = null }, 120)
+  closeTimer = setTimeout(() => { openMenuId.value = null }, 150)
 }
 
-// 调用工具栏方法
+// 调用工具栏方法，并同步本地绘制状态
 function callTool(method, ...args) {
   if (props.toolbarRef && typeof props.toolbarRef[method] === 'function') {
     props.toolbarRef[method](...args)
+  }
+  // 同步本地绘制类型状态
+  if (method === 'activateDrawTool') {
+    const type = args[0]
+    // 再次点击同一工具 = 关闭
+    localDrawType.value = localDrawType.value === type ? null : type
+  } else if (method === 'activateMeasureTool' || method === 'clearDrawings') {
+    localDrawType.value = null
   }
 }
 
@@ -351,7 +480,6 @@ function triggerUpload() {
   fileInputRef.value?.click()
 }
 function onFileChange(e) {
-  // 构造一个假事件转发给 handleFileUpload（模拟）
   if (props.toolbarRef && typeof props.toolbarRef.handleFileUpload === 'function') {
     props.toolbarRef.handleFileUpload(e)
   }
@@ -406,12 +534,39 @@ function handleLogout() {
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  margin-right: 24px;
+  margin-right: 8px;
 }
 .brand-logo { display: flex; align-items: center; }
 .brand-text  { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-title { font-size: 1.05rem; font-weight: 800; color: #1B5E20; letter-spacing: 1px; white-space: nowrap; }
 .brand-sub   { font-size: 0.62rem; color: #81C784; font-weight: 400; letter-spacing: 0.5px; }
+
+/* 返回主界面按钮 */
+.back-home-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; height: 34px; flex-shrink: 0; margin-right: 16px;
+  border-radius: 17px;
+  border: 1px solid rgba(46,125,50,0.25);
+  background: rgba(46,125,50,0.05);
+  color: #2E7D32; font-size: 0.82rem; font-weight: 500;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.back-home-btn:hover {
+  background: rgba(46,125,50,0.12);
+  border-color: rgba(46,125,50,0.5);
+  color: #1B5E20;
+}
+.top-navbar.theme-night .back-home-btn {
+  border-color: rgba(76,175,80,0.3);
+  background: rgba(76,175,80,0.06);
+  color: #81C784;
+}
+.top-navbar.theme-night .back-home-btn:hover {
+  background: rgba(76,175,80,0.15);
+  border-color: rgba(76,175,80,0.55);
+  color: #A5D6A7;
+}
 
 /* === Tool nav center === */
 .nav-tools {
@@ -458,7 +613,7 @@ function handleLogout() {
   z-index: 9999;
   padding: 6px 0;
 }
-.dropdown--wide { min-width: 200px; }
+.dropdown--wide { min-width: 220px; }
 .dropdown--right { left: auto; right: 0; }
 
 .dropdown-section {
@@ -504,6 +659,93 @@ function handleLogout() {
 }
 .dd-del:hover { color: #dc2626; }
 
+/* === 导出按钮 === */
+.dd-btn--export { color: #1d4ed8; }
+.dd-btn--export:hover { background: #eff6ff; }
+
+/* === 绘制样式面板 === */
+.dd-style-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px;
+}
+.dd-style-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dd-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dd-color-swatch input[type="color"] {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.swatch-dot {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,0.12);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform .15s;
+}
+.dd-color-swatch:hover .swatch-dot {
+  transform: scale(1.15);
+  border-color: rgba(0,0,0,0.3);
+}
+/* 点击色点时透明 input 接管点击 */
+.dd-color-swatch {
+  position: relative;
+}
+.dd-color-swatch input[type="color"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.dd-range {
+  flex: 1;
+  accent-color: #2E7D32;
+  height: 4px;
+  cursor: pointer;
+}
+.dd-style-val {
+  font-size: 0.75rem;
+  color: #374151;
+  min-width: 28px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.dd-select {
+  flex: 1;
+  padding: 3px 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #374151;
+  background: #fff;
+  cursor: pointer;
+}
+/* 夜间模式适配 */
+.top-navbar.theme-night .dd-btn--export { color: #93c5fd; }
+.top-navbar.theme-night .dd-btn--export:hover { background: rgba(59,130,246,.12); }
+.top-navbar.theme-night .dd-style-label { color: #6b7280; }
+.top-navbar.theme-night .dd-select { background: #1a2e1a; border-color: rgba(76,175,80,.3); color: #A5D6A7; }
+.top-navbar.theme-night .dd-style-val { color: #A5D6A7; }
+
 /* === Right user menu === */
 .nav-right { margin-left: auto; flex-shrink: 0; }
 .user-menu { position: relative; }
@@ -526,6 +768,7 @@ function handleLogout() {
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
 }
+.avatar--admin { background: #C05621; }
 /* user dropdown header */
 .dd-user-header {
   display: flex; align-items: center; gap: 10px;

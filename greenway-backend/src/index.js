@@ -278,6 +278,29 @@ app.use((err, req, res, next) => {
   res.status(500).json({ status: 'error', message: '服务器错误' });
 });
 
+// ===== 高德地图瓦片代理（解决 CORS 问题，使地图截图可包含底图） =====
+app.get('/api/tiles/gaode', async (req, res) => {
+  const { x, y, z, style = 8 } = req.query;
+  if (!x || !y || !z) return res.status(400).json({ error: 'Missing x/y/z' });
+  const server = (parseInt(x) + parseInt(y)) % 4 + 1;
+  const tileUrl = `https://webrd0${server}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=${style}&x=${x}&y=${y}&z=${z}`;
+  try {
+    const response = await fetch(tileUrl, {
+      headers: { 'Referer': 'https://www.amap.com/', 'User-Agent': 'Mozilla/5.0' }
+    });
+    if (!response.ok) return res.status(response.status).send();
+    const buffer = await response.arrayBuffer();
+    const ct = response.headers.get('content-type') || 'image/jpeg';
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Content-Type', ct);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(Buffer.from(buffer));
+  } catch (e) {
+    console.error('[瓦片代理] 错误:', e.message);
+    res.status(502).send();
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`[服务器] ✓ 后端已启动`);
