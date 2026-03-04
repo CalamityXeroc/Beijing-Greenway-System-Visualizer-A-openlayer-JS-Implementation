@@ -3,6 +3,7 @@ import cors from 'cors';
 import pg from 'pg';
 import dotenv from 'dotenv';
 import authRouter from './auth.js';
+import aiRouter from './routes/ai.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -27,6 +28,9 @@ app.use((req, _res, next) => { req.pool = pool; next(); });
 
 // 挂载认证与用户管理路由
 app.use('/api', authRouter);
+
+// 挂载 AI 助手路由
+app.use('/api/ai', aiRouter);
 
 // 健康检查
 app.get('/health', async (req, res) => {

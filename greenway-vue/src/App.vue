@@ -12,6 +12,9 @@
           <component :is="Component" />
         </transition>
       </router-view>
+
+      <!-- AI 绿道助手浮窗 -->
+      <AIChatbot />
     </div>
   </div>
 </template>
@@ -20,6 +23,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useGlobalTheme } from '@/utils/useTheme'
+import AIChatbot from '@/components/AIChatbot.vue'
 import { useAdminAuth } from '@/stores/adminAuth'
 import { 
   useMobileOptimization,
