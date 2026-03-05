@@ -22,7 +22,10 @@
           <div class="header-info">
             <div class="header-avatar">🌿</div>
             <div class="header-text">
-              <span class="header-name">绿道小助手</span>
+              <div class="header-name-row">
+                <span class="header-name">绿道小助手</span>
+                <span class="model-badge">DeepSeek</span>
+              </div>
               <span class="header-status">
                 <span class="status-dot" />
                 在线服务中
@@ -107,7 +110,7 @@
               :disabled="isLoading"
               placeholder="输入问题，例如：推荐一条适合骑行的绿道…"
               rows="1"
-              @keydown.enter.prevent="handleEnter"
+              @keydown.enter="handleEnter"
               @focus="inputFocused = true"
               @blur="inputFocused = false"
               @input="autoResize"
@@ -219,7 +222,8 @@ const clearChat = () => {
 
 /* ─────────────────────────── 发消息 ─────────────────────────── */
 const handleEnter = (e) => {
-  if (e.shiftKey) return  // Shift+Enter 换行
+  if (e.shiftKey) return  // Shift+Enter：不阻止默认行为，浏览器自动换行
+  e.preventDefault()      // 单独 Enter：阻止默认换行，改为发送消息
   sendMessage()
 }
 
@@ -382,10 +386,27 @@ const autoResize = () => {
   flex-direction: column;
 }
 
+.header-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .header-name {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
+}
+
+.model-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #d1fae5;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .header-status {
@@ -748,6 +769,30 @@ textarea::placeholder {
 
 :global([data-theme="night"]) .user-avatar {
   background: #1e1b4b;
+}
+
+:global([data-theme="night"]) .msg-bubble.user {
+  background: linear-gradient(135deg, #16a34a, #166534);
+}
+
+:global([data-theme="night"]) .msg-time {
+  color: #6b7280;
+}
+
+:global([data-theme="night"]) .dot {
+  background: #4ade80;
+}
+
+:global([data-theme="night"]) .input-hint {
+  color: #4b5563;
+}
+
+:global([data-theme="night"]) .send-btn:disabled {
+  background: #374151;
+}
+
+:global([data-theme="night"]) .chatbot-messages::-webkit-scrollbar-thumb {
+  background: #374151;
 }
 
 /* ======================== 移动端响应式 ======================== */

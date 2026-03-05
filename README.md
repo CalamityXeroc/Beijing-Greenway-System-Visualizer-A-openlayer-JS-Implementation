@@ -4,6 +4,7 @@
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)
 ![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2-blue.svg)
+![DeepSeek](https://img.shields.io/badge/AI-DeepSeek%20V3.2-purple.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 A modern WebGIS platform for exploring Beijing's greenway network, built with Vue 3 + OpenLayers + PostgreSQL/PostGIS.
@@ -52,7 +53,9 @@ Interactive visualization of **12 major Beijing greenways** featuring a fullscre
 -  Map canvas export to PNG
 -  Back-to-homepage button in map navigation bar
 -  User login / registration system
--  Full dark theme + responsive design
+-  Full site day/night theme (auto-switches by Beijing time) + responsive design
+-  **AI Assistant (绿道小助手)**: Powered by DeepSeek V3.2, **shown only on map/detail pages**, supports route recommendations, tutorials, and Q&A; conversations logged to database
+-  **Admin AI Chat Analytics**: Word cloud + daily trend chart + recent messages log, with day/night theme support (ECharts + echarts-wordcloud, Chinese NLP via `segment`)
 -  Capacitor-based mobile app (experimental)
 
 ---
@@ -71,8 +74,9 @@ Opens two terminals  backend on port **3001** and frontend on port **5173**.
 ```bash
 cd greenway-backend
 npm install
-npm run db:init   # initialise PostgreSQL + PostGIS tables
-npm run dev       # http://localhost:3001
+npm run db:init        # initialise PostgreSQL + PostGIS tables
+npm run db:chat-logs  # create AI chat logs table
+npm run dev            # http://localhost:3001
 ```
 
 **Frontend (new terminal):**
@@ -94,7 +98,9 @@ npm run dev       # http://localhost:5173
 |  **Map Export** | Export current map view as PNG image |
 |  **12 Greenways** | Individual detail pages with attributes & street panorama |
 |  **Real-time Weather** | Draggable weather widget (Amap API) |
-|  **Dark Mode** | Full-site dark theme (`#060d14` base), admin panel fully themed |
+|  **AI Assistant** | Map/detail-only floating chatbot (DeepSeek V3.2), conversations logged to DB |
+|  **AI Chat Analytics** | Admin: word cloud + daily trend + recent messages, dual day/night theme |
+|  **Day/Night Theme** | Full-site theme auto-switches by Beijing time; admin panel fully themed |
 |  **Admin Panel** | JWT auth (localStorage), dashboard, user management, logs |
 |  **User Auth** | Public user registration and login |
 |  **Mobile App** | Capacitor + Vue 3, auto-detected on native platform |
@@ -108,7 +114,12 @@ npm run dev       # http://localhost:5173
     src/
        index.js            # API entry point
        db.js               # PostgreSQL connection pool
-    scripts/                # DB init & GeoJSON import utilities
+       routes/
+          ai.js            # DeepSeek chat API + chat_logs INSERT
+          adminAiStats.js  # Admin AI analytics (word cloud & trends)
+    scripts/
+       add-chat-logs-table.js  # DB migration: chat_logs table
+       ...                     # DB init & GeoJSON import utilities
     init-db.sql             # Schema + PostGIS setup
 
  greenway-vue/               # Vue 3 frontend (Vite)
@@ -120,14 +131,17 @@ npm run dev       # http://localhost:5173
           UserLogin.vue            # /login
           UserRegister.vue         # /register
           admin/                   # /admin/* (auth-protected)
+              aistats/AiChatStats.vue  # AI chat analytics dashboard
        components/
           TopNavbar.vue            # Navigation bar + layer dropdown
           MapViewer.vue            # OpenLayers map wrapper
           MapToolbar.vue           # GIS tools (draw/measure/layers)
           WeatherCard.vue          # Draggable weather widget
           PanoramaViewer.vue       # Street panorama viewer
+          AIChatbot.vue             # AI floating window (map pages only)
        stores/
-          adminAuth.js             # Pinia store (JWT, sessionStorage)
+          adminAuth.js             # Pinia store (JWT, localStorage)
+          userAuth.js              # Public user auth
        router/index.js              # Routes + navigation guards
     public/数据/                     # GeoJSON geometry files
 
@@ -163,6 +177,7 @@ npm run dev       # http://localhost:5173
 | `/admin/dashboard` | AdminDashboard | Admin overview *(auth required)* |
 | `/admin/users` | AdminUsers | User management *(auth required)* |
 | `/admin/logs` | AdminLogs | System logs *(auth required)* |
+| `/admin/ai-stats` | AiChatStats | AI chat analytics *(auth required)* |
 | `/mobile/*` | MobileLayout | Mobile app (Capacitor) |
 
 ---
@@ -190,7 +205,13 @@ npm run dev       # http://localhost:5173
 
 ```http
 GET /api/greenways              # all greenways (summary list)
-GET /api/greenways?name=温榆河  # filter by name  GeoJSON FeatureCollection
+GET /api/greenways?name=温榆河  # filter by name → GeoJSON FeatureCollection
+POST /api/ai/chat               # AI conversation (DeepSeek V3.2)
+DELETE /api/ai/context/:id      # clear conversation history
+
+# Admin routes (Bearer JWT required)
+GET /api/admin/ai-stats?days=7  # word cloud + daily trend (7/14/30d)
+GET /api/admin/ai-stats/recent  # recent raw messages
 ```
 
 ```bash
@@ -215,6 +236,16 @@ CREATE TABLE greenways (
 );
 ```
 
+```sql
+-- AI chat logs (source for admin analytics dashboard)
+CREATE TABLE chat_logs (
+  id              SERIAL PRIMARY KEY,
+  conversation_id TEXT,
+  message         TEXT NOT NULL,
+  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 - **Geometry:** `MultiLineString` preserves independent segments
 - **CRS:** SRID 4326 (WGS 84)
 - **Spatial API:** PostGIS `ST_AsGeoJSON()` for GeoJSON serialization
@@ -231,6 +262,7 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 PORT=3001
 JWT_SECRET=your_jwt_secret
+DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
 **Frontend (`greenway-vue/.env.local`)**
@@ -270,8 +302,11 @@ VITE_API_BASE=http://localhost:3001
 |-------|-----------|
 | Frontend framework | Vue 3.4 + Vite 5 + Pinia |
 | Map engine | OpenLayers 8.2 |
-| Backend | Node.js 18 + Express 4.18 |
-| Database | PostgreSQL 18 + PostGIS 3.6 |
+| Charts / Word cloud | ECharts 6 + echarts-wordcloud + vue-echarts |
+| AI model | DeepSeek V3.2 (REST API) |
+| Chinese NLP | segment (pure-JS tokenizer) |
+| Backend | Node.js 18+ + Express 4.18 |
+| Database | PostgreSQL 14+ + PostGIS 3.3+ |
 | Mobile | Capacitor 5 |
 | Data format | GeoJSON + MultiLineString (SRID 4326) |
 

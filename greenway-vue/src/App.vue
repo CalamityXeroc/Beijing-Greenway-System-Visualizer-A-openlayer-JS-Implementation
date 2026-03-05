@@ -13,8 +13,8 @@
         </transition>
       </router-view>
 
-      <!-- AI 绿道助手浮窗 -->
-      <AIChatbot />
+      <!-- AI 绿道助手浮窗（仅在地图界面显示） -->
+      <AIChatbot v-if="showChatbot" />
     </div>
   </div>
 </template>
@@ -39,6 +39,16 @@ const { theme } = useGlobalTheme()
 
 // 获取当前路由
 const route = useRoute()
+
+// 仅在地图界面（绿道详情/总览页）显示 AI 助手
+const showChatbot = computed(() => {
+  const p = route.path
+  return !p.startsWith('/mobile')
+    && p !== '/'
+    && p !== '/login'
+    && p !== '/register'
+    && !p.startsWith('/admin')
+})
 
 // 获取移动端优化工具
 const mobileOpt = useMobileOptimization()

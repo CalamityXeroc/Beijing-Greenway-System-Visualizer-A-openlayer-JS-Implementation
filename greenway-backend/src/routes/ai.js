@@ -125,6 +125,14 @@ router.post('/chat', async (req, res) => {
       history.splice(0, 2)
     }
 
+    // 非阻塞写入对话日志（不影响主流程，失败静默忽略）
+    if (req.pool) {
+      req.pool.query(
+        'INSERT INTO chat_logs (conversation_id, message) VALUES ($1, $2)',
+        [cid, msgText]
+      ).catch(err => console.warn('[AI 日志] 写入失败（忽略）:', err.message))
+    }
+
     return res.json({
       reply,
       conversationId: cid

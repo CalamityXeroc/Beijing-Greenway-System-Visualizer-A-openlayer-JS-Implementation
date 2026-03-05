@@ -1,9 +1,10 @@
-﻿# 北京绿道信息可视化平台
+﻿# 北京绿道系统可视化平台
 
 ![Vue](https://img.shields.io/badge/Vue-3.4.0-brightgreen.svg)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)
 ![OpenLayers](https://img.shields.io/badge/OpenLayers-8.2-blue.svg)
+![DeepSeek](https://img.shields.io/badge/AI-DeepSeek%20V3.2-purple.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 基于 Vue 3 + OpenLayers + PostgreSQL/PostGIS 的现代 WebGIS 平台，交互式探索北京绿道网络。
@@ -52,7 +53,9 @@
 -  地图画布导出为 PNG 图片
 -  地图界面"返回主界面"快捷按钮
 -  用户注册与登录系统
--  全站深色主题（后台管理深色模式完整支持）
+- 全站昼夜主题（按北京时间自动切换），管理后台双主题完整适配
+-  **AI 助手（绿道小助手）**：基于 DeepSeek V3.2，**仅在地图 / 详情页显示**，支持路线推荐、操作指引、绿道知识问答，对话自动写入数据库
+-  **管理员 AI 对话分析：** 词云 + 每日趋势折线图 + 最近提问记录，支持昼夜主题自动切换（ECharts + echarts-wordcloud，中文分词使用 `segment` 库）
 -  Capacitor 移动端应用（试验阶段）
 
 ---
@@ -71,8 +74,9 @@
 ```bash
 cd greenway-backend
 npm install
-npm run db:init   # 初始化 PostgreSQL + PostGIS 表结构
-npm run dev       # http://localhost:3001
+npm run db:init         # 初始化 PostgreSQL + PostGIS 表结构
+npm run db:chat-logs   # 创建 AI 对话日志表
+npm run dev            # http://localhost:3001
 ```
 
 **前端（新终端）：**
@@ -94,7 +98,9 @@ npm run dev       # http://localhost:5173
 |  **地图导出** | 将当前地图视图导出为 PNG 图片 |
 |  **12 条绿道** | 每条均有独立详情页、属性信息和全景街景 |
 |  **实时天气** | 可拖动天气组件（高德地图 API） |
-|  **深色主题** | 全站深色配色（`#060d14` 主背景），后台管理界面深色模式完整支持 |
+|  **AI 助手** | 地图页浮窗，DeepSeek V3.2 驱动，对话写入数据库 |
+|  **AI 对话分析** | 管理员：词云 + 折线图 + 最近提问，昼夜主题自动切换 |
+|  **昼夜主题** | 全站昼夜配色，按北京时间自动切换；管理后台双主题完整适配 |
 |  **管理后台** | JWT 认证（localStorage 持久化）、数据概览、用户管理、系统日志 |
 |  **用户系统** | 公众用户注册与登录 |
 |  **移动端** | Capacitor + Vue 3，原生平台自动跳转移动端布局 |
@@ -108,7 +114,12 @@ npm run dev       # http://localhost:5173
     src/
        index.js            # API 入口
        db.js               # PostgreSQL 连接池
-    scripts/                # 数据库初始化与 GeoJSON 导入工具
+       routes/
+          ai.js            # DeepSeek 对话 API + 对话日志入库
+          adminAiStats.js  # 管理员 AI 分析（词云 & 趋势）
+    scripts/
+       add-chat-logs-table.js  # 数据库迁移脚本
+       ...                     # 数据库初始化与导入工具
     init-db.sql             # 表结构 + PostGIS 初始化
 
  greenway-vue/               # Vue 3 前端（Vite）
@@ -120,15 +131,17 @@ npm run dev       # http://localhost:5173
           UserLogin.vue            # /login
           UserRegister.vue         # /register
           admin/                   # /admin/*（权限保护）
+              aistats/AiChatStats.vue  # AI 对话分析看板
        components/
           TopNavbar.vue            # 顶部导航 + 图层下拉菜单
           MapViewer.vue            # OpenLayers 地图封装
           MapToolbar.vue           # GIS 工具（绘图/测量/图层）
           WeatherCard.vue          # 可拖动天气组件
           PanoramaViewer.vue       # 全景街景查看器
+          AIChatbot.vue             # AI 浮窗（仅地图页显示）
        stores/
-          adminAuth.js             # 管理员 Auth（JWT，localStorage 持久化）
-          userAuth.js              # 前台用户 Auth（localStorage 持久化）
+          adminAuth.js             # 管理员 Auth（JWT，localStorage）
+          userAuth.js              # 前台用户 Auth
        router/index.js              # 路由配置 + 导航守卫
     public/数据/                     # GeoJSON 几何数据文件
 
@@ -164,6 +177,7 @@ npm run dev       # http://localhost:5173
 | `/admin/dashboard` | AdminDashboard | 数据概览 *（需登录）* |
 | `/admin/users` | AdminUsers | 用户管理 *（需登录）* |
 | `/admin/logs` | AdminLogs | 系统日志 *（需登录）* |
+| `/admin/ai-stats` | AiChatStats | AI 对话分析 *（需登录）* |
 | `/mobile/*` | MobileLayout | 移动端布局（Capacitor） |
 
 ---
@@ -191,8 +205,12 @@ npm run dev       # http://localhost:5173
 
 ```http
 GET /api/greenways              # 获取所有绿道列表
-GET /api/greenways?name=温榆河  # 按名称筛选，返回 GeoJSON FeatureCollection
-```
+GET /api/greenways?name=温榆河  # 按名称筛选，返回 GeoJSON FeatureCollectionPOST /api/ai/chat               # AI 对话（DeepSeek V3.2）
+DELETE /api/ai/context/:id      # 清除对话历史
+
+# 管理员接口（需 Bearer JWT）
+GET /api/admin/ai-stats?days=7  # 词云 + 每日趋势，支持 7/14/30 天
+GET /api/admin/ai-stats/recent  # 最近原始提问记录```
 
 ```bash
 curl "http://localhost:3001/api/greenways?name=南沙"
@@ -232,6 +250,7 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 PORT=3001
 JWT_SECRET=your_jwt_secret
+DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
 **前端（`greenway-vue/.env.local`）**
@@ -269,11 +288,14 @@ VITE_API_BASE=http://localhost:3001
 
 | 层级 | 技术 |
 |------|------|
-| 前端框架 | Vue 3.4 + Vite 5 |
+| 前端框架 | Vue 3.4 + Vite 5 + Pinia |
 | 地图引擎 | OpenLayers 8.2 |
-| 后端 | Node.js 18 + Express 4.18 |
+| 图表 / 词云 | ECharts 6 + echarts-wordcloud + vue-echarts |
+| AI 模型 | DeepSeek V3.2（REST API） |
+| 中文分词 | segment（纯 JS 分词库） |
+| 后端 | Node.js 18+ + Express 4.18 |
 | 数据库 | PostgreSQL 14+ + PostGIS 3.3+ |
-| 移动端 | Capacitor 6 |
+| 移动端 | Capacitor 5 |
 | 数据格式 | GeoJSON + MultiLineString（SRID 4326） |
 
 ---

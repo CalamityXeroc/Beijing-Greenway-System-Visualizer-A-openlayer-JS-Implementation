@@ -13,6 +13,8 @@
 - ✅ RESTful API 绿道数据查询
 - ✅ GeoJSON 存储和空间查询
 - ✅ PostgreSQL/PostGIS 集成
+- ✅ **AI 助手服务**：基于 DeepSeek V3.2 的智能对话 API，支持对话历史管理；用户消息自动写入 `chat_logs` 表
+- ✅ **管理员 AI 对话分析**：词云 + 每日趋势 + 最近提问记录，中文分词使用 `segment` 库
 - ✅ 环境配置管理
 - ✅ 开发和生产就绪
 
@@ -48,6 +50,8 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 PORT=3001
 NODE_ENV=development
+JWT_SECRET=your_jwt_secret
+DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
 ### 3. 初始化数据库
@@ -97,6 +101,7 @@ npm run dev
 - `npm start` - 启动生产服务器
 - `npm run db:init` - 初始化数据库架构
 - `npm run db:import` - 导入 GeoJSON 数据
+- `npm run db:chat-logs` - 创建 AI 对话日志表 (`chat_logs`)
 - `npm run check` - 验证环境配置
 
 ## API 接口
@@ -116,6 +121,18 @@ GET /api/greenways
 GET /api/greenways?name=南沙绿道
 ```
 
+### AI 对话
+```bash
+POST /api/ai/chat
+DELETE /api/ai/context/:id
+```
+
+### 管理员 AI 分析（需 Bearer JWT）
+```bash
+GET /api/admin/ai-stats?days=7      # 词云 + 每日趋势（支持 7/14/30 天）
+GET /api/admin/ai-stats/recent      # 最近原始提问记录
+```
+
 ### 获取 GeoJSON 集合
 ```bash
 GET /api/greenways/geojson/collection
@@ -127,11 +144,15 @@ GET /api/greenways/geojson/collection
 greenway-backend/
 ├── src/
 │   ├── index.js           # 主服务入口
-│   └── db.js              # 数据库连接池
+│   ├── db.js              # 数据库连接池
+│   └── routes/
+│       ├── ai.js            # DeepSeek 对话 API + 对话日志入库
+│       └── adminAiStats.js  # 管理员 AI 分析
 ├── scripts/
-│   ├── init-db.js         # 数据库初始化
-│   ├── import-geometry.js # GeoJSON 数据导入
-│   ├── check-env.js       # 环境验证
+│   ├── init-db.js                 # 数据库初始化
+│   ├── import-geometry.js        # GeoJSON 数据导入
+│   ├── add-chat-logs-table.js    # 数据库迁移：chat_logs 表
+│   ├── check-env.js              # 环境验证
 │   └── sync-frontend-data.js
 ├── .env.example           # 示例环境变量
 ├── package.json

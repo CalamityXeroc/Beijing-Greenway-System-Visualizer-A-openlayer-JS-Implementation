@@ -26,9 +26,11 @@
 
 ### 🌈 增强用户体验
 - **实时天气组件**：显示当前天气状况
+- **AI 智能助手**：**仅在地图 / 详情页显示浮窗**，基于 DeepSeek V3.2，支持路线推荐、平台使用指引、绿道知识问答，对话自动写入数据库
 - **流畅动画效果**：精致的过渡动画和悬停交互
 - **信息卡片展示**：直观展示绿道统计和亮点
 - **深色模式**：全面夜间主题，支持所有页面
+- **管理员 AI 对话分析**：`/admin/ai-stats` 页面包含词云 + 每日趋势图 + 最近提问记录，支持昼夜双主题（ECharts + echarts-wordcloud）
 - **返回主界面按钮**：在地图视图中快速返回主页
 - **导航栏管理员状态显示**：登录管理员后，导航栏显示管理员身份
 - **localStorage 会话持久化**：用户和管理员 Token 存储在 localStorage，刷新页面后仍保持登录状态
@@ -212,9 +214,11 @@ npm run build  # 输出到 dist/ 目录
 
 ### 地图与 GIS
 - **OpenLayers 8.2.0**：高性能 Web 地图库
-  - 矢量/栅格图层支持
-  - 绘制和测量工具
-  - GeoJSON 格式支持
+
+### 图表与可视化
+- **ECharts 6**：数据可视化（图表、词云）
+- **echarts-wordcloud**：ECharts 词云扩展
+- **vue-echarts**：Vue 3 的 ECharts 官方封装
 
 ### 其他功能
 - **Axios 1.6.0**：HTTP 请求库
@@ -234,13 +238,19 @@ greenway-vue/
 │   │   ├── MapViewer.vue        # 核心地图组件
 │   │   ├── MapToolbar.vue       # GIS 工具栏
 │   │   ├── WeatherCard.vue      # 可拖动天气卡片
+│   │   ├── AIChatbot.vue        # AI 浮窗（仅地图页显示）
 │   │   └── BaiduPanoramaViewer.vue  # 360° 全景查看器
 │   ├── views/                   # 页面组件（13个）
 │   │   ├── GreenwayOverview.vue # 主交互概览页
 │   │   ├── WenyuDetail.vue      # 温榆河详情页
 │   │   ├── HuanerhuanDetail.vue # 环二环详情页
 │   │   ├── LiangmaheDetail.vue  # 亮马河详情页
-│   │   └── ...                  # 其他 9 个绿道详情页
+│   │   ├── ...                  # 其他 9 个绿道详情页
+│   │   └── admin/
+│   │       ├── AdminDashboard.vue
+│   │       ├── AdminUsers.vue
+│   │       ├── AdminLogs.vue
+│   │       └── aistats/AiChatStats.vue  # AI 对话分析看板
 │   ├── core/                    # 核心功能模块
 │   │   ├── MapManager.js        # 地图管理
 │   │   └── LayerManager.js      # 图层管理

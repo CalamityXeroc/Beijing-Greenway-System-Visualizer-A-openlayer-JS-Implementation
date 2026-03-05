@@ -13,6 +13,8 @@ Backend service for Beijing Greenway GIS platform using Node.js + Express + Post
 - ✅ RESTful API for greenway data queries
 - ✅ GeoJSON storage and spatial queries
 - ✅ PostgreSQL/PostGIS integration
+- ✅ **AI Chatbot Service**: Powered by DeepSeek V3.2 with conversation history management; chat messages logged to `chat_logs` table
+- ✅ **Admin AI Analytics**: Word cloud + daily trend + recent messages via `/api/admin/ai-stats`; Chinese NLP tokenization using `segment` library
 - ✅ Environment configuration management
 - ✅ Development and production ready
 
@@ -48,6 +50,8 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 PORT=3001
 NODE_ENV=development
+JWT_SECRET=your_jwt_secret
+DEEPSEEK_API_KEY=your_deepseek_api_key
 ```
 
 ### 3. Initialize Database
@@ -97,6 +101,7 @@ Expected output:
 - `npm start` - Start production server
 - `npm run db:init` - Initialize database schema
 - `npm run db:import` - Import GeoJSON data
+- `npm run db:chat-logs` - Create AI chat logs table (`chat_logs`)
 - `npm run check` - Verify environment configuration
 
 ## API Endpoints
@@ -116,6 +121,18 @@ GET /api/greenways
 GET /api/greenways?name=南沙绿道
 ```
 
+### AI Chat
+```bash
+POST /api/ai/chat
+DELETE /api/ai/context/:id
+```
+
+### Admin AI Analytics (Bearer JWT required)
+```bash
+GET /api/admin/ai-stats?days=7      # word cloud + daily trend (7/14/30d)
+GET /api/admin/ai-stats/recent      # recent raw messages
+```
+
 ### Get GeoJSON Collection
 ```bash
 GET /api/greenways/geojson/collection
@@ -127,11 +144,15 @@ GET /api/greenways/geojson/collection
 greenway-backend/
 ├── src/
 │   ├── index.js           # Main server entry point
-│   └── db.js              # Database connection pool
+│   ├── db.js              # Database connection pool
+│   └── routes/
+│       ├── ai.js            # DeepSeek chat API + chat_logs INSERT
+│       └── adminAiStats.js  # Admin AI analytics (word cloud & trends)
 ├── scripts/
-│   ├── init-db.js         # Database initialization
-│   ├── import-geometry.js # GeoJSON data import
-│   ├── check-env.js       # Environment verification
+│   ├── init-db.js               # Database initialization
+│   ├── import-geometry.js       # GeoJSON data import
+│   ├── add-chat-logs-table.js   # DB migration: chat_logs table
+│   ├── check-env.js             # Environment verification
 │   └── sync-frontend-data.js
 ├── .env.example           # Example environment variables
 ├── package.json
@@ -304,6 +325,14 @@ GET /health
 | geometry | geometry(Point,4326) | 位置坐标 |
 | created_at | timestamp | 创建时间 |
 | updated_at | timestamp | 更新时间 |
+
+### chat_logs 表（AI 对话日志）
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | serial | 主键 |
+| conversation_id | text | 对话会话ID |
+| message | text | 用户消息内容 |
+| created_at | timestamp | 创建时间 |
 
 ## PostgreSQL 安装
 

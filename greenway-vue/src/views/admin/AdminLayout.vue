@@ -114,6 +114,11 @@ const navItems = [
            <line x1="16" y1="13" x2="8" y2="13"/>
            <line x1="16" y1="17" x2="8" y2="17"/>`
   },
+  {
+    path: '/admin/ai-stats',
+    label: 'AI对话分析',
+    icon: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`
+  },
 ]
 
 const currentTitle = computed(() => {

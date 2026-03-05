@@ -26,9 +26,11 @@ A modern, interactive WebGIS platform for exploring Beijing's extensive greenway
 
 ### 🌈 Enhanced User Experience
 - **Collapsible Weather Widget**: Real-time weather information
+- **AI Chatbot Assistant**: Floating window **only on map and detail pages**, powered by DeepSeek V3.2, offering route recommendations, platform tutorials, and Q&A; conversations are automatically logged to the database
 - **Smooth Animations**: Polished transitions and hover effects
 - **Information Cards**: Greenway statistics and highlights
 - **Dark Mode Support**: Full night theme across all pages
+- **Admin AI Analytics**: Word cloud + daily trend chart + recent messages log in `/admin/ai-stats`, with day/night dual theme support (ECharts + echarts-wordcloud)
 - **Back-to-Homepage Button**: Quick navigation from map view back to landing page
 - **Admin State in Navbar**: When logged into admin, displays admin identity in the top navbar
 - **localStorage Auth**: User and admin sessions persist across browser refreshes
@@ -185,10 +187,11 @@ npm run build  # Output to dist/ directory
 
 ### Mapping & GIS
 - **OpenLayers 8.2.0**: High-performance web mapping library
-  - Vector and raster layer support
-  - Drawing and measurement interactions
-  - GeoJSON format support
-  - Custom styling and animations
+
+### Charts & Visualization
+- **ECharts 6**: Data visualization (charts, word clouds)
+- **echarts-wordcloud**: Word cloud extension for ECharts
+- **vue-echarts**: Official ECharts wrapper for Vue 3
 
 ### Additional Features
 - **Axios 1.6.0**: HTTP request library
@@ -208,13 +211,19 @@ greenway-vue/
 │   │   ├── MapViewer.vue        # Core map component
 │   │   ├── MapToolbar.vue       # GIS toolbar
 │   │   ├── WeatherCard.vue      # Draggable weather widget
+│   │   ├── AIChatbot.vue        # AI floating window (map pages only)
 │   │   └── BaiduPanoramaViewer.vue  # 360° panorama viewer
 │   ├── views/                   # Page components (13 total)
 │   │   ├── GreenwayOverview.vue # Main interactive overview
 │   │   ├── WenyuDetail.vue      # Wenyu River detail page
 │   │   ├── HuanerhuanDetail.vue # Ring No.2 detail page
 │   │   ├── LiangmaheDetail.vue  # Liangma River detail page
-│   │   └── ...                  # 9 more greenway pages
+│   │   ├── ...                  # 9 more greenway pages
+│   │   └── admin/
+│   │       ├── AdminDashboard.vue
+│   │       ├── AdminUsers.vue
+│   │       ├── AdminLogs.vue
+│   │       └── aistats/AiChatStats.vue  # AI chat analytics dashboard
 │   ├── core/                    # Core functionality
 │   │   ├── MapManager.js        # Map management
 │   │   └── LayerManager.js      # Layer management

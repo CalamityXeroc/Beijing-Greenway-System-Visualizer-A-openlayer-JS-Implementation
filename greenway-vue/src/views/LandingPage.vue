@@ -43,8 +43,14 @@
             <div class="lp-user-area">
               <span class="lp-avatar lp-avatar--admin">管</span>
               <span class="lp-nickname">{{ adminUser?.username || '管理员' }}</span>
-              <a href="/admin/dashboard" class="lp-admin-link" title="进入后台">后台</a>
             </div>
+            <a href="/admin/dashboard" class="btn-admin" title="进入后台">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              后台
+            </a>
           </template>
           <!-- 前台用户已登录：显示头像+昵称+退出 -->
           <template v-else>
@@ -663,13 +669,26 @@ onBeforeUnmount(() => {
 }
 .lp-logout-btn:hover { color: #EF9A9A; }
 .lp-avatar--admin { background: linear-gradient(135deg, #C05621, #92400e); color: #fbd38d; }
-.lp-admin-link {
-  font-size: 0.8rem; font-weight: 600; color: #fbd38d;
-  text-decoration: none; padding: 2px 8px; border-radius: 10px;
-  background: rgba(192,86,33,0.25); border: 1px solid rgba(192,86,33,0.4);
-  transition: background 0.2s;
+
+/* 后台入口按鈕 */
+.btn-admin {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 0 18px; height: 40px;
+  border-radius: 20px; line-height: 1;
+  background: rgba(192, 86, 33, 0.15);
+  border: 1px solid rgba(192, 86, 33, 0.45);
+  color: #fbd38d;
+  font-size: 0.9rem; font-weight: 600;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
 }
-.lp-admin-link:hover { background: rgba(192,86,33,0.45); }
+.btn-admin:hover {
+  background: rgba(192, 86, 33, 0.3);
+  border-color: rgba(251, 211, 141, 0.6);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(192, 86, 33, 0.35);
+}
 
 /* ── 通用按钮 ── */
 .btn-ghost {

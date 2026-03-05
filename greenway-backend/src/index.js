@@ -4,6 +4,7 @@ import pg from 'pg';
 import dotenv from 'dotenv';
 import authRouter from './auth.js';
 import aiRouter from './routes/ai.js';
+import adminAiStatsRouter from './routes/adminAiStats.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -31,6 +32,9 @@ app.use('/api', authRouter);
 
 // 挂载 AI 助手路由
 app.use('/api/ai', aiRouter);
+
+// 挂载管理员 AI 统计路由
+app.use('/api/admin', adminAiStatsRouter);
 
 // 健康检查
 app.get('/health', async (req, res) => {

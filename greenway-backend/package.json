@@ -9,6 +9,7 @@
     "start": "node src/index.js",
     "db:init": "node scripts/init-db.js",
     "db:import": "node scripts/import-geojson.js",
+    "db:chat-logs": "node scripts/add-chat-logs-table.js",
     "check": "node scripts/check-env.js"
   },
   "keywords": [
@@ -21,12 +22,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@node-rs/jieba": "^2.0.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "segment": "^0.1.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

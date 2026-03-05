@@ -31,12 +31,14 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "echarts": "^6.0.0",
+    "echarts-wordcloud": "^2.1.0",
     "express": "^5.2.1",
     "html2canvas": "^1.4.1",
     "ol": "^8.2.0",
     "pg": "^8.16.3",
     "pinia": "^2.1.7",
     "vue": "^3.4.0",
+    "vue-echarts": "^8.0.1",
     "vue-router": "^4.2.5"
   },
   "devDependencies": {

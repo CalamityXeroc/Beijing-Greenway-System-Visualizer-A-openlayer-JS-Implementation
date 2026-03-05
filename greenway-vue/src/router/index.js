@@ -169,6 +169,12 @@ const routes = [
         name: 'AdminLogs',
         component: () => import('@/views/admin/logs/AdminLogs.vue'),
         meta: { title: '系统日志', requiresAdmin: true }
+      },
+      {
+        path: 'ai-stats',
+        name: 'AdminAiStats',
+        component: () => import('@/views/admin/aistats/AiChatStats.vue'),
+        meta: { title: 'AI对话分析', requiresAdmin: true }
       }
     ]
   },

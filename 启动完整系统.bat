@@ -42,20 +42,16 @@ for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3001 " ^| findstr "LISTENIN
 )
 timeout /t 1 /nobreak >nul
 
-rem 启动后端
-cd greenway-backend
+rem 启动后端（使用 /D 显式指定工作目录，确保 .env.local 能被正确加载）
 echo ⏳ 启动后端服务器 (http://localhost:3001)...
-start "Greenway Backend" cmd /k npm run dev
+start "Greenway Backend" /D "%~dp0greenway-backend" cmd /k npm run dev
 
-cd ..
-timeout /t 3 /nobreak
+timeout /t 5 /nobreak
 
 rem 启动前端
-cd greenway-vue
 echo ⏳ 启动前端服务器 (http://localhost:5173)...
-start "Greenway Frontend" cmd /k npm run dev
+start "Greenway Frontend" /D "%~dp0greenway-vue" cmd /k npm run dev
 
-cd ..
 echo.
 echo ========================================================
 echo [OK] 前后端服务器已启动！
