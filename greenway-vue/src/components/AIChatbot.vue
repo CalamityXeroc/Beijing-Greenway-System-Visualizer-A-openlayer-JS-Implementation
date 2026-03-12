@@ -716,82 +716,82 @@ textarea::placeholder {
 .fade-down-enter-from   { opacity: 0; transform: translateY(-8px); }
 
 /* ======================== 深色模式 ======================== */
-:global([data-theme="night"]) .chatbot-panel {
+[data-theme="night"] .chatbot-panel {
   background: #111827;
 }
 
-:global([data-theme="night"]) .chatbot-messages {
+[data-theme="night"] .chatbot-messages {
   color: #f3f4f6;
 }
 
-:global([data-theme="night"]) .msg-bubble.assistant {
+[data-theme="night"] .msg-bubble.assistant {
   background: #1f2937;
   color: #f3f4f6;
 }
 
-:global([data-theme="night"]) .suggestions-bar {
+[data-theme="night"] .suggestions-bar {
   background: #1a2e1f;
   border-bottom-color: #166534;
 }
 
-:global([data-theme="night"]) .chip {
+[data-theme="night"] .chip {
   background: #1f2937;
   color: #4ade80;
   border-color: #166534;
 }
 
-:global([data-theme="night"]) .chip:hover {
+[data-theme="night"] .chip:hover {
   background: #16a34a;
   color: #fff;
 }
 
-:global([data-theme="night"]) .input-wrap {
+[data-theme="night"] .input-wrap {
   background: #1f2937;
   border-color: #374151;
 }
 
-:global([data-theme="night"]) .input-wrap.focused {
+[data-theme="night"] .input-wrap.focused {
   border-color: #22c55e;
   background: #1f2937;
 }
 
-:global([data-theme="night"]) textarea {
+[data-theme="night"] textarea {
   color: #f3f4f6;
 }
 
-:global([data-theme="night"]) .chatbot-input-area {
+[data-theme="night"] .chatbot-input-area {
   border-top-color: #1f2937;
 }
 
-:global([data-theme="night"]) .msg-avatar {
+[data-theme="night"] .msg-avatar {
   background: #1a2e1f;
 }
 
-:global([data-theme="night"]) .user-avatar {
+[data-theme="night"] .user-avatar {
   background: #1e1b4b;
 }
 
-:global([data-theme="night"]) .msg-bubble.user {
+[data-theme="night"] .msg-bubble.user {
   background: linear-gradient(135deg, #16a34a, #166534);
 }
 
-:global([data-theme="night"]) .msg-time {
+[data-theme="night"] .msg-time {
   color: #6b7280;
 }
 
-:global([data-theme="night"]) .dot {
+[data-theme="night"] .dot {
   background: #4ade80;
 }
 
-:global([data-theme="night"]) .input-hint {
+[data-theme="night"] .input-hint {
   color: #4b5563;
 }
 
-:global([data-theme="night"]) .send-btn:disabled {
+[data-theme="night"] .send-btn:disabled {
   background: #374151;
 }
 
-:global([data-theme="night"]) .chatbot-messages::-webkit-scrollbar-thumb {
+[data-theme="night"] .chatbot-messages::-webkit-scrollbar-thumb {
   background: #374151;
 }
 
