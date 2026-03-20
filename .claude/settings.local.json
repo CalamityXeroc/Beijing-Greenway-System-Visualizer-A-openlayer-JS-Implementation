@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python scripts/office/unpack.py \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026.docx\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026_unpacked\")",
+      "Bash(python \"C:\\\\Users\\\\cheng\\\\.claude\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026.docx\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026_unpacked\")",
+      "Bash(python -m pip install defusedxml)",
+      "Bash(python \"C:\\\\Users\\\\cheng\\\\.claude\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" --merge-runs false \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026.docx\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026_unpacked\")",
+      "Bash(python3 \"C:\\\\Users\\\\cheng\\\\.claude\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026.docx\" \"C:\\\\Users\\\\cheng\\\\Desktop\\\\BST_lab\\\\tryyyyyy\\\\申请书\\\\C2026_unpacked\")"
+    ]
+  }
+}

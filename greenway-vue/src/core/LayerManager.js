@@ -24,12 +24,13 @@ class LayerManager {
    * @param {string} style - 地图样式 (7=街道图, 8=文字标注)
    */
   createGaodeLayer(style = 8) {
-    // 通过后端代理转发，添加 CORS 头，使地图导出截图可以包含底图
-    // /api/tiles/gaode 由 greenway-backend 提供代理，开发环境由 Vite proxy 转发
-    const url = `/api/tiles/gaode?style=${style}&x={x}&y={y}&z={z}`
+    // style=8: 日间标准地图
+    // style=7: 夜间地图（高德官方）
+    // 如果使用 CSS 滤镜模拟，可保持使用 style=8
+    const url = `https://webrd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=${style}&x={x}&y={y}&z={z}`
     
     const layer = new TileLayer({
-      className: 'gaode-base-layer',
+      className: 'gaode-base-layer', // 添加特定类名以便单独应用 CSS 滤镜
       source: new XYZ({
         url: url,
         crossOrigin: 'anonymous'
