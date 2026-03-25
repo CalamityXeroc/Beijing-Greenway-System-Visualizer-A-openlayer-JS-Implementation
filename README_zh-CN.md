@@ -53,6 +53,9 @@
 -  地图画布导出为 PNG 图片
 -  地图界面"返回主界面"快捷按钮
 -  用户注册与登录系统
+-  绿道详情页评论系统（桌面评论面板，评分可选）
+-  管理后台评论管理（`/admin/comments`）：支持筛选、单条处理与批量处理
+-  评论敏感词拦截：命中敏感词直接禁止发布并提示
 - 全站昼夜主题（按北京时间自动切换），管理后台双主题完整适配
 -  **AI 助手（绿道小助手）**：基于 DeepSeek V3.2，**仅在地图 / 详情页显示**，支持路线推荐、操作指引、绿道知识问答，对话自动写入数据库
 -  **管理员 AI 对话分析：** 词云 + 每日趋势折线图 + 最近提问记录，支持昼夜主题自动切换（ECharts + echarts-wordcloud，中文分词使用 `segment` 库）
@@ -102,6 +105,9 @@ npm run dev       # http://localhost:5173
 |  **AI 对话分析** | 管理员：词云 + 折线图 + 最近提问，昼夜主题自动切换 |
 |  **昼夜主题** | 全站昼夜配色，按北京时间自动切换；管理后台双主题完整适配 |
 |  **管理后台** | JWT 认证（localStorage 持久化）、数据概览、用户管理、系统日志 |
+|  **评论系统** | 绿道详情页评论发布，支持可选评分与点赞交互 |
+|  **评论管理系统** | 管理端支持评论筛选、状态处理、批量审核/下架 |
+|  **内容安全** | 评论发布前执行敏感词检测，命中即拦截 |
 |  **用户系统** | 公众用户注册与登录 |
 |  **移动端** | Capacitor + Vue 3，原生平台自动跳转移动端布局 |
 
@@ -178,6 +184,7 @@ npm run dev       # http://localhost:5173
 | `/admin/users` | AdminUsers | 用户管理 *（需登录）* |
 | `/admin/logs` | AdminLogs | 系统日志 *（需登录）* |
 | `/admin/ai-stats` | AiChatStats | AI 对话分析 *（需登录）* |
+| `/admin/comments` | AdminComments | 评论管理 *（需登录）* |
 | `/mobile/*` | MobileLayout | 移动端布局（Capacitor） |
 
 ---
@@ -205,12 +212,19 @@ npm run dev       # http://localhost:5173
 
 ```http
 GET /api/greenways              # 获取所有绿道列表
-GET /api/greenways?name=温榆河  # 按名称筛选，返回 GeoJSON FeatureCollectionPOST /api/ai/chat               # AI 对话（DeepSeek V3.2）
+GET /api/greenways?name=温榆河  # 按名称筛选，返回 GeoJSON FeatureCollection
+POST /api/ai/chat               # AI 对话（DeepSeek V3.2）
 DELETE /api/ai/context/:id      # 清除对话历史
+POST /api/comments              # 发布评论（含敏感词检测、可选评分）
+GET /api/comments               # 按绿道查询评论
 
 # 管理员接口（需 Bearer JWT）
 GET /api/admin/ai-stats?days=7  # 词云 + 每日趋势，支持 7/14/30 天
-GET /api/admin/ai-stats/recent  # 最近原始提问记录```
+GET /api/admin/ai-stats/recent  # 最近原始提问记录
+GET /api/admin/comments         # 评论列表（支持筛选/分页）
+PATCH /api/admin/comments/:id/status      # 单条评论状态更新
+PATCH /api/admin/comments/batch/status    # 批量评论状态更新
+```
 
 ```bash
 curl "http://localhost:3001/api/greenways?name=南沙"

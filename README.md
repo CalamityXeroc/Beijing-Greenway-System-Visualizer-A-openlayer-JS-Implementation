@@ -53,6 +53,9 @@ Interactive visualization of **12 major Beijing greenways** featuring a fullscre
 -  Map canvas export to PNG
 -  Back-to-homepage button in map navigation bar
 -  User login / registration system
+-  Greenway detail comment system (desktop panel, optional rating)
+-  Comment moderation console in admin panel (`/admin/comments`) with search and batch actions
+-  Sensitive-word interception for comments (blocked submissions are rejected with prompt)
 -  Full site day/night theme (auto-switches by Beijing time) + responsive design
 -  **AI Assistant (绿道小助手)**: Powered by DeepSeek V3.2, **shown only on map/detail pages**, supports route recommendations, tutorials, and Q&A; conversations logged to database
 -  **Admin AI Chat Analytics**: Word cloud + daily trend chart + recent messages log, with day/night theme support (ECharts + echarts-wordcloud, Chinese NLP via `segment`)
@@ -102,6 +105,9 @@ npm run dev       # http://localhost:5173
 |  **AI Chat Analytics** | Admin: word cloud + daily trend + recent messages, dual day/night theme |
 |  **Day/Night Theme** | Full-site theme auto-switches by Beijing time; admin panel fully themed |
 |  **Admin Panel** | JWT auth (localStorage), dashboard, user management, logs |
+|  **Comment System** | Detail-page comments with optional rating and like interactions |
+|  **Comment Management** | Admin review panel with filtering, status actions, and batch updates |
+|  **Content Safety** | Sensitive-word check blocks disallowed comments before storage |
 |  **User Auth** | Public user registration and login |
 |  **Mobile App** | Capacitor + Vue 3, auto-detected on native platform |
 
@@ -178,6 +184,7 @@ npm run dev       # http://localhost:5173
 | `/admin/users` | AdminUsers | User management *(auth required)* |
 | `/admin/logs` | AdminLogs | System logs *(auth required)* |
 | `/admin/ai-stats` | AiChatStats | AI chat analytics *(auth required)* |
+| `/admin/comments` | AdminComments | Comment management *(auth required)* |
 | `/mobile/*` | MobileLayout | Mobile app (Capacitor) |
 
 ---
@@ -208,10 +215,15 @@ GET /api/greenways              # all greenways (summary list)
 GET /api/greenways?name=温榆河  # filter by name → GeoJSON FeatureCollection
 POST /api/ai/chat               # AI conversation (DeepSeek V3.2)
 DELETE /api/ai/context/:id      # clear conversation history
+POST /api/comments              # create a comment (sensitive-word check + optional rating)
+GET /api/comments               # query comments by greenway
 
 # Admin routes (Bearer JWT required)
 GET /api/admin/ai-stats?days=7  # word cloud + daily trend (7/14/30d)
 GET /api/admin/ai-stats/recent  # recent raw messages
+GET /api/admin/comments         # comment list with filters/pagination
+PATCH /api/admin/comments/:id/status      # update single comment status
+PATCH /api/admin/comments/batch/status    # batch status updates
 ```
 
 ```bash
