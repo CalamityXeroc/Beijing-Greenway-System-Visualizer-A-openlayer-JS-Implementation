@@ -57,7 +57,7 @@ Interactive visualization of **12 major Beijing greenways** featuring a fullscre
 -  Comment moderation console in admin panel (`/admin/comments`) with search and batch actions
 -  Sensitive-word interception for comments (blocked submissions are rejected with prompt)
 -  Full site day/night theme (auto-switches by Beijing time) + responsive design
--  **AI Assistant (绿道小助手)**: Powered by DeepSeek V3.2, **shown only on map/detail pages**, supports route recommendations, tutorials, and Q&A; conversations logged to database
+-  **AI Assistant (绿道小助手)**: Powered by DeepSeek V3.2, supports route recommendations, tutorials, and Q&A; conversations logged to database
 -  **Admin AI Chat Analytics**: Word cloud + daily trend chart + recent messages log, with day/night theme support (ECharts + echarts-wordcloud, Chinese NLP via `segment`)
 -  Capacitor-based mobile app (experimental)
 
@@ -338,4 +338,4 @@ MIT  see LICENSE for details.
 
 ---
 
-**Built with  for Beijing's urban green spaces**
+**Built with ❤ for Beijing's urban green spaces**
