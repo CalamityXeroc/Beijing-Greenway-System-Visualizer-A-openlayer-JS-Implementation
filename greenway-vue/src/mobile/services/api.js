@@ -58,3 +58,112 @@ export const checkBackendHealth = async () => {
     return false
   }
 }
+
+function buildUrl(path) {
+  const baseUrl = getApiBaseUrl()
+  return `${baseUrl}${path}`
+}
+
+async function readJson(res) {
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(data.message || `HTTP ${res.status}`)
+  }
+  return data
+}
+
+export const fetchCommentsByGreenway = async (greenwayId, options = {}) => {
+  const {
+    sort = 'newest',
+    page = 1,
+    pageSize = 20,
+    token = null
+  } = options
+
+  const params = new URLSearchParams({
+    greenwayId: String(greenwayId),
+    sort,
+    page: String(page),
+    pageSize: String(pageSize)
+  })
+
+  const res = await fetch(buildUrl(`/api/comments?${params.toString()}`), {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined
+  })
+
+  return readJson(res)
+}
+
+export const createComment = async (payload, token) => {
+  const res = await fetch(buildUrl('/api/comments'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+
+  return readJson(res)
+}
+
+export const deleteComment = async (commentId, token) => {
+  const res = await fetch(buildUrl(`/api/comments/${commentId}`), {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  return readJson(res)
+}
+
+export const likeComment = async (commentId, token) => {
+  const res = await fetch(buildUrl(`/api/comments/${commentId}/like`), {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  return readJson(res)
+}
+
+export const unlikeComment = async (commentId, token) => {
+  const res = await fetch(buildUrl(`/api/comments/${commentId}/like`), {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  return readJson(res)
+}
+
+export const fetchMyComments = async (token, page = 1, pageSize = 10) => {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize)
+  })
+
+  const res = await fetch(buildUrl(`/api/comments/me?${params.toString()}`), {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  return readJson(res)
+}
+
+export const reportComment = async (commentId, payload, token) => {
+  const res = await fetch(buildUrl(`/api/comments/${commentId}/report`), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload || {})
+  })
+
+  return readJson(res)
+}

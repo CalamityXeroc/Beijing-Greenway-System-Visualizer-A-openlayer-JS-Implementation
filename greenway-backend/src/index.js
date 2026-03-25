@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import authRouter from './auth.js';
 import aiRouter from './routes/ai.js';
 import adminAiStatsRouter from './routes/adminAiStats.js';
+import commentsRouter from './routes/comments.js';
+import adminCommentsRouter from './routes/adminComments.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -35,6 +37,13 @@ app.use('/api/ai', aiRouter);
 
 // 挂载管理员 AI 统计路由
 app.use('/api/admin', adminAiStatsRouter);
+
+// 挂载评论路由
+app.use('/api/comments', commentsRouter);
+app.use('/api/admin/comments', adminCommentsRouter);
+// 文档兼容别名路由
+app.use('/api/comment', commentsRouter);
+app.use('/api/admin/comment', adminCommentsRouter);
 
 // 健康检查
 app.get('/health', async (req, res) => {

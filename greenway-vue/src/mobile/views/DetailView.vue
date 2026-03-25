@@ -106,6 +106,80 @@
         </div>
       </section>
 
+      <section class="section comments-section">
+        <div class="comments-header">
+          <h3 class="section-title">用户评论</h3>
+          <div class="rating-summary">
+            <span class="rating-value">{{ avgRating.toFixed(1) }}</span>
+            <span class="rating-stars">{{ renderStars(Math.round(avgRating)) }}</span>
+            <span class="rating-total">{{ commentTotal }} 条</span>
+          </div>
+        </div>
+
+        <div class="comment-form">
+          <div class="rating-picker">
+            <button
+              v-for="n in 5"
+              :key="n"
+              class="rating-star-btn"
+              :class="{ active: n <= commentRating }"
+              @click="commentRating = n"
+              type="button"
+            >★</button>
+            <span class="rating-label">{{ commentRating }} 星</span>
+          </div>
+          <textarea
+            v-model="commentDraft"
+            class="comment-input"
+            placeholder="写下你的体验感受，帮助更多人选择路线"
+            maxlength="500"
+          ></textarea>
+          <div class="comment-form-bottom">
+            <span class="input-counter">{{ commentDraft.length }}/500</span>
+            <button class="comment-submit" :disabled="submittingComment" @click="submitComment">
+              {{ submittingComment ? '发布中...' : '发布评论' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="comment-toolbar">
+          <button
+            class="sort-btn"
+            :class="{ active: commentSort === 'newest' }"
+            @click="commentSort = 'newest'; loadComments()"
+          >最新</button>
+          <button
+            class="sort-btn"
+            :class="{ active: commentSort === 'hot' }"
+            @click="commentSort = 'hot'; loadComments()"
+          >最热</button>
+        </div>
+
+        <div v-if="commentsLoading" class="comment-state">评论加载中...</div>
+        <div v-else-if="commentsError" class="comment-state error">{{ commentsError }}</div>
+        <div v-else-if="!comments.length" class="comment-state">还没有评论，来做第一个分享的人吧</div>
+        <div v-else class="comment-list">
+          <article class="comment-card" v-for="c in comments" :key="c.id">
+            <header class="comment-card-header">
+              <div>
+                <div class="comment-user">{{ c.nickname || c.username || '匿名用户' }}</div>
+                <div class="comment-meta">
+                  <span class="comment-stars">{{ renderStars(c.rating) }}</span>
+                  <span>{{ formatCommentTime(c.created_at) }}</span>
+                </div>
+              </div>
+              <button v-if="isCommentOwner(c)" class="comment-delete" @click="removeComment(c)">删除</button>
+            </header>
+            <p class="comment-content">{{ c.content }}</p>
+            <div class="comment-actions">
+              <button class="comment-like" :class="{ active: c.liked_by_me }" @click="toggleLike(c)">
+                👍 有用 {{ c.like_count || 0 }}
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <!-- 操作按钮 -->
       <div class="action-row">
         <button class="action-btn primary" @click="navigateTo">
@@ -127,7 +201,15 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { fetchGreenways as fetchGreenwaysAPI } from '../services/api'
+import {
+  fetchGreenways as fetchGreenwaysAPI,
+  fetchCommentsByGreenway,
+  createComment,
+  deleteComment,
+  likeComment,
+  unlikeComment
+} from '../services/api'
+import { useUserAuth } from '@/stores/userAuth'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
@@ -144,6 +226,7 @@ import { useAppTheme } from '../composables/useAppTheme'
 const router = useRouter()
 const route = useRoute()
 const { isDark } = useAppTheme()
+const { isLoggedIn, currentUser, token } = useUserAuth()
 
 const trailId = route.params.id
 const trail = ref(null)
@@ -152,6 +235,15 @@ const error = ref(null)
 const isFavorite = ref(false)
 const miniMapEl = ref(null)
 const mapReady = ref(false)
+const comments = ref([])
+const commentsLoading = ref(false)
+const commentsError = ref('')
+const avgRating = ref(0)
+const commentTotal = ref(0)
+const commentSort = ref('newest')
+const submittingComment = ref(false)
+const commentDraft = ref('')
+const commentRating = ref(5)
 let miniMap = null
 
 const trailColor = computed(() => trail.value?.color || '#2E9640')
@@ -226,6 +318,122 @@ function goBack() {
   router.back()
 }
 
+function isCommentOwner(comment) {
+  return Number(comment.user_id) === Number(currentUser.value?.id)
+}
+
+function formatCommentTime(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function renderStars(value) {
+  const n = Math.max(0, Math.min(5, Number(value || 0)))
+  return '★'.repeat(n) + '☆'.repeat(5 - n)
+}
+
+async function loadComments() {
+  if (!trail.value?.id) return
+
+  commentsLoading.value = true
+  commentsError.value = ''
+  try {
+    const res = await fetchCommentsByGreenway(trail.value.id, {
+      sort: commentSort.value,
+      token: token.value || null
+    })
+    comments.value = res.data?.list || []
+    avgRating.value = Number(res.data?.summary?.avgRating || 0)
+    commentTotal.value = Number(res.data?.summary?.total || 0)
+  } catch (err) {
+    commentsError.value = err.message || '评论加载失败'
+  } finally {
+    commentsLoading.value = false
+  }
+}
+
+async function submitComment() {
+  if (!isLoggedIn.value) {
+    alert('请先登录后评论')
+    router.push('/mobile/login')
+    return
+  }
+
+  const content = commentDraft.value.trim()
+  if (!content) {
+    alert('请输入评论内容')
+    return
+  }
+  if (content.length > 500) {
+    alert('评论最多 500 字')
+    return
+  }
+
+  submittingComment.value = true
+  try {
+    const resp = await createComment(
+      {
+        greenwayId: trail.value.id,
+        content,
+        rating: commentRating.value
+      },
+      token.value
+    )
+
+    commentDraft.value = ''
+    commentRating.value = 5
+    alert(resp.message || '评论发布成功，待审核后展示')
+    await loadComments()
+  } catch (err) {
+    alert(err.message || '评论发布失败')
+  } finally {
+    submittingComment.value = false
+  }
+}
+
+async function toggleLike(comment) {
+  if (!isLoggedIn.value) {
+    alert('请先登录后点赞')
+    router.push('/mobile/login')
+    return
+  }
+
+  try {
+    if (comment.liked_by_me) {
+      const res = await unlikeComment(comment.id, token.value)
+      comment.liked_by_me = false
+      comment.like_count = Number(res.data?.likeCount ?? comment.like_count ?? 0)
+    } else {
+      const res = await likeComment(comment.id, token.value)
+      comment.liked_by_me = true
+      comment.like_count = Number(res.data?.likeCount ?? comment.like_count ?? 0)
+    }
+  } catch (err) {
+    alert(err.message || '操作失败')
+  }
+}
+
+async function removeComment(comment) {
+  if (!isCommentOwner(comment)) return
+
+  const confirmed = window.confirm('确定删除这条评论吗？')
+  if (!confirmed) return
+
+  try {
+    await deleteComment(comment.id, token.value)
+    await loadComments()
+  } catch (err) {
+    alert(err.message || '删除失败')
+  }
+}
+
 function toggleFavorite() {
   isFavorite.value = !isFavorite.value
 }
@@ -250,6 +458,7 @@ onMounted(async () => {
   if (trail.value) {
     await new Promise(r => setTimeout(r, 50))
     initMiniMap()
+    await loadComments()
   }
 })
 
@@ -451,6 +660,218 @@ onUnmounted(() => {
   font-size: var(--text-sm);
   color: var(--color-text-primary);
   text-align: right;
+}
+
+/* 评论区 */
+.comments-section {
+  padding-bottom: 12px;
+}
+
+.comments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.rating-value {
+  font-size: 16px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.rating-stars {
+  color: #f5a623;
+  letter-spacing: 0.5px;
+}
+
+.comment-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+}
+
+.rating-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.rating-star-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rating-star-btn.active {
+  color: #f5a623;
+}
+
+.rating-label {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.comment-input {
+  width: 100%;
+  min-height: 88px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 14px;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  resize: vertical;
+}
+
+.comment-form-bottom {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-counter {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.comment-submit {
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.comment-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.comment-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sort-btn {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sort-btn.active {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.comment-state {
+  padding: 16px 4px 8px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.comment-state.error {
+  color: var(--color-error, #e53935);
+}
+
+.comment-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  background: var(--color-surface);
+}
+
+.comment-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.comment-user {
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.comment-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.comment-stars {
+  color: #f5a623;
+}
+
+.comment-delete {
+  border: none;
+  background: transparent;
+  color: var(--color-error, #e53935);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.comment-content {
+  margin: 8px 0 10px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.comment-like {
+  border: none;
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.comment-like.active {
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
 }
 
 /* 操作按钮 */

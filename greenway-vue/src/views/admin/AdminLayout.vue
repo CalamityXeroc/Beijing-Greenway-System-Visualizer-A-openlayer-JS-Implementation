@@ -119,6 +119,12 @@ const navItems = [
     label: 'AI对话分析',
     icon: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`
   },
+  {
+    path: '/admin/comments',
+    label: '评论管理',
+    icon: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+           <circle cx="8" cy="10" r="1"/><circle cx="12" cy="10" r="1"/><circle cx="16" cy="10" r="1"/>`
+  },
 ]
 
 const currentTitle = computed(() => {

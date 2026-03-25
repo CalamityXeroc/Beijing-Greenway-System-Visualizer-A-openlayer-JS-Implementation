@@ -59,6 +59,11 @@
       </div>
 
       <div class="menu-group">
+        <button class="menu-row" @click="goToPage('my-comments')">
+          <span class="menu-icon bg-orange">评</span>
+          <span class="menu-label">我的评论</span>
+          <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
         <button class="menu-row" @click="goToPage('help')">
           <span class="menu-icon bg-orange"></span>
           <span class="menu-label">帮助与反馈</span>
@@ -133,6 +138,10 @@ const goAdmin = () => { window.location.href = '/admin/dashboard' }
 const goAdminLogin = () => { window.location.href = '/admin/login' }
 
 const goToPage = (p) => {
+  if (p === 'my-comments') {
+    router.push('/mobile/my-comments')
+    return
+  }
   // 预留页面跳转
   console.log('go', p)
 }

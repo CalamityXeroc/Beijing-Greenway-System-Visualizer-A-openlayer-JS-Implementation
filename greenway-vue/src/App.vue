@@ -60,6 +60,7 @@ const viewportSize = ref({})
 // 判断是否在移动端路由
 const isMobileRoute = computed(() => route.path.startsWith('/mobile'))
 
+
 // App 启动时向服务端验证管理员 token 有效性。
 // 若 token 已过期或伪造，apiFetch 收到 401 会自动调用 clearSession()，
 // 前台"进入后台"按钮随即消失，路由守卫也无法再通过。
@@ -130,5 +131,6 @@ onMounted(() => {
 .desktop-app {
   width: 100%;
   min-height: 100vh;
+  overflow: visible;
 }
 </style>

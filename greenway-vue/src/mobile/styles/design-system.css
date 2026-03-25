@@ -219,7 +219,9 @@
 
 html, body {
   margin: 0; padding: 0;
-  width: 100%; height: 100%;
+  width: 100%;
+  min-height: 100%;
+  height: auto;
 }
 
 body {
@@ -234,7 +236,12 @@ body {
   overscroll-behavior: none;
 }
 
-#app { width: 100%; height: 100%; overflow: hidden; }
+#app {
+  width: 100%;
+  min-height: 100%;
+  height: auto;
+  overflow: visible;
+}
 
 h1, h2, h3, h4, h5, h6, p { margin: 0; }
 

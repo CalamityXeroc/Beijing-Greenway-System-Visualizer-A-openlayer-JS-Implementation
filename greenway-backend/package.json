@@ -8,6 +8,8 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "db:init": "node scripts/init-db.js",
+    "db:migrate-comments-web": "node scripts/migrate-comments-web.js",
+    "verify:comments-flow": "node scripts/verify-comments-flow.js",
     "db:import": "node scripts/import-geojson.js",
     "db:chat-logs": "node scripts/add-chat-logs-table.js",
     "check": "node scripts/check-env.js"

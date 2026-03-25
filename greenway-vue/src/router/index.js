@@ -41,6 +41,12 @@ const routes = [
         meta: { title: '个人中心' }
       },
       {
+        path: 'my-comments',
+        name: 'MobileMyComments',
+        component: () => import('@/mobile/views/MyCommentsView.vue'),
+        meta: { title: '我的评论' }
+      },
+      {
         path: 'login',
         name: 'MobileLogin',
         component: () => import('@/mobile/views/LoginView.vue'),
@@ -175,6 +181,12 @@ const routes = [
         name: 'AdminAiStats',
         component: () => import('@/views/admin/aistats/AiChatStats.vue'),
         meta: { title: 'AI对话分析', requiresAdmin: true }
+      },
+      {
+        path: 'comments',
+        name: 'AdminComments',
+        component: () => import('@/views/admin/comments/AdminComments.vue'),
+        meta: { title: '评论管理', requiresAdmin: true }
       }
     ]
   },

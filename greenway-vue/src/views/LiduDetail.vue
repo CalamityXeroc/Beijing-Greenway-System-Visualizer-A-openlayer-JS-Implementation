@@ -12,7 +12,7 @@
 
     <div class="content">
       <!-- 左侧信息栏 -->
-      <div class="left-sidebar">
+      <div ref="leftSidebar" class="left-sidebar">
         <div class="feature-image placeholder-image">
           <div class="placeholder-text">
             <i class="fas fa-image"></i>
@@ -74,13 +74,15 @@
           :center="mapConfig.center"
           :zoom="mapConfig.zoom"
           :layers="layers"
-          :interactive="true"
+          :interactive="false"
           height="100%"
           @map-ready="onMapReady"
         :restrict-navigation="true" />
       </div>
     </div>
-
+    <section class="detail-comments-section">
+      <DesktopCommentsPanel greenway-name="北京丽都商圈绿道" />
+    </section>
     <!-- 天气卡片（固定定位，可拖动） -->
     <WeatherCard
       v-if="weatherLocation"
@@ -103,17 +105,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MapViewer from '@/components/MapViewer.vue'
 import WeatherCard from '@/components/WeatherCard.vue'
 import BaiduPanoramaViewer from '@/components/BaiduPanoramaViewer.vue'
+import DesktopCommentsPanel from '@/components/DesktopCommentsPanel.vue'
 import { loadGreenwayDataByName, buildGreenwayInfo } from '@/utils/greenwayHelper'
 
 const router = useRouter()
 const mapViewer = ref(null)
+const leftSidebar = ref(null)
 const showPanorama = ref(false)
 const baiduMapKey = 'als8C7E7ORhccEaRUiToTKbuxDIYlIiw'
+
+let cleanupSidebarWheel = null
+let prevBodyOverflowY = ''
+let prevHtmlOverflowY = ''
+const WHEEL_EDGE_EPSILON = 2
 
 const panoramaPoints = ref([
   {
@@ -197,8 +206,52 @@ const goBack = () => {
   router.back()
 }
 
-const onPointChange = (index) => {
-  console.log('[LiduDetail] 切换到观景点:', panoramaPoints.value[index].name)
+
+const setupSidebarWheelGuard = () => {
+  const el = leftSidebar.value
+  if (!el) return
+
+  const onSidebarWheel = (e) => {
+    if (showPanorama.value) return
+
+    const target = e.target
+    if (target instanceof Element && target.closest('.chatbot-panel, .panorama-modal, .weather-card')) {
+      return
+    }
+
+    const maxScrollTop = el.scrollHeight - el.clientHeight
+    if (maxScrollTop <= 0) {
+      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
+      e.preventDefault()
+      return
+    }
+
+    const isAtTop = el.scrollTop <= WHEEL_EDGE_EPSILON
+    const isAtBottom = (maxScrollTop - el.scrollTop) <= WHEEL_EDGE_EPSILON
+
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+
+    const nextScrollTop = el.scrollTop + e.deltaY
+    const clamped = Math.max(0, Math.min(maxScrollTop, nextScrollTop))
+    const willScroll = clamped !== el.scrollTop
+
+    if (!willScroll) return
+
+    el.scrollTop = clamped
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  window.addEventListener('wheel', onSidebarWheel, { passive: false, capture: true })
+  cleanupSidebarWheel = () => {
+    window.removeEventListener('wheel', onSidebarWheel, true)
+    cleanupSidebarWheel = null
+  }
 }
 
 // 加载绿道数据
@@ -220,8 +273,23 @@ const loadGreenwayData = async () => {
 }
 
 onMounted(async () => {
+  // 兜底：清理可能由其他页面遗留的滚动锁
+  prevBodyOverflowY = document.body.style.overflowY
+  prevHtmlOverflowY = document.documentElement.style.overflowY
+  document.body.style.overflowY = 'auto'
+  document.documentElement.style.overflowY = 'auto'
+
+
   console.log('[LiduDetail] 组件已挂载')
   await loadGreenwayData()
+  await nextTick()
+  setupSidebarWheelGuard()
+})
+
+onBeforeUnmount(() => {
+  cleanupSidebarWheel?.()
+  document.body.style.overflowY = prevBodyOverflowY
+  document.documentElement.style.overflowY = prevHtmlOverflowY
 })
 </script>
 
@@ -295,7 +363,7 @@ onMounted(async () => {
 
 .content {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
   gap: 0;
 }
 
@@ -305,6 +373,13 @@ onMounted(async () => {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  height: 100vh;
+  max-height: 100vh;
+  overscroll-behavior: contain;
+  position: relative;
+  z-index: 2;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -467,6 +542,7 @@ onMounted(async () => {
   position: relative;
   background: #f5f5f5;
 }
+
 
 @media (max-width: 768px) {
   .content {
@@ -727,3 +803,16 @@ onMounted(async () => {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+

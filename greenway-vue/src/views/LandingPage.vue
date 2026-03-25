@@ -1,5 +1,5 @@
 <template>
-  <div class="fp-root">
+  <div ref="landingRoot" class="fp-root">
     <!-- 粒子背景 Canvas（固定层） -->
     <canvas ref="canvasRef" class="bg-canvas"></canvas>
 
@@ -504,6 +504,7 @@ const features = [
 // Canvas 粒子动画
 // ══════════════════════════════════════════════════
 const canvasRef = ref(null)
+const landingRoot = ref(null)
 let animFrameId = null
 
 function initCanvas() {
@@ -557,19 +558,19 @@ function initCanvas() {
 // ══════════════════════════════════════════════════
 onMounted(() => {
   initCanvas()
-  window.addEventListener('wheel', onWheel, { passive: false })
+  landingRoot.value?.addEventListener('wheel', onWheel, { passive: false })
   window.addEventListener('keydown', onKeyDown)
-  window.addEventListener('touchstart', onTouchStart, { passive: true })
-  window.addEventListener('touchend', onTouchEnd)
+  landingRoot.value?.addEventListener('touchstart', onTouchStart, { passive: true })
+  landingRoot.value?.addEventListener('touchend', onTouchEnd)
 })
 
 onBeforeUnmount(() => {
   if (animFrameId) cancelAnimationFrame(animFrameId)
   if (wheelTimer) clearTimeout(wheelTimer)
-  window.removeEventListener('wheel', onWheel)
+  landingRoot.value?.removeEventListener('wheel', onWheel)
   window.removeEventListener('keydown', onKeyDown)
-  window.removeEventListener('touchstart', onTouchStart)
-  window.removeEventListener('touchend', onTouchEnd)
+  landingRoot.value?.removeEventListener('touchstart', onTouchStart)
+  landingRoot.value?.removeEventListener('touchend', onTouchEnd)
 })
 </script>
 
