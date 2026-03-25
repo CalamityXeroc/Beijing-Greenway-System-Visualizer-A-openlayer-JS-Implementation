@@ -102,6 +102,7 @@ async function initDatabase() {
         id SERIAL PRIMARY KEY,
         greenway_id INTEGER NOT NULL REFERENCES greenways(id) ON DELETE CASCADE,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        parent_comment_id INTEGER REFERENCES greenway_comments(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
         rating INTEGER CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
@@ -129,9 +130,12 @@ async function initDatabase() {
       );
 
       ALTER TABLE greenway_comments ALTER COLUMN status SET DEFAULT 'pending';
+      ALTER TABLE greenway_comments
+        ADD COLUMN IF NOT EXISTS parent_comment_id INTEGER REFERENCES greenway_comments(id) ON DELETE CASCADE;
 
       CREATE INDEX IF NOT EXISTS idx_comments_greenway_id ON greenway_comments(greenway_id);
       CREATE INDEX IF NOT EXISTS idx_comments_user_id ON greenway_comments(user_id);
+      CREATE INDEX IF NOT EXISTS idx_comments_parent_comment_id ON greenway_comments(parent_comment_id);
       CREATE INDEX IF NOT EXISTS idx_comments_status_created_at ON greenway_comments(status, created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_comment_likes_comment_id ON greenway_comment_likes(comment_id);
       CREATE INDEX IF NOT EXISTS idx_comment_reports_comment_id ON greenway_comment_reports(comment_id);

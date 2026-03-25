@@ -141,7 +141,7 @@ async function handleList(req, res, greenwayIdInput) {
 
     const likedUserId = req.user?.id || null;
     const listResult = await req.pool.query(
-      `SELECT c.id, c.greenway_id, c.user_id, c.content, c.rating, c.status, c.like_count, c.created_at,
+      `SELECT c.id, c.greenway_id, c.user_id, c.parent_comment_id, c.content, c.rating, c.status, c.like_count, c.created_at,
               u.username, u.nickname,
               CASE WHEN cl.user_id IS NULL THEN false ELSE true END AS liked_by_me
        FROM greenway_comments c
@@ -218,10 +218,12 @@ router.get('/trail/:trailId', optionalAuth, async (req, res) => {
 });
 
 router.post('/', authMiddleware, async (req, res) => {
-  const { greenwayId, content, rating } = req.body;
+  const { greenwayId, content, rating, parentCommentId } = req.body;
   const safeContent = (content || '').trim();
+  const hasParent = !(parentCommentId === undefined || parentCommentId === null || String(parentCommentId).trim() === '');
+  const safeParentCommentId = hasParent ? parseInt(parentCommentId, 10) : null;
   const hasRating = !(rating === undefined || rating === null || String(rating).trim() === '');
-  const safeRating = hasRating ? parseInt(rating, 10) : null;
+  const safeRating = hasParent ? null : (hasRating ? parseInt(rating, 10) : null);
 
   if (!greenwayId) {
     return res.status(400).json({ code: 400, message: '未识别到当前绿道 ID，请刷新页面后重试' });
@@ -235,11 +237,34 @@ router.post('/', authMiddleware, async (req, res) => {
   if (hasRating && (Number.isNaN(safeRating) || safeRating < 1 || safeRating > 5)) {
     return res.status(400).json({ code: 400, message: '评分必须在 1-5 之间' });
   }
+  if (hasParent && (Number.isNaN(safeParentCommentId) || safeParentCommentId <= 0)) {
+    return res.status(400).json({ code: 400, message: '回复目标无效' });
+  }
 
   try {
     const greenwayResult = await req.pool.query('SELECT id FROM greenways WHERE id = $1', [greenwayId]);
     if (greenwayResult.rows.length === 0) {
       return res.status(404).json({ code: 404, message: '绿道不存在' });
+    }
+
+    if (hasParent) {
+      const parentResult = await req.pool.query(
+        `SELECT id, greenway_id, status
+         FROM greenway_comments
+         WHERE id = $1`,
+        [safeParentCommentId]
+      );
+      if (parentResult.rows.length === 0) {
+        return res.status(404).json({ code: 404, message: '被回复评论不存在' });
+      }
+
+      const parent = parentResult.rows[0];
+      if (parseInt(parent.greenway_id, 10) !== parseInt(greenwayId, 10)) {
+        return res.status(400).json({ code: 400, message: '回复目标与当前绿道不匹配' });
+      }
+      if (parent.status !== 'visible') {
+        return res.status(400).json({ code: 400, message: '该评论当前不可回复' });
+      }
     }
 
     const recentResult = await req.pool.query(
@@ -262,15 +287,15 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     const insertResult = await req.pool.query(
-      `INSERT INTO greenway_comments (greenway_id, user_id, content, rating, status)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, greenway_id, user_id, content, rating, status, like_count, created_at`,
-      [greenwayId, req.user.id, safeContent, safeRating, 'visible']
+      `INSERT INTO greenway_comments (greenway_id, user_id, parent_comment_id, content, rating, status)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, greenway_id, user_id, parent_comment_id, content, rating, status, like_count, created_at`,
+      [greenwayId, req.user.id, safeParentCommentId, safeContent, safeRating, 'visible']
     );
 
     res.status(201).json({
       code: 200,
-      message: '评论发布成功',
+      message: hasParent ? '回复发布成功' : '评论发布成功',
       data: {
         ...insertResult.rows[0],
         autoReview: {
