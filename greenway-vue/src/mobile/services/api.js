@@ -11,11 +11,14 @@ export const getApiBaseUrl = () => {
      (window.location.protocol === 'http:' && window.location.hostname === 'localhost' && !import.meta.env.DEV))
 
   if (isCapacitor) {
-    // 强制在这个开发阶段使用 10.0.2.2 (模拟器专属) 如果他在用模拟器
-    // 但为了兼顾他手机测试的功能，用一个后备方案
-    // 由于他目前说 "我正在用模拟器查看", 使用 10.0.2.2:3001
-    return 'http://10.0.2.2:3001'
+    // 使用您的实际后端地址 - 端口3001
+    const baseUrl = 'http://10.26.171.159:3001'
+    console.log('[API] Capacitor模式，使用后端地址:', baseUrl)
+    return baseUrl
   }
+  
+  // Web开发模式，使用代理
+  console.log('[API] Web开发模式，使用相对路径')
   return ''
 }
 
@@ -26,9 +29,25 @@ export const getApiBaseUrl = () => {
 export const fetchGreenways = async () => {
   const baseUrl = getApiBaseUrl()
   const url = `${baseUrl}/api/greenways`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`API ${res.status}: ${url}`)
-  return res.json()
+  console.log('[API] 请求绿道列表:', url)
+  
+  try {
+    const res = await fetch(url)
+    console.log('[API] 绿道列表响应状态:', res.status)
+    
+    if (!res.ok) {
+      const errorText = await res.text()
+      console.error('[API] 绿道列表请求失败:', res.status, errorText)
+      throw new Error(`API ${res.status}: ${url}`)
+    }
+    
+    const data = await res.json()
+    console.log('[API] 绿道列表数据加载成功，数量:', data?.features?.length || 0)
+    return data
+  } catch (error) {
+    console.error('[API] 绿道列表请求异常:', error)
+    throw error
+  }
 }
 
 /**
@@ -166,4 +185,115 @@ export const reportComment = async (commentId, payload, token) => {
   })
 
   return readJson(res)
+}
+
+/**
+ * 获取最近评论（用于发现页动态流）
+ * @param {number} limit 限制条数
+ * @returns {Promise<Object>}
+ */
+export const fetchRecentComments = async (limit = 10) => {
+  const params = new URLSearchParams({
+    page: '1',
+    pageSize: String(limit),
+    status: 'visible'
+  })
+  const res = await fetch(buildUrl(`/api/comments/recent?${params.toString()}`))
+  return readJson(res)
+}
+
+// ========== 管理员API（移动端） ==========
+
+/**
+ * 管理员API请求封装
+ */
+const adminFetch = async (path, options = {}, token) => {
+  const res = await fetch(buildUrl(path), {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...options.headers
+    }
+  })
+  return readJson(res)
+}
+
+/**
+ * 获取用户列表（管理员）
+ */
+export const fetchAdminUsers = async (params, token) => {
+  const q = new URLSearchParams(params)
+  return adminFetch(`/api/admin/users?${q}`, {}, token)
+}
+
+/**
+ * 更新用户状态（管理员）
+ */
+export const updateUserStatus = async (userId, status, token) => {
+  return adminFetch(`/api/admin/users/${userId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  }, token)
+}
+
+/**
+ * 更新用户信息（管理员）
+ */
+export const updateUser = async (userId, data, token) => {
+  return adminFetch(`/api/admin/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }, token)
+}
+
+/**
+ * 删除用户（管理员）
+ */
+export const deleteUser = async (userId, token) => {
+  return adminFetch(`/api/admin/users/${userId}`, {
+    method: 'DELETE'
+  }, token)
+}
+
+/**
+ * 获取评论列表（管理员）
+ */
+export const fetchAdminComments = async (params, token) => {
+  const q = new URLSearchParams(params)
+  return adminFetch(`/api/admin/comments?${q}`, {}, token)
+}
+
+/**
+ * 更新评论状态（管理员）
+ */
+export const updateCommentStatus = async (commentId, status, token) => {
+  return adminFetch(`/api/admin/comments/${commentId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  }, token)
+}
+
+/**
+ * 批量更新评论状态（管理员）
+ */
+export const batchUpdateCommentStatus = async (ids, status, token) => {
+  return adminFetch('/api/admin/comments/batch/status', {
+    method: 'PATCH',
+    body: JSON.stringify({ ids, status })
+  }, token)
+}
+
+/**
+ * 获取评论统计（管理员）
+ */
+export const fetchCommentStats = async (days, token) => {
+  return adminFetch(`/api/admin/comments/stats?days=${days}`, {}, token)
+}
+
+/**
+ * 获取仪表盘数据（管理员）
+ */
+export const fetchDashboardStats = async (token) => {
+  return adminFetch('/api/admin/dashboard/stats', {}, token)
 }

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import pg from 'pg';
 import dotenv from 'dotenv';
+import os from 'os';
 import authRouter from './auth.js';
 import aiRouter from './routes/ai.js';
 import adminAiStatsRouter from './routes/adminAiStats.js';
@@ -13,8 +14,13 @@ dotenv.config({ path: '.env.local' });
 const app = express();
 const PORT = process.env.PORT || 3001;  // 后端端口：3001（非 3000）
 
-// 中间件
-app.use(cors());
+// 中间件 - 配置CORS允许移动端访问
+app.use(cors({
+  origin: '*', // 开发环境允许所有来源
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 app.use(express.json());
 
 // 数据库连接
@@ -318,12 +324,45 @@ app.get('/api/tiles/gaode', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+// 获取本机IP用于显示 - 优先选择非169.254开头的地址（真实网络接口）
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  const candidates = [];
+  
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        candidates.push({ name, address: iface.address });
+      }
+    }
+  }
+  
+  // 优先选择非169.254开头的地址（真实网络，非自动配置）
+  const realNetwork = candidates.find(c => !c.address.startsWith('169.254.') && !c.address.startsWith('192.168.70.') && !c.address.startsWith('192.168.238.'));
+  if (realNetwork) {
+    console.log(`[网络] 选择网络接口: ${realNetwork.name} (${realNetwork.address})`);
+    return realNetwork.address;
+  }
+  
+  // 降级选择任何可用地址
+  if (candidates.length > 0) {
+    console.log(`[网络] 使用备用接口: ${candidates[0].name} (${candidates[0].address})`);
+    return candidates[0].address;
+  }
+  
+  return '0.0.0.0';
+}
+
+const localIP = getLocalIP();
+
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`[服务器] ✓ 后端已启动`);
-  console.log(`[服务器] 地址: http://localhost:${PORT}`);
-  console.log(`[服务器] 健康检查: http://localhost:${PORT}/health`);
-  console.log(`[服务器] API 文档: http://localhost:${PORT}/api/greenways`);
+  console.log(`[服务器] 本地地址: http://localhost:${PORT}`);
+  console.log(`[服务器] 网络地址: http://${localIP}:${PORT}`);
+  console.log(`[服务器] 绑定: 0.0.0.0:${PORT} (所有网卡)`);
+  console.log(`[服务器] 健康检查: http://${localIP}:${PORT}/health`);
+  console.log(`[服务器] 绿道列表: http://${localIP}:${PORT}/api/greenways`);
   console.log(`${'='.repeat(60)}\n`);
 });
 

@@ -11,6 +11,16 @@ const routes = [
     meta: { title: '北京绿道 - 移动版' },
     children: [
       {
+        path: '',
+        redirect: '/mobile/discover'
+      },
+      {
+        path: 'discover',
+        name: 'MobileDiscover',
+        component: () => import('@/mobile/views/DiscoverView.vue'),
+        meta: { title: '发现' }
+      },
+      {
         path: 'map',
         name: 'MobileMap',
         component: () => import('@/mobile/views/MapView.vue'),
@@ -57,6 +67,37 @@ const routes = [
         name: 'MobileRegister',
         component: () => import('@/mobile/views/RegisterView.vue'),
         meta: { title: '注册' }
+      },
+      // 管理员功能（移动端）
+      {
+        path: 'admin',
+        name: 'MobileAdmin',
+        component: () => import('@/mobile/views/AdminHomeView.vue'),
+        meta: { title: '管理中心', requiresAdmin: true }
+      },
+      {
+        path: 'admin/users',
+        name: 'MobileAdminUsers',
+        component: () => import('@/mobile/views/AdminUsersView.vue'),
+        meta: { title: '用户管理', requiresAdmin: true }
+      },
+      {
+        path: 'admin/comments',
+        name: 'MobileAdminComments',
+        component: () => import('@/mobile/views/AdminCommentsView.vue'),
+        meta: { title: '评论审核', requiresAdmin: true }
+      },
+      {
+        path: 'settings',
+        name: 'MobileSettings',
+        component: () => import('@/mobile/views/SettingsView.vue'),
+        meta: { title: '设置' }
+      },
+      {
+        path: 'diagnostic',
+        name: 'MobileDiagnostic',
+        component: () => import('@/mobile/views/DiagnosticView.vue'),
+        meta: { title: '网络诊断' }
       }
     ]
   },
@@ -225,7 +266,7 @@ router.beforeEach((to, from, next) => {
 
   // 在 Capacitor 原生 App 中，根路径自动跳转到移动端首页
   if (Capacitor.isNativePlatform() && to.path === '/') {
-    next('/mobile/map')
+    next('/mobile/discover')
     return
   }
 
