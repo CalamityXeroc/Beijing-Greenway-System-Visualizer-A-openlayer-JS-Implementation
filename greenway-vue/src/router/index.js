@@ -98,6 +98,24 @@ const routes = [
         name: 'MobileDiagnostic',
         component: () => import('@/mobile/views/DiagnosticView.vue'),
         meta: { title: '网络诊断' }
+      },
+      {
+        path: 'privacy',
+        name: 'MobilePrivacy',
+        component: () => import('@/mobile/views/PrivacyView.vue'),
+        meta: { title: '隐私政策' }
+      },
+      {
+        path: 'agreement',
+        name: 'MobileAgreement',
+        component: () => import('@/mobile/views/AgreementView.vue'),
+        meta: { title: '用户协议' }
+      },
+      {
+        path: 'feedback',
+        name: 'MobileFeedback',
+        component: () => import('@/mobile/views/FeedbackView.vue'),
+        meta: { title: '意见反馈' }
       }
     ]
   },

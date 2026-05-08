@@ -9,7 +9,11 @@
             <span v-if="!currentUser?.avatar">{{ avatarLetter }}</span>
             <img v-else :src="currentUser.avatar" alt="头像" />
           </div>
-          <span v-if="isAdmin" class="admin-crown">👑</span>
+          <span v-if="isAdmin" class="admin-crown">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l2.4 7.2L22 9l-6 5.2 2.4 7.8L12 17l-6.4 5L8 14.2 2 9l7.6-.2z"/>
+            </svg>
+          </span>
         </div>
         <div class="user-info">
           <h2 class="user-name">{{ displayName }}</h2>
@@ -149,15 +153,6 @@
         </button>
       </div>
 
-      <!-- 非管理员也可见的管理员登录入口 -->
-      <div v-if="!isAdmin" class="admin-login-entry">
-        <button class="admin-login-btn" @click="goAdminLogin">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          管理员登录
-        </button>
-      </div>
 
       <div class="nav-spacer"></div>
     </div>
@@ -193,10 +188,10 @@ const avatarLetter = computed(() => {
 })
 const avatarBg = computed(() => {
   const colors = [
-    'linear-gradient(135deg, #667eea, #764ba2)',
-    'linear-gradient(135deg, #11998e, #38ef7d)',
-    'linear-gradient(135deg, #f093fb, #f5576c)',
-    'linear-gradient(135deg, #fc4a1a, #f7b733)'
+    'linear-gradient(135deg, #217a32, #52b562)',
+    'linear-gradient(135deg, #1a5c20, #2e9640)',
+    'linear-gradient(135deg, #2e9640, #85cf8f)',
+    'linear-gradient(135deg, #134516, #217a32)'
   ]
   const name = username.value || ''
   return colors[(name.charCodeAt(0) || 0) % colors.length]
@@ -210,7 +205,6 @@ const logout = () => {
 }
 
 const goMobileAdmin = () => router.push('/mobile/admin')
-const goAdminLogin = () => { window.location.href = '/admin/login' }
 
 const goToPage = (p) => {
   if (p === 'my-comments') {
@@ -225,7 +219,11 @@ const goToPage = (p) => {
     router.push('/mobile/settings')
     return
   }
-  if (p === 'help' || p === 'about') {
+  if (p === 'help') {
+    alert('帮助文档即将上线')
+    return
+  }
+  if (p === 'about') {
     router.push('/mobile/settings')
     return
   }
@@ -246,9 +244,9 @@ const goToPage = (p) => {
   top: 0;
   left: 0;
   right: 0;
-  height: 140px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-  border-radius: 0 0 32px 32px;
+  height: 160px;
+  background: var(--gradient-brand);
+  border-radius: 0 0 36px 36px;
 }
 .hero-content {
   position: relative;
@@ -260,6 +258,16 @@ const goToPage = (p) => {
 .avatar-container {
   position: relative;
   margin-bottom: 12px;
+}
+.avatar-container::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  opacity: 0.15;
+  filter: blur(8px);
+  z-index: -1;
 }
 .avatar-ring {
   width: 80px;
@@ -291,10 +299,11 @@ const goToPage = (p) => {
   margin-bottom: 16px;
 }
 .user-name {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   margin: 0;
+  letter-spacing: -0.5px;
 }
 .user-sub {
   font-size: var(--text-sm);
@@ -340,13 +349,25 @@ const goToPage = (p) => {
 /* 统计卡片 */
 .stats-card {
   display: flex;
-  background: var(--color-surface);
-  margin: -12px 16px 16px;
+  margin: -16px 16px 16px;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
   padding: 20px 0;
   position: relative;
   z-index: 1;
+}
+.theme-light .stats-card {
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-md);
+}
+.theme-dark .stats-card {
+  background: rgba(28, 28, 30, 0.78);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-md);
 }
 .stat-item {
   flex: 1;

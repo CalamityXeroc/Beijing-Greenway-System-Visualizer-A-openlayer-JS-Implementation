@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="trail-card" @click="handleClick">
+  <button class="trail-card" @click="handleClick" type="button">
     <div class="card-thumb">
       <img :src="imgSrc" :alt="trail.name" class="thumb-img" @error="onImgError" />
       <span v-if="trail.difficulty" class="diff-badge" :class="'diff-' + trail.difficulty">{{ diffText }}</span>
@@ -20,7 +20,7 @@
         <span v-if="trail.tags && trail.tags[0]" class="meta-tag">{{ trail.tags[0] }}</span>
       </div>
     </div>
-  </div>
+  </button>
 </template>
 
 <script setup>
@@ -52,32 +52,35 @@ const cleanDesc = computed(() => {
 })
 
 const imgSrc = computed(() => {
-  if (!props.trail.image) {
-    const hex = (props.trail.color || '2E7D32').replace('#', '')
-    return `https://dummyimage.com/300x180/${hex}/ffffff&text=${encodeURIComponent(props.trail.name || '')}`
-  }
-  return props.trail.image
+  return props.trail.image || null
 })
 
 const handleClick = () => emit('click', props.trail)
 const onImgError = (e) => {
-  const hex = (props.trail.color || '2E7D32').replace('#', '')
-  e.target.src = `https://dummyimage.com/300x180/${hex}/ffffff&text=${encodeURIComponent(props.trail.name || '绿道')}`
+  e.target.style.display = 'none'
 }
 </script>
 
 <style scoped>
 .trail-card {
   display: flex; gap: 12px;
+  width: 100%;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   padding: 12px;
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
   -webkit-user-select: none; user-select: none;
 }
-.trail-card:active { transform: scale(0.975); box-shadow: none; }
+.theme-dark .trail-card {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.trail-card:active { transform: scale(0.975); box-shadow: var(--shadow-sm); }
 
 .card-thumb {
   position: relative; flex: 0 0 96px; height: 96px;
@@ -87,13 +90,15 @@ const onImgError = (e) => {
 .thumb-img { width: 100%; height: 100%; object-fit: cover; }
 
 .diff-badge {
-  position: absolute; bottom: 5px; left: 5px;
-  padding: 2px 7px; border-radius: 4px;
-  font-size: 10px; font-weight: 600; color: #fff;
+  position: absolute; bottom: 6px; left: 6px;
+  padding: 3px 9px; border-radius: 6px;
+  font-size: 10px; font-weight: 700; color: #fff;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
-.diff-easy   { background: #34c759; }
-.diff-medium { background: #ff9f0a; }
-.diff-hard   { background: #ff3b30; }
+.diff-easy   { background: rgba(52, 199, 89, 0.85); }
+.diff-medium { background: rgba(255, 159, 10, 0.85); }
+.diff-hard   { background: rgba(255, 59, 48, 0.85); }
 
 .card-body {
   flex: 1; min-width: 0;
@@ -123,8 +128,8 @@ const onImgError = (e) => {
 .meta-dist {
   display: inline-flex; align-items: center; gap: 3px;
   padding: 3px 8px;
-  background: rgba(0,122,255,0.1);
-  color: #007aff;
+  background: var(--fill-primary);
+  color: var(--color-primary);
   border-radius: var(--radius-full);
   font-size: 11px; font-weight: var(--font-weight-semibold);
 }

@@ -37,6 +37,7 @@
         <span class="batch-count">已选 {{ selectedIds.length }} 条</span>
         <button class="batch-btn approve" @click="batchApprove">通过</button>
         <button class="batch-btn reject" @click="batchReject">下架</button>
+        <button class="batch-btn danger" @click="batchPermanentDelete">永久删除</button>
         <button class="batch-btn clear" @click="selectedIds = []">清空</button>
       </div>
     </Transition>
@@ -80,6 +81,10 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
             恢复
           </button>
+          <button class="action-btn danger" @click="permanentlyDeleteComment(comment)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            永久删除
+          </button>
         </div>
       </div>
 
@@ -119,7 +124,14 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminAuth } from '@/stores/adminAuth'
-import { fetchAdminComments, updateCommentStatus, batchUpdateCommentStatus, fetchCommentStats } from '../services/api'
+import {
+  fetchAdminComments,
+  updateCommentStatus,
+  batchUpdateCommentStatus,
+  fetchCommentStats,
+  deleteCommentPermanent,
+  batchDeleteCommentsPermanent
+} from '../services/api'
 
 const router = useRouter()
 const { token, isLoggedIn } = useAdminAuth()
@@ -256,6 +268,35 @@ const batchReject = async () => {
   }
 }
 
+const permanentlyDeleteComment = async (comment) => {
+  const ok = window.confirm('此操作会永久删除评论及关联回复/点赞/举报记录，无法恢复。确定继续吗？')
+  if (!ok) return
+
+  try {
+    await deleteCommentPermanent(comment.id, token.value)
+    selectedIds.value = selectedIds.value.filter((id) => id !== comment.id)
+    await loadComments()
+    await loadStats()
+  } catch (e) {
+    alert(e.message || '永久删除失败')
+  }
+}
+
+const batchPermanentDelete = async () => {
+  if (!selectedIds.value.length) return
+  const ok = window.confirm(`将永久删除 ${selectedIds.value.length} 条评论及关联数据，无法恢复。确定继续吗？`)
+  if (!ok) return
+
+  try {
+    await batchDeleteCommentsPermanent(selectedIds.value, token.value)
+    selectedIds.value = []
+    await loadComments()
+    await loadStats()
+  } catch (e) {
+    alert(e.message || '批量永久删除失败')
+  }
+}
+
 onMounted(() => {
   loadComments()
   loadStats()
@@ -374,6 +415,7 @@ onMounted(() => {
 }
 .batch-btn.approve { background: var(--fill-primary); color: var(--color-primary); }
 .batch-btn.reject { background: var(--fill-warning); color: var(--color-warning); }
+.batch-btn.danger { background: var(--fill-error); color: var(--color-error); }
 .batch-btn.clear { background: var(--color-surface-2); color: var(--color-text-secondary); }
 
 /* 评论列表 */
@@ -472,6 +514,7 @@ onMounted(() => {
 .action-btn.approve { background: var(--fill-primary); color: var(--color-primary); }
 .action-btn.reject { background: var(--fill-warning); color: var(--color-warning); }
 .action-btn.restore { background: rgba(50, 173, 230, 0.12); color: var(--color-info); }
+.action-btn.danger { background: var(--fill-error); color: var(--color-error); }
 .action-btn:active { opacity: 0.7; }
 
 /* 骨架屏 */

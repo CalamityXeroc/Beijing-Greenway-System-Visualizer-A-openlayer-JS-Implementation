@@ -28,7 +28,7 @@
     <div v-else-if="trail" class="detail-content">
       <!-- 迷你地图 -->
       <div ref="miniMapEl" class="mini-map-container"></div>
-      <div v-if="!mapReady" class="map-placeholder">
+      <div v-if="!mapReady" class="map-placeholder" role="img" aria-label="绿道地图位置">
         <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20l-5.447-2.724A1 1 0 0 1 3 16.382V5.618a1 1 0 0 1 1.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0 0 21 18.382V7.618a1 1 0 0 0-.553-.894L15 4m0 13V4M9 7l6-3"/></svg>
       </div>
 
@@ -555,6 +555,7 @@ onUnmounted(() => {
 .map-placeholder {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -637,10 +638,16 @@ onUnmounted(() => {
 
 /* 信息表格 */
 .info-table {
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.65);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--color-border);
+}
+.theme-dark .info-table {
+  background: rgba(28, 28, 30, 0.65);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 .info-row {
   display: flex;

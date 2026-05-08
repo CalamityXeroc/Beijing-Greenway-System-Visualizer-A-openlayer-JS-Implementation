@@ -85,8 +85,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* 优化渲染 */
   text-rendering: optimizeLegibility;
-  /* 平滑过渡 */
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #app {

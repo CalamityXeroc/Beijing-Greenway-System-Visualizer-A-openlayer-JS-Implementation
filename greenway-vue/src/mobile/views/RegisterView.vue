@@ -154,7 +154,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
-import { getApiBaseUrl } from '../services/api'
+import { getApiBaseUrl, registerUser } from '../services/api'
 
 const router = useRouter()
 const { setSession } = useUserAuth()
@@ -215,13 +215,7 @@ const handleRegister = async () => {
     if (form.nickname) body.nickname = form.nickname
     if (form.email) body.email = form.email
 
-    const res = await fetch(`${getApiBase()}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    const json = await res.json()
-    if (!res.ok) throw new Error(json.message || json.error || '注册失败，请稍后重试')
+    const json = await registerUser(body)
 
     // 后端响应格式: { code, message, data: { token, user } }
     const payload = json.data || json  // 兼容两种结构

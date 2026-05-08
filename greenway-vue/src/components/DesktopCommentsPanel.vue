@@ -162,12 +162,14 @@ const floorRows = computed(() => {
   const top = []
 
   for (const item of list.value) {
-    byId.set(item.id, { ...item, children: [] })
+    byId.set(item.id, { item, children: [] })
   }
 
   for (const node of byId.values()) {
-    if (node.parent_comment_id && byId.has(node.parent_comment_id)) {
-      byId.get(node.parent_comment_id).children.push(node)
+    const parentId = node.item?.parent_comment_id
+    const parentKey = Number(parentId)
+    if (parentId && byId.has(parentKey)) {
+      byId.get(parentKey).children.push(node)
     } else {
       top.push(node)
     }
@@ -175,14 +177,14 @@ const floorRows = computed(() => {
 
   const time = (v) => new Date(v?.created_at || 0).getTime()
   const rootSorter = sort.value === 'hot'
-    ? (a, b) => (Number(b.like_count || 0) - Number(a.like_count || 0)) || (time(b) - time(a))
-    : (a, b) => time(b) - time(a)
+    ? (a, b) => (Number(b.item?.like_count || 0) - Number(a.item?.like_count || 0)) || (time(b.item) - time(a.item))
+    : (a, b) => time(b.item) - time(a.item)
 
-  const childSorter = (a, b) => time(a) - time(b)
+  const childSorter = (a, b) => time(a.item) - time(b.item)
 
   function walk(node, depth, label, replyToName) {
     rows.push({
-      item: node,
+      item: node.item,
       depth,
       floorLabel: label,
       replyToName
@@ -190,7 +192,7 @@ const floorRows = computed(() => {
 
     node.children.sort(childSorter)
     node.children.forEach((child, index) => {
-      walk(child, depth + 1, `${label}-${index + 1}`, displayName(node))
+      walk(child, depth + 1, `${label}-${index + 1}`, displayName(node.item))
     })
   }
 

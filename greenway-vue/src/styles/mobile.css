@@ -405,19 +405,19 @@ body {
    ============================================ */
 
 @media (prefers-color-scheme: dark) {
-  .navbar,
-  .header {
+  :root:not([data-theme]) .navbar,
+  :root:not([data-theme]) .header {
     background-color: #1a1a1a;
     color: #ffffff;
   }
 
-  button {
+  :root:not([data-theme]) button {
     background-color: #2d2d2d;
     color: #ffffff;
   }
 
-  input,
-  textarea {
+  :root:not([data-theme]) input,
+  :root:not([data-theme]) textarea {
     background-color: #2d2d2d;
     color: #ffffff;
     border-color: #404040;

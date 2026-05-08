@@ -36,6 +36,7 @@
       <span>已选 {{ selectedIds.length }} 条</span>
       <button type="button" class="batch-btn ok" @click="batchUpdate('visible')">批量通过</button>
       <button type="button" class="batch-btn warn" @click="batchUpdate('hidden')">批量下架</button>
+      <button type="button" class="batch-btn danger" @click="batchPermanentDelete">批量永久删除</button>
       <button type="button" class="batch-btn info" @click="batchUpdate('pending')">批量改为审核中</button>
       <button type="button" class="batch-btn" @click="clearSelection">清空选择</button>
     </div>
@@ -72,6 +73,7 @@
               <button type="button" v-if="item.status === 'pending'" class="act-btn ok" @click="updateStatus(item.id, 'visible')">通过</button>
               <button type="button" v-if="item.status !== 'hidden'" class="act-btn warn" @click="updateStatus(item.id, 'hidden')">下架</button>
               <button type="button" v-if="item.status === 'hidden'" class="act-btn info" @click="updateStatus(item.id, 'visible')">恢复</button>
+              <button type="button" class="act-btn danger" @click="deletePermanent(item.id)">永久删除</button>
             </td>
           </tr>
           <tr v-if="!list.length">
@@ -303,6 +305,40 @@ async function batchUpdate(status) {
   }
 }
 
+async function deletePermanent(id) {
+  const ok = window.confirm('此操作会永久删除评论及关联回复/点赞/举报记录，无法恢复。确定继续吗？')
+  if (!ok) return
+
+  try {
+    await withPreservedScroll(async () => {
+      await apiFetch(`/api/admin/comments/${id}/permanent-delete`, { method: 'POST' })
+      selectedIds.value = selectedIds.value.filter((x) => x !== id)
+      await Promise.all([loadList(), loadStats()])
+    })
+  } catch (err) {
+    alert(err.message || '永久删除失败')
+  }
+}
+
+async function batchPermanentDelete() {
+  if (!selectedIds.value.length) return
+  const ok = window.confirm(`将永久删除 ${selectedIds.value.length} 条评论及关联数据，无法恢复。确定继续吗？`)
+  if (!ok) return
+
+  try {
+    await withPreservedScroll(async () => {
+      await apiFetch('/api/admin/comments/batch/permanent-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids: selectedIds.value })
+      })
+      clearSelection()
+      await Promise.all([loadList(), loadStats()])
+    })
+  } catch (err) {
+    alert(err.message || '批量永久删除失败')
+  }
+}
+
 onMounted(async () => {
   await Promise.all([loadList(), loadStats()])
 })
@@ -381,6 +417,7 @@ onMounted(async () => {
 .batch-btn.ok { color: #166534; border-color: #86efac; background: #f0fdf4; }
 .batch-btn.warn { color: #92400e; border-color: #fcd34d; background: #fffbeb; }
 .batch-btn.info { color: #1d4ed8; border-color: #93c5fd; background: #eff6ff; }
+.batch-btn.danger { color: #991b1b; border-color: #fca5a5; background: #fef2f2; }
 
 .table-wrap {
   background: #fff;
@@ -419,6 +456,7 @@ onMounted(async () => {
 .act-btn.ok { color: #166534; background: #f0fdf4; border-color: #86efac; }
 .act-btn.warn { color: #92400e; background: #fffbeb; border-color: #fcd34d; }
 .act-btn.info { color: #1d4ed8; background: #eff6ff; border-color: #93c5fd; }
+.act-btn.danger { color: #991b1b; background: #fef2f2; border-color: #fca5a5; }
 
 .status-tag {
   font-size: 12px;

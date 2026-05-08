@@ -36,10 +36,18 @@ export function useTheme() {
       isAutoMode.value = false
       console.log(`[useTheme] 使用已保存的用户主题偏好: ${userPref}`)
     } else {
-      // 使用北京时间自动判断
-      initialMode = isBeiJingDayTime() ? 'day' : 'night'
-      isAutoMode.value = !isLocked
-      console.log(`[useTheme] 根据北京时间初始化主题: ${initialMode}`)
+      // 从移动端主题同步
+      const mobilePref = localStorage.getItem('greenway-theme')
+      if (mobilePref === 'dark' || mobilePref === 'light') {
+        initialMode = mobilePref === 'dark' ? 'night' : 'day'
+        localStorage.setItem('appTheme', initialMode)
+        console.log(`[useTheme] 从移动端同步主题: ${initialMode}`)
+      } else {
+        // 使用北京时间自动判断
+        initialMode = isBeiJingDayTime() ? 'day' : 'night'
+        isAutoMode.value = !isLocked
+        console.log(`[useTheme] 根据北京时间初始化主题: ${initialMode}`)
+      }
     }
 
     setTheme(initialMode, false)

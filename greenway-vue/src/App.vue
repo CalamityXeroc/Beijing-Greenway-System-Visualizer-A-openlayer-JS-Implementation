@@ -15,6 +15,20 @@
 
       <!-- AI 绿道助手浮窗（仅在地图界面显示） -->
       <AIChatbot v-if="showChatbot" />
+
+      <!-- 页脚备案信息 -->
+      <footer class="site-footer" v-if="showFooter">
+        <div class="footer-inner">
+          <p>© 2025-2026 北京绿道</p>
+          <p>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">京ICP备2025153719号-2</a>
+          </p>
+          <p class="beian-police">
+            <img src="/备案图标.png" alt="公安备案" class="beian-icon">
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=11022902000516" target="_blank" rel="noopener noreferrer">京公网安备11022902000516号</a>
+          </p>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -48,6 +62,12 @@ const showChatbot = computed(() => {
     && p !== '/login'
     && p !== '/register'
     && !p.startsWith('/admin')
+})
+
+// 页脚备案信息：桌面端页面显示（首页已有独立 footer，不重复）
+const showFooter = computed(() => {
+  const p = route.path
+  return !p.startsWith('/mobile') && !p.startsWith('/admin') && p !== '/'
 })
 
 // 获取移动端优化工具
@@ -132,5 +152,62 @@ onMounted(() => {
   width: 100%;
   min-height: 100vh;
   overflow: visible;
+}
+
+/* 页脚备案信息 */
+.site-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  line-height: 1.8;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.site-footer p {
+  margin: 2px 0;
+}
+.site-footer a {
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.site-footer a:hover {
+  color: var(--theme-green, #4CAF50);
+  text-decoration: underline;
+}
+.beian-police {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.beian-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  opacity: 0.75;
+}
+</style>
+
+<!-- 全局夜间页面背景覆盖（非 scoped，避免详情页作用域问题） -->
+<style>
+[data-theme="night"] .greenroad-page,
+[data-theme="night"] .beiyunhe-page,
+[data-theme="night"] .wenyu-page,
+[data-theme="night"] .huanerhuan-page,
+[data-theme="night"] .liangmahe-page,
+[data-theme="night"] .changying-page,
+[data-theme="night"] .changping42-page,
+[data-theme="night"] .lidu-page,
+[data-theme="night"] .nansha-page,
+[data-theme="night"] .aosen-page,
+[data-theme="night"] .yingcheng-page,
+[data-theme="night"] .sanshan-page,
+[data-theme="night"] .chaoyang-page {
+  background: var(--bg-primary, #1a1a1a) !important;
 }
 </style>

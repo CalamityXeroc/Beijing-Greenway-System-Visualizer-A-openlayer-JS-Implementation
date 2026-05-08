@@ -118,7 +118,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
-import { getApiBaseUrl } from '../services/api'
+import { getApiBaseUrl, loginUser } from '../services/api'
 
 const router = useRouter()
 const { setSession } = useUserAuth()
@@ -147,18 +147,10 @@ const handleLogin = async () => {
   isLoading.value = true
   errorMsg.value = ''
   try {
-    const res = await fetch(`${getApiBase()}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: form.username, password: form.password })
-    })
-    const json = await res.json()
-    if (!res.ok) throw new Error(json.message || json.error || '登录失败，请检查用户名或密码')
-    // 后端响应格式: { code, message, data: { token, user } }
-    const payload = json.data || json  // 兼容两种结构
+    const json = await loginUser(form.username, form.password)
+    const payload = json.data || json
     if (!payload.token) throw new Error('登录失败：服务器未返回令牌')
     setSession(payload.token, payload.user)
-    // 跳转到个人页或之前的页面
     const redirect = router.currentRoute.value.query.redirect || '/mobile/profile'
     router.replace(redirect)
   } catch (err) {

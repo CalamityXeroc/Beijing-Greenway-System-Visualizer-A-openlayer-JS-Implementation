@@ -8,6 +8,8 @@
 
     <!-- 可滚动内容区 -->
     <div class="scroll-area" ref="scrollEl">
+      <!-- 装饰性光晕 -->
+      <div class="hero-glow" aria-hidden="true"></div>
       <!-- 轮播图 -->
       <div class="carousel-section">
         <div class="carousel" @touchstart="onTouchStart" @touchmove="onTouchMove" @touchend="onTouchEnd">
@@ -19,7 +21,7 @@
                 <h3 class="slide-title">{{ item.title }}</h3>
                 <p class="slide-desc">{{ item.desc }}</p>
               </div>
-              <div class="slide-icon">{{ item.icon }}</div>
+              <div class="slide-icon" v-html="item.icon"></div>
             </div>
           </div>
           <div class="carousel-dots">
@@ -33,7 +35,7 @@
       <div class="quick-section">
         <div class="quick-grid">
           <button class="quick-item" v-for="entry in quickEntries" :key="entry.id" @click="handleQuickEntry(entry)">
-            <span class="quick-item-icon" :style="{ background: entry.bg }">{{ entry.icon }}</span>
+            <span class="quick-item-icon" :style="{ background: entry.bg }" v-html="entry.icon"></span>
             <span class="quick-item-label">{{ entry.label }}</span>
           </button>
         </div>
@@ -42,11 +44,11 @@
       <!-- 热门绿道 -->
       <section class="section">
         <div class="section-header">
-          <span class="section-title">🔥 热门绿道</span>
+          <span class="section-title">热门绿道</span>
           <button class="section-action" @click="goToList">查看全部</button>
         </div>
         <div class="hot-trails">
-          <div class="hot-trail-card" v-for="trail in hotTrails" :key="trail.id" @click="viewTrailDetail(trail)">
+          <button class="hot-trail-card" v-for="trail in hotTrails" :key="trail.id" @click="viewTrailDetail(trail)" type="button">
             <div class="hot-trail-rank" :class="{ top: trail.rank <= 3 }">{{ trail.rank }}</div>
             <div class="hot-trail-info">
               <h4 class="hot-trail-name">{{ trail.name }}</h4>
@@ -60,14 +62,14 @@
               <span class="score-value">{{ trail.score }}</span>
               <span class="score-star">★</span>
             </div>
-          </div>
+          </button>
         </div>
       </section>
 
       <!-- 社区动态 -->
       <section class="section">
         <div class="section-header">
-          <span class="section-title">💬 社区动态</span>
+          <span class="section-title">社区动态</span>
           <button class="section-action" @click="refreshFeed">刷新</button>
         </div>
         
@@ -153,38 +155,38 @@ const hotTrails = ref([])
 
 // 轮播图数据
 const banners = [
-  { 
-    title: '温榆河绿道', 
-    desc: '京城最美滨河骑行线', 
+  {
+    title: '温榆河绿道',
+    desc: '京城最美滨河骑行线',
     badge: '精选推荐',
-    icon: '🌊',
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    icon: '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 12h18M3 6l9-3 9 3M3 18l9 3 9-3"/></svg>',
+    gradient: 'linear-gradient(135deg, #1a5c20 0%, #2e9640 50%, #52b562 100%)',
     id: 1
   },
-  { 
-    title: '奥林匹克森林公园', 
-    desc: '感受绿色奥运遗产', 
+  {
+    title: '奥林匹克森林公园',
+    desc: '感受绿色奥运遗产',
     badge: '热门打卡',
-    icon: '🌳',
-    gradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+    icon: '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"/><path d="M12 7v5l3 3"/></svg>',
+    gradient: 'linear-gradient(135deg, #0c2e0e 0%, #217a32 50%, #2e9640 100%)',
     id: 9
   },
-  { 
-    title: '亮马河绿道', 
-    desc: '城市夜景最佳观赏地', 
+  {
+    title: '亮马河绿道',
+    desc: '城市夜景最佳观赏地',
     badge: '新鲜上线',
-    icon: '🌃',
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    icon: '<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    gradient: 'linear-gradient(135deg, #134516 0%, #1a5c20 50%, #2e9640 100%)',
     id: 3
   }
 ]
 
 // 快捷入口
 const quickEntries = [
-  { id: 'nearby', icon: '📍', label: '附近', bg: 'linear-gradient(135deg, #667eea, #764ba2)' },
-  { id: 'hot', icon: '🔥', label: '热门', bg: 'linear-gradient(135deg, #f093fb, #f5576c)' },
-  { id: 'riding', icon: '🚴', label: '骑行', bg: 'linear-gradient(135deg, #11998e, #38ef7d)' },
-  { id: 'running', icon: '🏃', label: '跑步', bg: 'linear-gradient(135deg, #fc4a1a, #f7b733)' }
+  { id: 'nearby', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>', label: '附近', bg: 'linear-gradient(135deg, #2e9640, #52b562)' },
+  { id: 'hot', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>', label: '热门', bg: 'linear-gradient(135deg, #d4a017, #f5c542)' },
+  { id: 'riding', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>', label: '骑行', bg: 'linear-gradient(135deg, #217a32, #2e9640)' },
+  { id: 'running', icon: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v5l-3 3m0 0l-3 5m3-5h6l3 5"/></svg>', label: '跑步', bg: 'linear-gradient(135deg, #b8860b, #d4a017)' }
 ]
 
 // 轮播自动播放
@@ -263,8 +265,16 @@ const loadFeed = async () => {
 const refreshFeed = () => loadFeed()
 const loadMoreFeed = async () => {
   loadingMore.value = true
-  await new Promise(r => setTimeout(r, 1000))
-  loadingMore.value = false
+  try {
+    const data = await fetchRecentComments(feedList.value.length + 10)
+    if (data.data?.length) {
+      feedList.value = [...feedList.value, ...data.data]
+    }
+  } catch (e) {
+    console.error('加载更多动态失败:', e)
+  } finally {
+    loadingMore.value = false
+  }
 }
 
 // 工具函数
@@ -334,6 +344,30 @@ onUnmounted(() => {
   overscroll-behavior: contain;
 }
 
+/* 装饰性光晕 */
+.hero-glow {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(46,150,64,0.08), transparent 70%);
+  pointer-events: none;
+}
+
+/* 区块错位入场动画 */
+.carousel-section { animation: fadeSlideUp 0.6s ease-out both; }
+.quick-section { animation: fadeSlideUp 0.6s ease-out 0.1s both; }
+.section:nth-of-type(1) { animation: fadeSlideUp 0.6s ease-out 0.2s both; }
+.section:nth-of-type(2) { animation: fadeSlideUp 0.6s ease-out 0.3s both; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* 轮播图 */
 .carousel-section {
   padding: 0 16px 16px;
@@ -376,10 +410,11 @@ onUnmounted(() => {
   backdrop-filter: blur(8px);
 }
 .slide-title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  letter-spacing: -0.3px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.35);
 }
 .slide-desc {
   font-size: 13px;
@@ -390,8 +425,13 @@ onUnmounted(() => {
   position: absolute;
   top: 20px;
   right: 20px;
-  font-size: 40px;
   opacity: 0.3;
+  color: #fff;
+  line-height: 1;
+}
+.slide-icon svg {
+  width: 40px;
+  height: 40px;
 }
 .carousel-dots {
   position: absolute;
@@ -431,9 +471,13 @@ onUnmounted(() => {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   margin-bottom: 10px;
-  box-shadow: var(--shadow-sm);
+  border-left: 3px solid transparent;
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.hot-trail-card:nth-child(-n+3) {
+  border-left-color: var(--color-primary);
 }
 .hot-trail-card:active {
   transform: scale(0.98);

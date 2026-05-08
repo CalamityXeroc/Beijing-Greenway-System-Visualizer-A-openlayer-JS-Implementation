@@ -285,6 +285,25 @@ export const batchUpdateCommentStatus = async (ids, status, token) => {
 }
 
 /**
+ * 永久删除评论（管理员）
+ */
+export const deleteCommentPermanent = async (commentId, token) => {
+  return adminFetch(`/api/admin/comments/${commentId}/permanent-delete`, {
+    method: 'POST'
+  }, token)
+}
+
+/**
+ * 批量永久删除评论（管理员）
+ */
+export const batchDeleteCommentsPermanent = async (ids, token) => {
+  return adminFetch('/api/admin/comments/batch/permanent-delete', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
+  }, token)
+}
+
+/**
  * 获取评论统计（管理员）
  */
 export const fetchCommentStats = async (days, token) => {
@@ -296,4 +315,30 @@ export const fetchCommentStats = async (days, token) => {
  */
 export const fetchDashboardStats = async (token) => {
   return adminFetch('/api/admin/dashboard/stats', {}, token)
+}
+
+// ========== 用户认证 API ==========
+
+/**
+ * 用户登录
+ */
+export const loginUser = async (username, password) => {
+  const res = await fetch(buildUrl('/api/auth/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  return readJson(res)
+}
+
+/**
+ * 用户注册
+ */
+export const registerUser = async (data) => {
+  const res = await fetch(buildUrl('/api/auth/register'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return readJson(res)
 }

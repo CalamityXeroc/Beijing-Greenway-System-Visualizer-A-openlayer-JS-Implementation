@@ -69,7 +69,7 @@
             <span class="item-label">深色模式</span>
             <div class="item-right">
               <label class="switch">
-                <input type="checkbox" v-model="darkMode" @change="toggleDarkMode">
+                <input type="checkbox" :checked="darkMode" @change="toggleDarkMode" aria-label="切换深色模式">
                 <span class="slider"></span>
               </label>
             </div>
@@ -84,13 +84,10 @@
               </div>
             </div>
           </div>
-          <div class="setting-item" @click="showLanguageSheet">
+          <div class="setting-item">
             <span class="item-label">语言</span>
             <div class="item-right">
               <span class="item-hint">简体中文</span>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
             </div>
           </div>
         </div>
@@ -150,15 +147,6 @@
           隐私与数据
         </h2>
         <div class="setting-group">
-          <div class="setting-item" @click="goDiagnostic">
-            <span class="item-label">网络诊断</span>
-            <div class="item-right">
-              <span class="item-hint">检查后端连接</span>
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
-            </div>
-          </div>
           <div class="setting-item" @click="clearCache">
             <span class="item-label">清除缓存</span>
             <div class="item-right">
@@ -236,34 +224,6 @@
 
     <div class="bottom-safe"></div>
 
-    <!-- 语言选择面板 -->
-    <Teleport to="body">
-      <div class="action-sheet-overlay" v-if="showLanguage" @click="showLanguage = false">
-        <div class="action-sheet" @click.stop>
-          <div class="sheet-header">
-            <h3>选择语言</h3>
-          </div>
-          <div class="sheet-options">
-            <button class="sheet-option active">
-              <span>简体中文</span>
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </button>
-            <button class="sheet-option" disabled>
-              <span>繁體中文</span>
-              <span class="coming">即将支持</span>
-            </button>
-            <button class="sheet-option" disabled>
-              <span>English</span>
-              <span class="coming">即将支持</span>
-            </button>
-          </div>
-          <button class="sheet-cancel" @click="showLanguage = false">取消</button>
-        </div>
-      </div>
-    </Teleport>
-
     <!-- 关于页面 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showAboutModal" @click="showAboutModal = false">
@@ -299,27 +259,48 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserAuth } from '@/stores/userAuth'
+import { useAppTheme } from '@/mobile/composables/useAppTheme'
 
 const router = useRouter()
-const { isLoggedIn, logout, user } = useUserAuth()
+const { isLoggedIn, clearSession, currentUser } = useUserAuth()
+const { isDark: darkMode, toggleTheme } = useAppTheme()
+const toggleDarkMode = toggleTheme
 
 // 设置状态
-const darkMode = ref(false)
 const fontSizeLevel = ref(1)
 const fontSizeLabels = ['小', '标准', '大']
 const notifyComments = ref(true)
 const notifySystem = ref(true)
 const notifyActivity = ref(false)
-const cacheSize = ref('12.3 MB')
+const cacheSize = ref('计算中...')
 const appVersion = ref('1.0.0')
-const showLanguage = ref(false)
 const showAboutModal = ref(false)
 
 const maskedPhone = computed(() => {
-  if (!user.value?.phone) return ''
-  const p = user.value.phone
+  if (!currentUser.value?.phone) return ''
+  const p = currentUser.value.phone
   return p.slice(0, 3) + '****' + p.slice(-4)
 })
+
+function calcCacheSize() {
+  try {
+    let total = 0
+    for (const key in localStorage) {
+      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+        total += (localStorage.getItem(key) || '').length * 2 // UTF-16
+      }
+    }
+    if (total < 1024) {
+      cacheSize.value = total + ' B'
+    } else if (total < 1024 * 1024) {
+      cacheSize.value = (total / 1024).toFixed(1) + ' KB'
+    } else {
+      cacheSize.value = (total / 1024 / 1024).toFixed(1) + ' MB'
+    }
+  } catch {
+    cacheSize.value = '未知'
+  }
+}
 
 function goBack() {
   router.back()
@@ -337,15 +318,7 @@ function bindPhone() {
   alert('手机绑定功能即将上线')
 }
 
-function toggleDarkMode() {
-  if (darkMode.value) {
-    document.documentElement.classList.add('dark-theme')
-    localStorage.setItem('theme', 'dark')
-  } else {
-    document.documentElement.classList.remove('dark-theme')
-    localStorage.setItem('theme', 'light')
-  }
-}
+// toggleDarkMode 由 useAppTheme 提供
 
 function decreaseFontSize() {
   if (fontSizeLevel.value > 0) {
@@ -367,29 +340,21 @@ function applyFontSize() {
   localStorage.setItem('fontSize', fontSizeLevel.value)
 }
 
-function showLanguageSheet() {
-  showLanguage.value = true
-}
-
-function goDiagnostic() {
-  router.push('/mobile/diagnostic')
-}
-
 function clearCache() {
   if (confirm('确定清除所有缓存数据吗？')) {
-    localStorage.clear()
+    ;['greenway-theme', 'fontSize', 'appTheme', 'appThemeLock', 'theme'].forEach(k => localStorage.removeItem(k))
     sessionStorage.clear()
-    cacheSize.value = '0 KB'
+    calcCacheSize()
     alert('缓存已清除')
   }
 }
 
 function showPrivacyPolicy() {
-  alert('隐私政策页面开发中')
+  router.push('/mobile/privacy')
 }
 
 function showUserAgreement() {
-  alert('用户协议页面开发中')
+  router.push('/mobile/agreement')
 }
 
 function checkUpdate() {
@@ -397,7 +362,7 @@ function checkUpdate() {
 }
 
 function showFeedback() {
-  alert('意见反馈功能即将上线')
+  router.push('/mobile/feedback')
 }
 
 function showAbout() {
@@ -406,7 +371,7 @@ function showAbout() {
 
 function confirmLogout() {
   if (confirm('确定要退出登录吗？')) {
-    logout()
+    clearSession()
     router.push('/mobile/login')
   }
 }
@@ -425,6 +390,9 @@ onMounted(() => {
     fontSizeLevel.value = parseInt(savedFontSize, 10)
     applyFontSize()
   }
+
+  // 计算缓存大小
+  calcCacheSize()
 })
 </script>
 
@@ -554,7 +522,7 @@ onMounted(() => {
   inset: 0;
   background: var(--color-surface-3);
   border-radius: 30px;
-  transition: background var(--transition-normal);
+  transition: background var(--transition-base);
 }
 .slider::before {
   content: '';
@@ -565,7 +533,7 @@ onMounted(() => {
   bottom: 3px;
   background: #fff;
   border-radius: 50%;
-  transition: transform var(--transition-normal);
+  transition: transform var(--transition-base);
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 input:checked + .slider {
@@ -634,7 +602,7 @@ input:checked + .slider::before {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  animation: fadeIn var(--transition-normal);
+  animation: fadeIn var(--transition-base);
 }
 @keyframes fadeIn { from { opacity: 0; } }
 
@@ -644,7 +612,7 @@ input:checked + .slider::before {
   background: var(--color-surface);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   padding-bottom: env(safe-area-inset-bottom, 20px);
-  animation: slideUp var(--transition-normal);
+  animation: slideUp var(--transition-base);
 }
 @keyframes slideUp { from { transform: translateY(100%); } }
 
@@ -713,7 +681,7 @@ input:checked + .slider::before {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  animation: fadeIn var(--transition-normal);
+  animation: fadeIn var(--transition-base);
 }
 
 .modal-content {
@@ -722,7 +690,7 @@ input:checked + .slider::before {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  animation: scaleIn var(--transition-normal);
+  animation: scaleIn var(--transition-base);
 }
 @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } }
 

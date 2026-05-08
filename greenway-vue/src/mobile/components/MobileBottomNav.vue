@@ -8,6 +8,7 @@
         :class="{ active: activeTab === item.id }"
         @click="handleTabChange(item.id)"
         :aria-label="item.label"
+        :aria-current="activeTab === item.id ? 'page' : undefined"
       >
         <!-- 活跃态胶囊背景 -->
         <span class="tab-pill" v-if="activeTab === item.id"></span>
@@ -92,19 +93,20 @@ watch(() => props.modelValue, v => { activeTab.value = v })
   left: 0;
   right: 0;
   z-index: var(--z-fixed);
-  background: var(--color-surface);
-  border-top: 0.5px solid var(--color-border);
-  /* 毛玻璃效果 */
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 -1px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* 解决毛玻璃时的背景透明问题 */
 .theme-light .bottom-nav {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: blur(30px) saturate(200%);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 .theme-dark .bottom-nav {
-  background: rgba(28, 28, 30, 0.85);
+  background: rgba(28, 28, 30, 0.82);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  backdrop-filter: blur(30px) saturate(200%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .nav-inner {
@@ -135,6 +137,9 @@ watch(() => props.modelValue, v => { activeTab.value = v })
 .nav-tab.active {
   color: var(--color-primary);
 }
+.nav-tab.active .tab-label {
+  font-weight: var(--font-weight-semibold);
+}
 
 /* 活跃胶囊背景 */
 .tab-pill {
@@ -142,11 +147,13 @@ watch(() => props.modelValue, v => { activeTab.value = v })
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 52px;
+  width: 48px;
   height: 32px;
   border-radius: 16px;
-  background: var(--fill-primary);
+  background: var(--gradient-brand);
   pointer-events: none;
+  box-shadow: 0 2px 12px rgba(33, 122, 50, 0.25);
+  transition: all var(--transition-spring);
 }
 
 .tab-icon {
@@ -163,7 +170,7 @@ watch(() => props.modelValue, v => { activeTab.value = v })
 .tab-label {
   position: relative;
   z-index: 1;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: var(--font-weight-medium);
   line-height: 1;
   letter-spacing: 0.2px;

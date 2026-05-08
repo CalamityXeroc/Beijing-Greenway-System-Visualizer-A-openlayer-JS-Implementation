@@ -1,5 +1,5 @@
 <template>
-  <nav class="top-navbar" :class="{ 'theme-night': isNight }">
+  <nav class="top-navbar">
     <!-- 左：Logo + 标题 -->
     <div class="nav-brand">
       <div class="brand-logo">
@@ -402,7 +402,6 @@
 import { ref, computed } from 'vue'
 import { useUserAuth } from '@/stores/userAuth'
 import { useAdminAuth } from '@/stores/adminAuth'
-import { useGlobalTheme } from '@/utils/useTheme'
 
 const props = defineProps({
   toolbarRef: { type: Object, default: null },
@@ -424,10 +423,6 @@ const userAuth = useUserAuth()
 const { isLoggedIn: adminIsLoggedIn, adminUser } = useAdminAuth()
 const openMenuId = ref(null)
 const fileInputRef = ref(null)
-
-// 主题状态：读取全局主题，不依赖 toolbarRef
-const { theme: globalTheme } = useGlobalTheme()
-const isNight = computed(() => globalTheme.value === 'night')
 
 // ---------- 本地绘制状态（可靠响应式）----------
 // 不依赖穿透组件 proxy 读取 toolbarRef.activeTool.value，
@@ -511,22 +506,22 @@ function handleLogout() {
 }
 
 /* 夜间主题 */
-.top-navbar.theme-night {
+[data-theme="night"] .top-navbar {
   background: rgba(18, 30, 20, 0.97);
   border-bottom-color: rgba(76, 175, 80, 0.2);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
 }
-.top-navbar.theme-night .brand-title { color: #A5D6A7; }
-.top-navbar.theme-night .brand-sub   { color: #4CAF50; }
-.top-navbar.theme-night .nav-btn     { color: #81C784; }
-.top-navbar.theme-night .nav-btn:hover,
-.top-navbar.theme-night .nav-btn.active { background: rgba(76,175,80,.15); color: #A5D6A7; }
-.top-navbar.theme-night .has-active .nav-btn { color: #69F0AE; }
-.top-navbar.theme-night .dropdown    { background: #1a2e1a; border-color: rgba(76,175,80,.2); }
-.top-navbar.theme-night .dd-btn      { color: #81C784; }
-.top-navbar.theme-night .dd-btn:hover{ background: rgba(76,175,80,.12); }
-.top-navbar.theme-night .dropdown-section { color: #4CAF50; }
-.top-navbar.theme-night .user-btn    { color: #81C784; border-color: rgba(76,175,80,.3); }
+[data-theme="night"] .top-navbar .brand-title { color: #A5D6A7; }
+[data-theme="night"] .top-navbar .brand-sub   { color: #4CAF50; }
+[data-theme="night"] .top-navbar .nav-btn     { color: #81C784; }
+[data-theme="night"] .top-navbar .nav-btn:hover,
+[data-theme="night"] .top-navbar .nav-btn.active { background: rgba(76,175,80,.15); color: #A5D6A7; }
+[data-theme="night"] .top-navbar .has-active .nav-btn { color: #69F0AE; }
+[data-theme="night"] .top-navbar .dropdown    { background: #1a2e1a; border-color: rgba(76,175,80,.2); }
+[data-theme="night"] .top-navbar .dd-btn      { color: #81C784; }
+[data-theme="night"] .top-navbar .dd-btn:hover{ background: rgba(76,175,80,.12); }
+[data-theme="night"] .top-navbar .dropdown-section { color: #4CAF50; }
+[data-theme="night"] .top-navbar .user-btn    { color: #81C784; border-color: rgba(76,175,80,.3); }
 
 /* === Brand === */
 .nav-brand {
@@ -557,12 +552,12 @@ function handleLogout() {
   border-color: rgba(46,125,50,0.5);
   color: #1B5E20;
 }
-.top-navbar.theme-night .back-home-btn {
+[data-theme="night"] .top-navbar .back-home-btn {
   border-color: rgba(76,175,80,0.3);
   background: rgba(76,175,80,0.06);
   color: #81C784;
 }
-.top-navbar.theme-night .back-home-btn:hover {
+[data-theme="night"] .top-navbar .back-home-btn:hover {
   background: rgba(76,175,80,0.15);
   border-color: rgba(76,175,80,0.55);
   color: #A5D6A7;
@@ -740,11 +735,11 @@ function handleLogout() {
   cursor: pointer;
 }
 /* 夜间模式适配 */
-.top-navbar.theme-night .dd-btn--export { color: #93c5fd; }
-.top-navbar.theme-night .dd-btn--export:hover { background: rgba(59,130,246,.12); }
-.top-navbar.theme-night .dd-style-label { color: #6b7280; }
-.top-navbar.theme-night .dd-select { background: #1a2e1a; border-color: rgba(76,175,80,.3); color: #A5D6A7; }
-.top-navbar.theme-night .dd-style-val { color: #A5D6A7; }
+[data-theme="night"] .top-navbar .dd-btn--export { color: #93c5fd; }
+[data-theme="night"] .top-navbar .dd-btn--export:hover { background: rgba(59,130,246,.12); }
+[data-theme="night"] .top-navbar .dd-style-label { color: #6b7280; }
+[data-theme="night"] .top-navbar .dd-select { background: #1a2e1a; border-color: rgba(76,175,80,.3); color: #A5D6A7; }
+[data-theme="night"] .top-navbar .dd-style-val { color: #A5D6A7; }
 
 /* === Right user menu === */
 .nav-right { margin-left: auto; flex-shrink: 0; }

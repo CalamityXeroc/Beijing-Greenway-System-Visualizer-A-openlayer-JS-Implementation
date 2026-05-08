@@ -166,7 +166,7 @@ const refreshStats = async () => {
 }
 
 const clearCache = () => {
-  localStorage.clear()
+  ;['greenway-theme', 'fontSize', 'appTheme', 'appThemeLock', 'theme'].forEach(k => localStorage.removeItem(k))
   alert('缓存已清除')
 }
 

@@ -324,24 +324,6 @@ onMounted(() => {
   addLog(`API地址: ${apiBaseUrl.value || '(使用相对路径)'}`, 'info')
   addLog('点击"重新测试所有"按钮开始诊断', 'info')
 })
-      tests.value[2].status = 'success'
-      tests.value[2].result = '在线 (Web环境)'
-      addLog('网络状态: 在线 (Web环境)', 'info')
-    }
-  } catch (err) {
-    tests.value[2].status = 'failed'
-    tests.value[2].result = err.message
-    addLog(`网络状态检查失败: ${err.message}`, 'error')
-  }
-
-  testing.value = false
-  addLog('诊断测试完成', 'info')
-}
-
-onMounted(() => {
-  addLog('网络诊断工具已加载', 'info')
-  addLog(`运行环境: ${isCapacitor.value ? 'Capacitor' : 'Web'}`, 'info')
-})
 </script>
 
 <style scoped>

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="map-view">
     <!-- 地图全屏容器 -->
-    <div ref="mapContainer" class="map-container" :class="{ 'night-mode': isDark }"></div>
+    <div ref="mapContainer" class="map-container" :class="{ 'night-mode': isDark }" role="application" aria-label="绿道地图"></div>
 
     <!-- 用户位置标记（CSS 脉冲动画，通过 Overlay 定位） -->
     <div ref="locationMarkerEl" class="location-marker-wrap" style="display:none">
@@ -90,8 +90,14 @@ const initMap = () => {
   if (!mapContainer.value) return
   const rect = mapContainer.value.getBoundingClientRect()
   if (rect.width === 0 || rect.height === 0) {
-    setTimeout(() => initMap(), 200); return
+    if (!initMap.retryCount) initMap.retryCount = 0
+    initMap.retryCount++
+    if (initMap.retryCount < 3) {
+      setTimeout(() => initMap(), 500)
+    }
+    return
   }
+  initMap.retryCount = 0
 
   map = new Map({
     target: mapContainer.value,
@@ -315,10 +321,23 @@ onUnmounted(() => { map?.dispose() })
   left: 0; right: 0;
   bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
   z-index: var(--z-overlay);
-  background: var(--color-surface);
   border-radius: 20px 20px 0 0;
   padding: 8px 16px 16px;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+}
+
+.theme-light .trail-sheet {
+  background: rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+}
+.theme-dark .trail-sheet {
+  background: rgba(28, 28, 30, 0.82);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
 }
 .sheet-drag-bar {
   width: 36px; height: 4px;
@@ -399,7 +418,7 @@ onUnmounted(() => { map?.dispose() })
 
 /* 面板出入场动画 */
 .trail-sheet-enter-active, .trail-sheet-leave-active {
-  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
 }
-.trail-sheet-enter-from, .trail-sheet-leave-to { transform: translateY(100%); }
+.trail-sheet-enter-from, .trail-sheet-leave-to { transform: translateY(100%); opacity: 0; }
 </style>

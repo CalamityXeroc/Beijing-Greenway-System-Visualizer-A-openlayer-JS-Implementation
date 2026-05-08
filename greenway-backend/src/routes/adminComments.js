@@ -141,6 +141,84 @@ router.patch('/batch/status', authMiddleware, adminOnly, async (req, res) => {
   }
 });
 
+async function batchPermanentDelete(req, res) {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids.map((n) => parseInt(n, 10)).filter((n) => !Number.isNaN(n)) : [];
+
+  if (!ids.length) {
+    return res.status(400).json({ code: 400, message: 'ids 不能为空' });
+  }
+
+  const client = await req.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `DELETE FROM greenway_comments
+       WHERE id = ANY($1::int[])
+       RETURNING id`,
+      [ids]
+    );
+
+    await client.query('COMMIT');
+
+    res.json({
+      code: 200,
+      message: '批量永久删除成功',
+      data: { deleted: result.rows.length }
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[admin/comments/batch-permanent]', err);
+    res.status(500).json({ code: 500, message: '服务器错误' });
+  } finally {
+    client.release();
+  }
+}
+
+async function permanentDelete(req, res) {
+  const commentId = parseInt(req.params.id, 10);
+  if (Number.isNaN(commentId)) {
+    return res.status(400).json({ code: 400, message: '评论 ID 非法' });
+  }
+
+  const client = await req.pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `DELETE FROM greenway_comments
+       WHERE id = $1
+       RETURNING id`,
+      [commentId]
+    );
+
+    if (result.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ code: 404, message: '评论不存在' });
+    }
+
+    await client.query('COMMIT');
+
+    res.json({
+      code: 200,
+      message: '评论已永久删除',
+      data: { id: commentId }
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('[admin/comments/permanent]', err);
+    res.status(500).json({ code: 500, message: '服务器错误' });
+  } finally {
+    client.release();
+  }
+}
+
+router.delete('/batch/permanent', authMiddleware, adminOnly, batchPermanentDelete);
+router.post('/batch/permanent-delete', authMiddleware, adminOnly, batchPermanentDelete);
+
+router.delete('/:id/permanent', authMiddleware, adminOnly, permanentDelete);
+router.post('/:id/permanent-delete', authMiddleware, adminOnly, permanentDelete);
+
 router.get('/stats', authMiddleware, adminOnly, async (req, res) => {
   const days = Math.min(90, Math.max(7, parsePage(req.query.days, 30)));
 

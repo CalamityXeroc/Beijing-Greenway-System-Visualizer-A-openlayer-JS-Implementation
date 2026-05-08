@@ -207,12 +207,12 @@
             <div class="section-heading">
               <div class="section-tag">ABOUT</div>
               <h2 class="section-title">关于平台</h2>
-              <p class="section-desc">北京绿道信息化管理平台简介</p>
+              <p class="section-desc">北京绿道系统可视化平台简介</p>
             </div>
             <div class="about-grid">
               <div class="about-main">
                 <p class="about-text">
-                  北京绿道系统信息化平台整合了全市主要绿道的空间数据、属性信息与游憩资源，
+                  北京绿道系统可视化平台整合了全市主要绿道的空间数据、属性信息与游憩资源，
                   依托 <strong>WebGIS 技术</strong>实现绿道路网的可视化展示与交互式查询，
                   为市民、游客和规划管理部门提供精准的绿道信息服务。
                   平台覆盖<strong>东城、西城、朝阳、海淀、昌平、通州</strong>等多区，
@@ -352,9 +352,18 @@
                 </div>
               </div>
               <div class="footer-bottom">
-                <span>© 2025 北京绿道系统信息化平台 · 保留所有权利</span>
+                <span>© 2025-2026 北京绿道系统信息化平台 · 保留所有权利</span>
                 <span class="footer-sep">·</span>
                 <span>数据仅供参考，请以官方发布为准</span>
+              </div>
+              <div class="footer-filing">
+                <p>
+                  <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">京ICP备2025153719号-2</a>
+                </p>
+                <p class="beian-police">
+                  <img src="/备案图标.png" alt="公安备案" class="beian-icon" width="18" height="18">
+                  <a href="https://beian.mps.gov.cn/#/query/webSearch?code=11022902000516" target="_blank" rel="noopener noreferrer">京公网安备11022902000516号</a>
+                </p>
               </div>
             </footer>
           </div>
@@ -1032,6 +1041,12 @@ a.fl-link { cursor: pointer; }
 a.fl-link:hover { color: #A5D6A7; }
 .footer-bottom { display: flex; align-items: center; gap: 8px; padding-top: 16px; border-top: 1px solid rgba(105,240,174,0.05); font-size: 0.73rem; color: #37474F; }
 .footer-sep { color: #455A64; }
+.footer-filing { margin-top: 10px; text-align: center; font-size: 13px; color: #546E7A; line-height: 1.8; }
+.footer-filing p { margin: 2px 0; }
+.footer-filing a { color: #546E7A; text-decoration: none; transition: color 0.2s; }
+.footer-filing a:hover { color: #69F0AE; text-decoration: underline; }
+.beian-police { display: inline-flex; align-items: center; gap: 6px; }
+.beian-icon { width: 18px; height: 18px; vertical-align: middle; opacity: 0.75; }
 
 /* ══════════════════════════════════════════════════
    响应式

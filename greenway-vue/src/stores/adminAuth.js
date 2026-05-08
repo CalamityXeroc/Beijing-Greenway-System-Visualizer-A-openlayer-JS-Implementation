@@ -43,12 +43,21 @@ export function useAdminAuth() {
         ...(options.headers || {}),
       },
     })
-    const data = await res.json()
+    const raw = await res.text()
+    let data = {}
+    try {
+      data = raw ? JSON.parse(raw) : {}
+    } catch {
+      data = {}
+    }
+
     if (!res.ok) {
       if (res.status === 401) clearSession()   // token 过期/无效，立即清除本地会话
       throw new Error(data.message || `HTTP ${res.status}`)
     }
-    return data
+    if (!raw) return {}
+    if (Object.keys(data).length) return data
+    throw new Error('接口返回非 JSON 数据，请检查后端路由或反向代理配置')
   }
 
   return { isLoggedIn, adminUser, token, setSession, clearSession, apiFetch }

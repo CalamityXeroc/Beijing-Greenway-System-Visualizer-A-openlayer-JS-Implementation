@@ -1,14 +1,14 @@
 <template>
   <div class="mobile-map-toolbar">
     <!-- 工具箱触发按钮 -->
-    <button class="fab fab-secondary" title="工具箱" @click="toggleToolbox">
+    <button class="fab fab-secondary" title="工具箱" @click="toggleToolbox" :aria-expanded="isOpen">
       <i class="fas fa-tools"></i>
     </button>
 
     <!-- 工具箱底部面板 -->
     <Teleport to="body">
-      <div v-if="isOpen" class="toolbox-overlay" @click="closeToolbox">
-        <div class="toolbox-panel" @click.stop>
+      <div v-if="isOpen" class="toolbox-overlay" @click="closeToolbox" @keydown.escape="closeToolbox">
+        <div class="toolbox-panel" @click.stop role="dialog" aria-modal="true" aria-label="地图工具箱">
           <div class="toolbox-header">
             <h3>地图工具</h3>
             <button class="close-btn" @click="closeToolbox">
@@ -487,9 +487,10 @@ onUnmounted(() => {
 .clear-btn {
   width: 100%;
   padding: 14px;
-  background: #fff0f0;
-  color: #e53935;
-  border: 1px solid #ffcdd2;
+  background: var(--fill-error);
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+  opacity: 0.8;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
@@ -501,7 +502,7 @@ onUnmounted(() => {
 }
 
 .clear-btn:active {
-  background: #ffebee;
+  opacity: 0.6;
 }
 
 @keyframes fadeIn {

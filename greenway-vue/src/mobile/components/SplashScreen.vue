@@ -1,13 +1,16 @@
 <template>
   <div v-if="!splashFinished" class="splash-screen">
+    <!-- 跳过按钮（2秒后显示） -->
+    <button v-if="showSkip" class="skip-btn" @click="handleSkip" aria-label="跳过启动画面">跳过</button>
+
     <!-- 背景纹理噪声层 -->
-    <div class="noise-overlay"></div>
+    <div class="noise-overlay" aria-hidden="true"></div>
 
     <!-- 中心光晕 -->
-    <div class="center-glow"></div>
+    <div class="center-glow" aria-hidden="true"></div>
 
     <!-- 大型背景装饰叶（左上） -->
-    <div class="bg-leaf bg-leaf--tl">
+    <div class="bg-leaf bg-leaf--tl" aria-hidden="true">
       <svg viewBox="0 0 300 420" xmlns="http://www.w3.org/2000/svg" fill="none">
         <path d="M150,400 C80,320 20,230 30,130 C42,40 100,8 150,5 C200,8 258,40 270,130 C280,230 220,320 150,400Z"
           fill="rgba(90,190,100,0.06)" />
@@ -24,7 +27,7 @@
     </div>
 
     <!-- 大型背景装饰叶（右下） -->
-    <div class="bg-leaf bg-leaf--br">
+    <div class="bg-leaf bg-leaf--br" aria-hidden="true">
       <svg viewBox="0 0 260 380" xmlns="http://www.w3.org/2000/svg" fill="none">
         <path d="M130,360 C65,285 10,200 20,108 C32,28 88,2 130,0 C172,2 228,28 240,108 C250,200 195,285 130,360Z"
           fill="rgba(120,210,110,0.05)" />
@@ -40,7 +43,7 @@
 
     <!-- 漂浮叶片粒子 -->
     <div v-for="leaf in floatingLeaves" :key="leaf.id"
-      class="floating-leaf"
+      class="floating-leaf" aria-hidden="true"
       :style="{
         left: leaf.x + '%',
         top: leaf.startY + '%',
@@ -119,7 +122,7 @@
       <p class="splash-subtitle">探索北京绿道之美</p>
 
       <!-- 进度条 -->
-      <div class="splash-progress-wrap">
+      <div class="splash-progress-wrap" role="progressbar" :aria-valuenow="Math.round(progress)" aria-valuemin="0" aria-valuemax="100" aria-label="加载进度">
         <div class="splash-progress">
           <div class="splash-progress-bar" :style="{ width: progress + '%' }">
             <span class="progress-glow"></span>
@@ -146,6 +149,7 @@ const emit = defineEmits(['finish'])
 const splashFinished = ref(false)
 const progress = ref(0)
 const loadingText = ref('加载中...')
+const showSkip = ref(false)
 
 const loadingMessages = [
   '初始化应用...',
@@ -189,6 +193,9 @@ onMounted(async () => {
     // Web 环境无 Capacitor，忽略
   }
 
+  // 2秒后显示跳过按钮
+  const skipTimer = setTimeout(() => { showSkip.value = true }, 2000)
+
   const interval = setInterval(() => {
     progress.value += Math.random() * 30
     if (progress.value > 90) progress.value = 90
@@ -198,6 +205,7 @@ onMounted(async () => {
 
   setTimeout(() => {
     clearInterval(interval)
+    clearTimeout(skipTimer)
     progress.value = 100
     loadingText.value = '进入应用...'
     setTimeout(() => {
@@ -206,6 +214,11 @@ onMounted(async () => {
     }, 600)
   }, props.duration)
 })
+
+const handleSkip = () => {
+  splashFinished.value = true
+  emit('finish')
+}
 </script>
 
 <style scoped>
@@ -508,5 +521,26 @@ onMounted(async () => {
   text-align: center;
   font-weight: 300;
   min-height: 16px;
+}
+
+/* 跳过按钮 */
+.skip-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 20px) + 8px);
+  right: 16px;
+  z-index: 10;
+  padding: 6px 16px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-full, 20px);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s, color 0.2s;
+}
+.skip-btn:active {
+  background: rgba(255,255,255,0.2);
 }
 </style>

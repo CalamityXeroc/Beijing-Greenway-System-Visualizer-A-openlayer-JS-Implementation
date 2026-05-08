@@ -1,12 +1,18 @@
 <template>
-  <div class="search-bar">
+  <div class="search-bar" role="combobox" :aria-expanded="showSuggestions && suggestions.length > 0" aria-haspopup="listbox">
     <div class="search-input-group">
-      <i class="ion-magnify search-icon"></i>
+      <svg class="search-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
       <input
         :value="modelValue"
         class="search-input"
         :placeholder="placeholder"
-        type="text"
+        type="search"
+        aria-label="搜索绿道"
+        role="searchbox"
+        autocomplete="off"
         @input="handleInput"
         @focus="$emit('focus')"
         @blur="$emit('blur')"
@@ -16,20 +22,30 @@
         v-if="modelValue && clearable"
         class="clear-btn"
         @click="handleClear"
+        aria-label="清除搜索"
       >
-        <i class="ion-close-circle"></i>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
       </button>
     </div>
-    
+
     <!-- 搜索建议 -->
-    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions">
+    <div v-if="showSuggestions && suggestions.length > 0" class="suggestions" role="listbox" :id="suggestionsId">
       <button
         v-for="(suggestion, index) in suggestions"
         :key="index"
         class="suggestion-item"
+        role="option"
+        :aria-selected="false"
         @click="handleSelectSuggestion(suggestion)"
       >
-        <i class="ion-history"></i>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
         <span>{{ suggestion }}</span>
       </button>
     </div>
@@ -38,6 +54,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+
+const suggestionsId = 'search-suggestions'
 
 const props = defineProps({
   modelValue: {
@@ -94,23 +112,36 @@ const handleSelectSuggestion = (suggestion) => {
 .search-input-group {
   display: flex;
   align-items: center;
-  background: var(--color-surface-secondary);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 0 var(--space-md);
   height: 44px;
   transition: all var(--transition-base);
 }
 
+.theme-light .search-input-group {
+  background: rgba(239, 237, 232, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.theme-dark .search-input-group {
+  background: rgba(40, 40, 43, 0.7);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 .search-input-group:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 92, 32, 0.1);
+  box-shadow: 0 0 0 3px rgba(33, 122, 50, 0.12);
 }
 
 .search-icon {
-  font-size: 20px;
+  width: 20px;
+  height: 20px;
   color: var(--color-text-tertiary);
   margin-right: var(--space-sm);
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -177,10 +208,14 @@ const handleSelectSuggestion = (suggestion) => {
   background: var(--color-surface-secondary);
 }
 
-.suggestion-item i {
+.clear-btn svg {
+  display: block;
+}
+
+.suggestion-item svg {
   color: var(--color-text-tertiary);
   margin-right: var(--space-md);
-  font-size: 16px;
+  flex-shrink: 0;
 }
 
 .suggestion-item span {
