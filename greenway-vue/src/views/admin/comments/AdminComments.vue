@@ -8,11 +8,11 @@
     <div class="stats-row" v-if="statsReady">
       <div class="chart-card">
         <div class="card-title">近 30 天评论趋势</div>
-        <v-chart class="chart-line" :option="trendOption" autoresize />
+        <div ref="trendChartRef" class="chart-line"></div>
       </div>
       <div class="chart-card pie-card">
         <div class="card-title">评论状态分布</div>
-        <v-chart class="chart-pie" :option="pieOption" autoresize />
+        <div ref="pieChartRef" class="chart-pie"></div>
       </div>
     </div>
 
@@ -95,16 +95,10 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { PieChart, LineChart } from 'echarts/charts'
-import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import * as echarts from 'echarts'
 import { useAdminAuth } from '@/stores/adminAuth'
 import { useGlobalTheme } from '@/utils/useTheme'
-
-use([CanvasRenderer, PieChart, LineChart, GridComponent, TooltipComponent, LegendComponent])
 
 const { apiFetch } = useAdminAuth()
 const { theme } = useGlobalTheme()
@@ -339,8 +333,42 @@ async function batchPermanentDelete() {
   }
 }
 
+// ── 原生 ECharts ─────────────────────────────────────────────
+const trendChartRef = ref(null)
+const pieChartRef = ref(null)
+let trendChartInst = null
+let pieChartInst = null
+
+function initCharts() {
+  if (trendChartRef.value && !trendChartInst) {
+    trendChartInst = echarts.init(trendChartRef.value)
+  }
+  if (pieChartRef.value && !pieChartInst) {
+    pieChartInst = echarts.init(pieChartRef.value)
+  }
+}
+function updateCharts() {
+  if (trendChartInst && trend.value.length > 0) {
+    trendChartInst.setOption(trendOption.value, true)
+  }
+  if (pieChartInst) {
+    pieChartInst.setOption(pieOption.value, true)
+  }
+}
+
 onMounted(async () => {
   await Promise.all([loadList(), loadStats()])
+  await nextTick()
+  initCharts()
+  updateCharts()
+})
+watch(trend, () => nextTick(() => updateCharts()), { deep: true })
+watch(distribution, () => nextTick(() => updateCharts()), { deep: true })
+onBeforeUnmount(() => {
+  trendChartInst?.dispose()
+  pieChartInst?.dispose()
+  trendChartInst = null
+  pieChartInst = null
 })
 </script>
 

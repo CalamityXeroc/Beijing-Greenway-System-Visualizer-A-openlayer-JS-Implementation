@@ -1,901 +1,901 @@
-<template>
-  <div class="yingcheng-page">
-    <header class="header">
-      <button @click="goBack" class="back-btn">
-        <i class="fas fa-arrow-left"></i> ∑µªÿ
-      </button>
-      <div class="title-container">
-        <h1>±±æ©”™≥«Ω®∂º¬Ãµ¿</h1>
-        <p><i class="fas fa-leaf"></i> π≈∂º“≈‘œ£¨¿˙ ∑Œƒ¬ˆ</p>
-      </div>
-    </header>
-
-    <div class="content">
-      <!-- ◊Û≤‡–≈œ¢¿∏ -->
-      <div ref="leftSidebar" class="left-sidebar">
-        <img 
-          src="https://via.placeholder.com/800x300?text=”™≥«Ω®∂º¬Ãµ¿" 
-          alt="”™≥«Ω®∂º¬Ãµ¿æ∞π€" 
-          class="feature-image"
-          @error="handleImageError"
-        />
-        
-        <div class="highlights">
-          <h3><i class="fas fa-star"></i>¬Ãµ¿¡¡µ„</h3>
-          <ul>
-            <li>
-              <strong>◊‹≥§∂»£∫</strong>
-              <span>{{ greenwayInfo.total_length }}</span>
-            </li>
-            <li>
-              <strong>∏≤∏««¯”Ú£∫</strong>
-              <span>{{ greenwayInfo.coverage_area }}</span>
-            </li>
-            <li>
-              <strong>Ω®…Ë√Êª˝£∫</strong>
-              <span>{{ greenwayInfo.construction_area }}</span>
-            </li>
-            <li>
-              <strong>Ãÿ…´£∫</strong>
-              <span>{{ greenwayInfo.features }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="highlights">
-          <h3><i class="fas fa-info-circle"></i>¬Ãµ¿ºÚΩÈ</h3>
-          <p class="description">
-            {{ greenwayInfo.description }}
-          </p>
-          <div class="badges">
-            <span class="badge badge-green">
-              <i class="fas fa-landmark"></i> ¿˙ ∑ŒƒªØ
-            </span>
-            <span class="badge badge-blue">
-              <i class="fas fa-university"></i> π≈º£¥Æ¡™
-            </span>
-            <span class="badge badge-purple">
-              <i class="fas fa-walking"></i> ŒƒªØ¬˛≤Ω
-            </span>
-          </div>
-        </div>
-        
-        <!-- »´æ∞‰Ø¿¿∞¥≈• -->
-        <button class="panorama-btn" @click="showPanorama = true">
-          <i class="fas fa-street-view"></i>
-          <span>360°„»´æ∞‰Ø¿¿</span>
-        </button>
-      </div>
-
-      <!-- ”“≤‡µÿÕº«¯”Ú -->
-      <div class="right-map">
-        <MapViewer
-          ref="mapViewer"
-          :center="mapConfig.center"
-          :zoom="mapConfig.zoom"
-          :layers="layers"
-          :interactive="false"
-          height="100%"
-          @map-ready="onMapReady"
-        :restrict-navigation="true" />
-      </div>
-    </div>
-    <section class="detail-comments-section">
-      <DesktopCommentsPanel greenway-name="±±æ©”™≥«Ω®∂º¬Ãµ¿" />
-    </section>
-    <!-- ÃÏ∆¯ø®∆¨£®πÃ∂®∂®Œª£¨ø…Õœ∂Ø£© -->
-    <WeatherCard
-      v-if="weatherLocation"
-      :longitude="weatherLocation.lon"
-      :latitude="weatherLocation.lat"
-      location-label="”™≥«Ω®∂º¬Ãµ¿"
-      @weather-loaded="onWeatherLoaded"
-    />
-
-    <!-- ∞Ÿ∂»»´æ∞≤Èø¥∆˜ -->
-    <BaiduPanoramaViewer
-      :visible="showPanorama"
-      :panorama-points="panoramaPoints"
-      :initial-point="0"
-      :baidu-map-key="baiduMapKey"
-      @close="showPanorama = false"
-      @point-change="onPointChange"
-    />
-  </div>
-</template>
-
-<script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import MapViewer from '@/components/MapViewer.vue'
-import WeatherCard from '@/components/WeatherCard.vue'
-import BaiduPanoramaViewer from '@/components/BaiduPanoramaViewer.vue'
-import DesktopCommentsPanel from '@/components/DesktopCommentsPanel.vue'
-import { loadGreenwayDataByName, buildGreenwayInfo } from '@/utils/greenwayHelper'
-
-const router = useRouter()
-
-// µÿÕº◊Èº˛“˝”√
-const mapViewer = ref(null)
-const leftSidebar = ref(null)
-
-// »´æ∞≤Èø¥∆˜◊¥Ã¨
-const showPanorama = ref(false)
-
-// ∞Ÿ∂»µÿÕºAPI√‹‘ø
-const baiduMapKey = import.meta.env.VITE_BAIDU_MAP_KEY || ''
-
-
-let cleanupSidebarWheel = null
-let prevBodyOverflowY = ''
-let prevHtmlOverflowY = ''
-const WHEEL_EDGE_EPSILON = 2
-
-// ”™≥«Ω®∂º¬Ãµ¿»´æ∞µ„Œª≈‰÷√£®’Ê µ◊¯±Í£©
-const panoramaPoints = ref([
-  {
-    name: 'ÃÏ∞≤√≈π„≥°',
-    description: '◊Êπ˙–ƒ‘‡£¨÷–ª™œÛ’˜',
-    lng: 116.3974,
-    lat: 39.9076
-  },
-  {
-    name: 'π π¨≤©ŒÔ‘∫',
-    description: 'ª º“π¨µÓ£¨ ¿ΩÁ“≈≤˙',
-    lng: 116.3972,
-    lat: 39.9163
-  },
-  {
-    name: 'æ∞…Ωπ´‘∞',
-    description: 'æ©≥«÷–÷·£¨∏©Ó´◊œΩ˚≥«',
-    lng: 116.3950,
-    lat: 39.9274
-  },
-  {
-    name: 'ÃÏÃ≥π´‘∞',
-    description: '∆ÌƒÍµÓ£¨ª º“º¿Ã≥',
-    lng: 116.4074,
-    lat: 39.8826
-  },
-  {
-    name: '«∞√≈¥ÛΩ÷',
-    description: 'π≈∂º…Ã“µΩ÷£¨∞ŸƒÍ¿œ◊÷∫≈',
-    lng: 116.3950,
-    lat: 39.8993
-  }
-])
-
-// µÿÕº≈‰÷√
-const mapConfig = reactive({
-  center: [116.395, 39.915],
-  zoom: 12
-})
-
-// ÃÏ∆¯Œª÷√
-const weatherLocation = ref(null)
-
-// Õº≤„≈‰÷√
-// ¬Ãµ¿œÍœ∏–≈œ¢
-const greenwayInfo = ref({
-  total_length: 'º”‘ÿ÷–...',
-  coverage_area: 'º”‘ÿ÷–...',
-  construction_area: 'º”‘ÿ÷–...',
-  features: 'º”‘ÿ÷–...',
-  description: '’˝‘⁄ªÒ»°¬Ãµ¿ºÚΩÈ–≈œ¢...'
-})
-
-const layers = ref([
-  {
-    id: 'yingcheng-greenway',
-    type: 'geojson',
-    data: null,  // Ω´Õ®π˝fetch∂ØÃ¨…Ë÷√
-    visible: true,
-    fitExtent: true,
-    style: {
-      lineColor: '#2196F3',
-      lineWidth: 4
-    }
-  }
-])
-
-// µÿÕºæÕ–˜
-const onMapReady = (map) => {
-  console.log('[YingchengDetail] µÿÕº“—æÕ–˜')
-  
-  // ªÒ»°µÿÕº÷––ƒ◊˜Œ™ÃÏ∆¯≤È—ØŒª÷√
-  setTimeout(() => {
-    if (mapViewer.value) {
-      const mapMgr = mapViewer.value.getMapManager()
-      const center = mapMgr.getCenter()
-      weatherLocation.value = {
-        lon: center[0],
-        lat: center[1]
-      }
-      console.log('[YingchengDetail] ÃÏ∆¯≤È—ØŒª÷√:', weatherLocation.value)
-    }
-  }, 1000)
-}
-
-// ÃÏ∆¯º”‘ÿÕÍ≥…
-const onWeatherLoaded = (weather) => {
-  console.log('[YingchengDetail] ÃÏ∆¯ ˝æ›“—º”‘ÿ:', weather)
-}
-
-// ∑µªÿ…œ“ª“≥
-const goBack = () => {
-  router.back()
-}
-
-// Õº∆¨º”‘ÿ ß∞‹¥¶¿Ì
-const handleImageError = (event) => {
-  console.warn('[YingchengDetail] Õº∆¨º”‘ÿ ß∞‹')
-  event.target.src = 'https://via.placeholder.com/800x300?text=”™≥«Ω®∂º¬Ãµ¿'
-}
-
-// »´æ∞π€æ∞µ„«–ªª
-
-const setupSidebarWheelGuard = () => {
-  const el = leftSidebar.value
-  if (!el) return
-
-  const onSidebarWheel = (e) => {
-    if (showPanorama.value) return
-
-    const target = e.target
-    if (target instanceof Element && target.closest('.chatbot-panel, .panorama-modal, .weather-card')) {
-      return
-    }
-
-    const maxScrollTop = el.scrollHeight - el.clientHeight
-    if (maxScrollTop <= 0) {
-      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
-      e.preventDefault()
-      return
-    }
-
-    const isAtTop = el.scrollTop <= WHEEL_EDGE_EPSILON
-    const isAtBottom = (maxScrollTop - el.scrollTop) <= WHEEL_EDGE_EPSILON
-
-    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
-
-    const nextScrollTop = el.scrollTop + e.deltaY
-    const clamped = Math.max(0, Math.min(maxScrollTop, nextScrollTop))
-    const willScroll = clamped !== el.scrollTop
-
-    if (!willScroll) return
-
-    el.scrollTop = clamped
-    e.preventDefault()
-    e.stopPropagation()
-  }
-
-  window.addEventListener('wheel', onSidebarWheel, { passive: false, capture: true })
-  cleanupSidebarWheel = () => {
-    window.removeEventListener('wheel', onSidebarWheel, true)
-    cleanupSidebarWheel = null
-  }
-}
-
-// º”‘ÿ¬Ãµ¿ ˝æ›
-const loadGreenwayData = async () => {
-  try {
-    const greenwayData = await loadGreenwayDataByName('”™≥«Ω®∂º¬Ãµ¿', (data) => {
-      // ∏¸–¬ΩÁ√Êœ‘ æµƒ Ù–‘
-      const info = buildGreenwayInfo(data)
-      Object.assign(greenwayInfo.value, info)
-    })
-    
-    if (greenwayData) {
-      // ∏¸–¬Õº≤„ ˝æ›
-      layers.value[0].data = greenwayData.geojson
-    }
-  } catch (err) {
-    console.error('[YingchengDetail] º”‘ÿ¬Ãµ¿ ˝æ› ß∞‹:', err)
-  }
-}
-
-onMounted(async () => {
-  // ∂µµ◊£∫«Â¿Ìø…ƒ‹”…∆‰À˚“≥√Ê“≈¡Ùµƒπˆ∂ØÀ¯
-  prevBodyOverflowY = document.body.style.overflowY
-  prevHtmlOverflowY = document.documentElement.style.overflowY
-  document.body.style.overflowY = 'auto'
-  document.documentElement.style.overflowY = 'auto'
-
-
-  console.log('[YingchengDetail] ◊Èº˛“—π“‘ÿ')
-  await loadGreenwayData()
-  await nextTick()
-  setupSidebarWheelGuard()
-})
-
-onBeforeUnmount(() => {
-  cleanupSidebarWheel?.()
-  document.body.style.overflowY = prevBodyOverflowY
-  document.documentElement.style.overflowY = prevHtmlOverflowY
-})
-</script>
-
-<style scoped>
-.yingcheng-page {
-  width: 100%;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
-  padding-top: 0;
-  margin: 0;
-}
-
-.header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.5rem;
-  padding-left: 480px; /* µÿÕº«¯”Úæ”÷– */
-  box-sizing: border-box;
-}
-
-.header h1,
-.header p,
-.back-btn {
-  pointer-events: auto;
-}
-
-.back-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 1.5rem;
-  background: rgba(33, 150, 243, 0.1);
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #2196F3;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.2s;
-}
-
-.back-btn:hover {
-  background: rgba(33, 150, 243, 0.2);
-  transform: translateY(-50%) translateX(-2px);
-}
-
-.header h1 {
-  font-size: 2.2rem; margin: 0 0 0.2rem 0;
-  margin: 0 0 0.2rem 0;
-  color: #1B5E20;
-  font-weight: 700;
-}
-
-.header p {
-  color: #1B5E20;
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin: 0;
-}
-
-.header i {
-  color: #1B5E20;
-  margin-right: 0.4rem;
-}
-
-.content {
-  display: flex;
-  min-height: 100vh;
-  gap: 0;
-}
-
-/* ◊Û≤‡–≈œ¢¿∏ */
-.left-sidebar {
-  width: 480px;
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  height: 100vh;
-  max-height: 100vh;
-  overscroll-behavior: contain;
-  position: relative;
-  z-index: 2;
-  padding: 110px 1.5rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
-  border-right: 1px solid rgba(76, 175, 80, 0.1);
-}
-
-/* ”“≤‡µÿÕº«¯”Ú */
-.right-map {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-image {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transition: transform 0.3s ease;
-}
-
-.feature-image:hover {
-  transform: scale(1.03);
-}
-
-.highlights {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(5px);
-  padding: 1.25rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(76, 175, 80, 0.1);
-}
-
-.highlights h3 {
-  color: #2E7D32;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.highlights h3::before {
-  content: '';
-  display: block;
-  width: 4px;
-  height: 1em;
-  background: linear-gradient(180deg, #4CAF50, #2196F3);
-  border-radius: 2px;
-}
-
-.highlights ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.highlights li {
-  margin: 0.75rem 0;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  position: relative;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.highlights li:hover {
-  transform: translateX(5px);
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.highlights li::before {
-  content: "\f058";
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  color: #4CAF50;
-  position: absolute;
-  left: 0.8rem;
-  opacity: 0.8;
-}
-
-.highlights li strong {
-  color: #2196F3;
-}
-
-.highlights li span {
-  color: #666;
-}
-
-.description {
-  line-height: 1.8;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
-.badges {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.badge {
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-/* »´æ∞‰Ø¿¿∞¥≈• */
-.panorama-btn {
-  width: 100%;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  border: none;
-  border-radius: 10px;
-  color: white;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.panorama-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-  background: linear-gradient(135deg, #45a049, #388e3c);
-}
-
-.panorama-btn:active {
-  transform: translateY(-1px);
-}
-
-.panorama-btn i {
-  font-size: 1.3rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.badge-green {
-  background: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
-}
-
-.badge-blue {
-  background: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
-}
-
-.badge-purple {
-  background: rgba(103, 58, 183, 0.1);
-  color: #673AB7;
-}
-
-/* œÏ”¶ Ω */
-
-@media (max-width: 1200px) {
-  .header { padding-left: 0; }
-  .content {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .left-sidebar {
-    width: 100%;
-    height: auto;
-  }
-
-  .right-map {
-    height: 60vh;
-  }
-
-  .header h1 {
-    font-size: 1.3rem;
-  margin: 0 0 0.2rem 0;}
-}
-
-
-@media (max-width: 768px) {
-  .header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  pointer-events: none;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.5rem;
-  padding-left: 480px; /* µÿÕº«¯”Úæ”÷– */
-  box-sizing: border-box;
-}
-
-  .back-btn {
-    left: 1rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-  }
-
-  .left-sidebar {
-    padding: 1rem;
-  }
-
-  .feature-image {
-    height: 180px;
-  }
-
-  .right-map {
-    height: 50vh;
-  }
-}
-
-.title-container {
-  background: transparent;
-  padding: 0.8rem 2rem;
-  text-align: center;
-  pointer-events: auto;
-  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.8);
-}
-
-.title-container:hover {
-  transform: translateY(-2px);
-}
-
-/* Night mode styles */
-[data-theme="night"] .yingcheng-page {
-  background: var(--bg-primary, #1a1a1a);
-}
-
-[data-theme="night"] .header h1,
-[data-theme="night"] .header p,
-[data-theme="night"] .header i {
-  color: var(--text-primary, #e0e0e0);
-}
-
-[data-theme="night"] .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary, #b0b0b0);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="night"] .back-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="night"] .left-sidebar {
-  background: var(--card-bg, rgba(30, 30, 30, 0.9));
-  border-right-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="night"] .placeholder-image {
-  background: var(--bg-secondary, #2a2a2a);
-}
-
-[data-theme="night"] .placeholder-text {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .placeholder-text i {
-  opacity: 0.5;
-}
-
-[data-theme="night"] .highlights {
-  background: var(--card-bg, rgba(30, 30, 30, 0.7));
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="night"] .highlights h3 {
-  color: var(--text-primary, #e0e0e0);
-}
-
-[data-theme="night"] .highlights h3::before {
-  background: linear-gradient(180deg, #66bb6a, #42a5f5);
-}
-
-[data-theme="night"] .highlights li {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="night"] .highlights li:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-[data-theme="night"] .highlights li::before {
-  color: #66bb6a;
-}
-
-[data-theme="night"] .highlights li strong {
-  color: #42a5f5;
-}
-
-[data-theme="night"] .highlights li span {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .description {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .badge-green {
-  background: rgba(102, 187, 106, 0.15);
-  color: #66bb6a;
-}
-
-[data-theme="night"] .badge-blue {
-  background: rgba(66, 165, 245, 0.15);
-  color: #42a5f5;
-}
-
-[data-theme="night"] .badge-purple {
-  background: rgba(171, 71, 188, 0.15);
-  color: #ab47bc;
-}
-
-[data-theme="night"] .panorama-btn {
-  background: linear-gradient(135deg, #66bb6a, #2e7d32);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="night"] .panorama-btn:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
-  background: linear-gradient(135deg, #2e7d32, #1b5e20);
-}
-
-[data-theme="night"] .title-container {
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
-}
-
-[data-theme="night"] .right-map {
-  background: var(--bg-primary-dark, #0a0a0a);
-}
-
-[data-theme="night"] .feature-image {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-</style>
-
-<!-- »´æ÷÷˜Ã‚—˘ Ω - ¥¶¿Ìscoped—˘ Ω÷–Œﬁ∑®”¶”√µƒ»´æ÷—°‘Ò∆˜ -->
-<style>
-[data-theme="night"] .yingcheng-page {
-  background: var(--bg-primary, #1a1a1a);
-}
-
-[data-theme="night"] .yingcheng-page .header h1,
-[data-theme="night"] .yingcheng-page .header p,
-[data-theme="night"] .yingcheng-page .header i {
-  color: var(--text-primary, #e0e0e0);
-}
-
-[data-theme="night"] .yingcheng-page .back-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary, #b0b0b0);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="night"] .yingcheng-page .back-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-[data-theme="night"] .yingcheng-page .left-sidebar {
-  background: var(--card-bg, rgba(30, 30, 30, 0.9));
-  border-right-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="night"] .yingcheng-page .placeholder-image {
-  background: var(--bg-secondary, #2a2a2a);
-}
-
-[data-theme="night"] .yingcheng-page .placeholder-text {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .yingcheng-page .placeholder-text i {
-  opacity: 0.5;
-}
-
-[data-theme="night"] .yingcheng-page .highlights {
-  background: var(--card-bg, rgba(30, 30, 30, 0.7));
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="night"] .yingcheng-page .highlights h3 {
-  color: var(--text-primary, #e0e0e0);
-}
-
-[data-theme="night"] .yingcheng-page .highlights h3::before {
-  background: linear-gradient(180deg, #66bb6a, #42a5f5);
-}
-
-[data-theme="night"] .yingcheng-page .highlights li {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="night"] .yingcheng-page .highlights li:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-[data-theme="night"] .yingcheng-page .highlights li::before {
-  color: #66bb6a;
-}
-
-[data-theme="night"] .yingcheng-page .highlights li strong {
-  color: #42a5f5;
-}
-
-[data-theme="night"] .yingcheng-page .highlights li span {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .yingcheng-page .description {
-  color: var(--text-secondary, #b0b0b0);
-}
-
-[data-theme="night"] .yingcheng-page .badge-green {
-  background: rgba(102, 187, 106, 0.15);
-  color: #66bb6a;
-}
-
-[data-theme="night"] .yingcheng-page .badge-blue {
-  background: rgba(66, 165, 245, 0.15);
-  color: #42a5f5;
-}
-
-[data-theme="night"] .yingcheng-page .badge-purple {
-  background: rgba(171, 71, 188, 0.15);
-  color: #ab47bc;
-}
-
-[data-theme="night"] .yingcheng-page .panorama-btn {
-  background: linear-gradient(135deg, #66bb6a, #2e7d32);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-[data-theme="night"] .yingcheng-page .panorama-btn:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
-  background: linear-gradient(135deg, #2e7d32, #1b5e20);
-}
-
-[data-theme="night"] .yingcheng-page .title-container {
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
-}
-
-[data-theme="night"] .yingcheng-page .right-map {
-  background: var(--bg-primary-dark, #0a0a0a);
-}
-
-[data-theme="night"] .yingcheng-page .feature-image {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-</style>
-
-
-
-
-
-
-
-
-
-
-
-
-
+<template>
+  <div class="yingcheng-page">
+    <header class="header">
+      <button @click="goBack" class="back-btn">
+        <i class="fas fa-arrow-left"></i> ËøîÂõû
+      </button>
+      <div class="title-container">
+        <h1>Âåó‰∫¨Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì</h1>
+        <p><i class="fas fa-leaf"></i> Âè§ÈÉΩÈÅóÈüµÔºåÂéÜÂè≤ÊñáËÑâ</p>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Â∑¶‰æß‰ø°ÊÅØÊ†è -->
+      <div ref="leftSidebar" class="left-sidebar">
+        <img 
+          src="https://via.placeholder.com/800x300?text=Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì" 
+          alt="Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅìÊôØËßÇ" 
+          class="feature-image"
+          @error="handleImageError"
+        />
+        
+        <div class="highlights">
+          <h3><i class="fas fa-star"></i>ÁªøÈÅì‰∫ÆÁÇπ</h3>
+          <ul>
+            <li>
+              <strong>ÊÄªÈïøÂ∫¶Ôºö</strong>
+              <span>{{ greenwayInfo.total_length }}</span>
+            </li>
+            <li>
+              <strong>Ë¶ÜÁõñÂå∫ÂüüÔºö</strong>
+              <span>{{ greenwayInfo.coverage_area }}</span>
+            </li>
+            <li>
+              <strong>Âª∫ËÆæÈù¢ÁßØÔºö</strong>
+              <span>{{ greenwayInfo.construction_area }}</span>
+            </li>
+            <li>
+              <strong>ÁâπËâ≤Ôºö</strong>
+              <span>{{ greenwayInfo.features }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="highlights">
+          <h3><i class="fas fa-info-circle"></i>ÁªøÈÅìÁÆÄ‰ªã</h3>
+          <p class="description">
+            {{ greenwayInfo.description }}
+          </p>
+          <div class="badges">
+            <span class="badge badge-green">
+              <i class="fas fa-landmark"></i> ÂéÜÂè≤ÊñáÂåñ
+            </span>
+            <span class="badge badge-blue">
+              <i class="fas fa-university"></i> Âè§Ëøπ‰∏≤ËÅî
+            </span>
+            <span class="badge badge-purple">
+              <i class="fas fa-walking"></i> ÊñáÂåñÊº´Ê≠•
+            </span>
+          </div>
+        </div>
+        
+        <!-- ÂÖ®ÊôØÊµèËßàÊåâÈíÆ -->
+        <button class="panorama-btn" @click="showPanorama = true">
+          <i class="fas fa-street-view"></i>
+          <span>360¬∞ÂÖ®ÊôØÊµèËßà</span>
+        </button>
+      </div>
+
+      <!-- Âè≥‰æßÂú∞ÂõæÂå∫Âüü -->
+      <div class="right-map">
+        <MapViewer
+          ref="mapViewer"
+          :center="mapConfig.center"
+          :zoom="mapConfig.zoom"
+          :layers="layers"
+          :interactive="false"
+          height="100%"
+          @map-ready="onMapReady"
+        :restrict-navigation="true" />
+      </div>
+    </div>
+    <section class="detail-comments-section">
+      <DesktopCommentsPanel greenway-name="Âåó‰∫¨Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì" />
+    </section>
+    <!-- Â§©Ê∞îÂç°ÁâáÔºàÂõ∫ÂÆöÂÆö‰ΩçÔºåÂèØÊãñÂä®Ôºâ -->
+    <WeatherCard
+      v-if="weatherLocation"
+      :longitude="weatherLocation.lon"
+      :latitude="weatherLocation.lat"
+      location-label="Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì"
+      @weather-loaded="onWeatherLoaded"
+    />
+
+    <!-- ÁôæÂ∫¶ÂÖ®ÊôØÊü•ÁúãÂô® -->
+    <BaiduPanoramaViewer
+      :visible="showPanorama"
+      :panorama-points="panoramaPoints"
+      :initial-point="0"
+      :baidu-map-key="baiduMapKey"
+      @close="showPanorama = false"
+      @point-change="onPointChange"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import MapViewer from '@/components/MapViewer.vue'
+import WeatherCard from '@/components/WeatherCard.vue'
+import BaiduPanoramaViewer from '@/components/BaiduPanoramaViewer.vue'
+import DesktopCommentsPanel from '@/components/DesktopCommentsPanel.vue'
+import { loadGreenwayDataByName, buildGreenwayInfo } from '@/utils/greenwayHelper'
+
+const router = useRouter()
+
+// Âú∞ÂõæÁªÑ‰ª∂ÂºïÁî®
+const mapViewer = ref(null)
+const leftSidebar = ref(null)
+
+// ÂÖ®ÊôØÊü•ÁúãÂô®Áä∂ÊÄÅ
+const showPanorama = ref(false)
+
+// ÁôæÂ∫¶Âú∞ÂõæAPIÂØÜÈí•
+const baiduMapKey = import.meta.env.VITE_BAIDU_MAP_KEY || ''
+
+
+let cleanupSidebarWheel = null
+let prevBodyOverflowY = ''
+let prevHtmlOverflowY = ''
+const WHEEL_EDGE_EPSILON = 2
+
+// Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅìÂÖ®ÊôØÁÇπ‰ΩçÈÖçÁΩÆÔºàÁúüÂÆûÂùêÊ†áÔºâ
+const panoramaPoints = ref([
+  {
+    name: 'Â§©ÂÆâÈó®ÂπøÂú∫',
+    description: 'Á•ñÂõΩÂøÉËÑèÔºå‰∏≠ÂçéË±°ÂæÅ',
+    lng: 116.3974,
+    lat: 39.9076
+  },
+  {
+    name: 'ÊïÖÂÆ´ÂçöÁâ©Èô¢',
+    description: 'ÁöáÂÆ∂ÂÆ´ÊÆøÔºå‰∏ñÁïåÈÅó‰∫ß',
+    lng: 116.3972,
+    lat: 39.9163
+  },
+  {
+    name: 'ÊôØÂ±±ÂÖ¨Âõ≠',
+    description: '‰∫¨Âüé‰∏≠ËΩ¥Ôºå‰øØÁû∞Á¥´Á¶ÅÂüé',
+    lng: 116.3950,
+    lat: 39.9274
+  },
+  {
+    name: 'Â§©ÂùõÂÖ¨Âõ≠',
+    description: 'Á•àÂπ¥ÊÆøÔºåÁöáÂÆ∂Á•≠Âùõ',
+    lng: 116.4074,
+    lat: 39.8826
+  },
+  {
+    name: 'ÂâçÈó®Â§ßË°ó',
+    description: 'Âè§ÈÉΩÂïÜ‰∏öË°óÔºåÁôæÂπ¥ËÄÅÂ≠óÂè∑',
+    lng: 116.3950,
+    lat: 39.8993
+  }
+])
+
+// Âú∞ÂõæÈÖçÁΩÆ
+const mapConfig = reactive({
+  center: [116.395, 39.915],
+  zoom: 12
+})
+
+// Â§©Ê∞î‰ΩçÁΩÆ
+const weatherLocation = ref(null)
+
+// ÂõæÂ±ÇÈÖçÁΩÆ
+// ÁªøÈÅìËØ¶ÁªÜ‰ø°ÊÅØ
+const greenwayInfo = ref({
+  total_length: 'Âä†ËΩΩ‰∏≠...',
+  coverage_area: 'Âä†ËΩΩ‰∏≠...',
+  construction_area: 'Âä†ËΩΩ‰∏≠...',
+  features: 'Âä†ËΩΩ‰∏≠...',
+  description: 'Ê≠£Âú®Ëé∑ÂèñÁªøÈÅìÁÆÄ‰ªã‰ø°ÊÅØ...'
+})
+
+const layers = ref([
+  {
+    id: 'yingcheng-greenway',
+    type: 'geojson',
+    data: null,  // Â∞ÜÈÄöËøáfetchÂä®ÊÄÅËÆæÁΩÆ
+    visible: true,
+    fitExtent: true,
+    style: {
+      lineColor: '#2196F3',
+      lineWidth: 4
+    }
+  }
+])
+
+// Âú∞ÂõæÂ∞±Áª™
+const onMapReady = (map) => {
+  console.log('[YingchengDetail] Âú∞ÂõæÂ∑≤Â∞±Áª™')
+  
+  // Ëé∑ÂèñÂú∞Âõæ‰∏≠ÂøÉ‰Ωú‰∏∫Â§©Ê∞îÊü•ËØ¢‰ΩçÁΩÆ
+  setTimeout(() => {
+    if (mapViewer.value) {
+      const mapMgr = mapViewer.value.getMapManager()
+      const center = mapMgr.getCenter()
+      weatherLocation.value = {
+        lon: center[0],
+        lat: center[1]
+      }
+      console.log('[YingchengDetail] Â§©Ê∞îÊü•ËØ¢‰ΩçÁΩÆ:', weatherLocation.value)
+    }
+  }, 1000)
+}
+
+// Â§©Ê∞îÂä†ËΩΩÂÆåÊàê
+const onWeatherLoaded = (weather) => {
+  console.log('[YingchengDetail] Â§©Ê∞îÊï∞ÊçÆÂ∑≤Âä†ËΩΩ:', weather)
+}
+
+// ËøîÂõû‰∏ä‰∏ÄÈ°µ
+const goBack = () => {
+  router.back()
+}
+
+// ÂõæÁâáÂä†ËΩΩÂ§±Ë¥•Â§ÑÁêÜ
+const handleImageError = (event) => {
+  console.warn('[YingchengDetail] ÂõæÁâáÂä†ËΩΩÂ§±Ë¥•')
+  event.target.src = 'https://via.placeholder.com/800x300?text=Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì'
+}
+
+// ÂÖ®ÊôØËßÇÊôØÁÇπÂàáÊç¢
+
+const setupSidebarWheelGuard = () => {
+  const el = leftSidebar.value
+  if (!el) return
+
+  const onSidebarWheel = (e) => {
+    if (showPanorama.value) return
+
+    const target = e.target
+    if (target instanceof Element && target.closest('.chatbot-panel, .panorama-modal, .weather-card')) {
+      return
+    }
+
+    const maxScrollTop = el.scrollHeight - el.clientHeight
+    if (maxScrollTop <= 0) {
+      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
+      e.preventDefault()
+      return
+    }
+
+    const isAtTop = el.scrollTop <= WHEEL_EDGE_EPSILON
+    const isAtBottom = (maxScrollTop - el.scrollTop) <= WHEEL_EDGE_EPSILON
+
+    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+      window.scrollBy({ top: e.deltaY, behavior: 'auto' })
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+
+    const nextScrollTop = el.scrollTop + e.deltaY
+    const clamped = Math.max(0, Math.min(maxScrollTop, nextScrollTop))
+    const willScroll = clamped !== el.scrollTop
+
+    if (!willScroll) return
+
+    el.scrollTop = clamped
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  window.addEventListener('wheel', onSidebarWheel, { passive: false, capture: true })
+  cleanupSidebarWheel = () => {
+    window.removeEventListener('wheel', onSidebarWheel, true)
+    cleanupSidebarWheel = null
+  }
+}
+
+// Âä†ËΩΩÁªøÈÅìÊï∞ÊçÆ
+const loadGreenwayData = async () => {
+  try {
+    const greenwayData = await loadGreenwayDataByName('Ëê•ÂüéÂª∫ÈÉΩÁªøÈÅì', (data) => {
+      // Êõ¥Êñ∞ÁïåÈù¢ÊòæÁ§∫ÁöÑÂ±ûÊÄß
+      const info = buildGreenwayInfo(data)
+      Object.assign(greenwayInfo.value, info)
+    })
+    
+    if (greenwayData) {
+      // Êõ¥Êñ∞ÂõæÂ±ÇÊï∞ÊçÆ
+      layers.value[0].data = greenwayData.geojson
+    }
+  } catch (err) {
+    console.error('[YingchengDetail] Âä†ËΩΩÁªøÈÅìÊï∞ÊçÆÂ§±Ë¥•:', err)
+  }
+}
+
+onMounted(async () => {
+  // ÂÖúÂ∫ïÔºöÊ∏ÖÁêÜÂèØËÉΩÁî±ÂÖ∂‰ªñÈ°µÈù¢ÈÅóÁïôÁöÑÊªöÂä®ÈîÅ
+  prevBodyOverflowY = document.body.style.overflowY
+  prevHtmlOverflowY = document.documentElement.style.overflowY
+  document.body.style.overflowY = 'auto'
+  document.documentElement.style.overflowY = 'auto'
+
+
+  console.log('[YingchengDetail] ÁªÑ‰ª∂Â∑≤ÊåÇËΩΩ')
+  await loadGreenwayData()
+  await nextTick()
+  setupSidebarWheelGuard()
+})
+
+onBeforeUnmount(() => {
+  cleanupSidebarWheel?.()
+  document.body.style.overflowY = prevBodyOverflowY
+  document.documentElement.style.overflowY = prevHtmlOverflowY
+})
+</script>
+
+<style scoped>
+.yingcheng-page {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #E8F5E9 0%, #E3F2FD 50%, #F1F8E9 100%);
+  padding-top: 0;
+  margin: 0;
+}
+
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 480px; /* Âú∞ÂõæÂå∫ÂüüÂ±Ö‰∏≠ */
+  box-sizing: border-box;
+}
+
+.header h1,
+.header p,
+.back-btn {
+  pointer-events: auto;
+}
+
+.back-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 1.5rem;
+  background: rgba(33, 150, 243, 0.1);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #2196F3;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(33, 150, 243, 0.2);
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.header h1 {
+  font-size: 2.2rem; margin: 0 0 0.2rem 0;
+  margin: 0 0 0.2rem 0;
+  color: #1B5E20;
+  font-weight: 700;
+}
+
+.header p {
+  color: #1B5E20;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.header i {
+  color: #1B5E20;
+  margin-right: 0.4rem;
+}
+
+.content {
+  display: flex;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* Â∑¶‰æß‰ø°ÊÅØÊ†è */
+.left-sidebar {
+  width: 480px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  height: 100vh;
+  max-height: 100vh;
+  overscroll-behavior: contain;
+  position: relative;
+  z-index: 2;
+  padding: 110px 1.5rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+/* Âè≥‰æßÂú∞ÂõæÂå∫Âüü */
+.right-map {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease;
+}
+
+.feature-image:hover {
+  transform: scale(1.03);
+}
+
+.highlights {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(5px);
+  padding: 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.highlights h3 {
+  color: #2E7D32;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.highlights h3::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 1em;
+  background: linear-gradient(180deg, #4CAF50, #2196F3);
+  border-radius: 2px;
+}
+
+.highlights ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.highlights li {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.highlights li:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.highlights li::before {
+  content: "\f058";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: #4CAF50;
+  position: absolute;
+  left: 0.8rem;
+  opacity: 0.8;
+}
+
+.highlights li strong {
+  color: #2196F3;
+}
+
+.highlights li span {
+  color: #666;
+}
+
+.description {
+  line-height: 1.8;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ÂÖ®ÊôØÊµèËßàÊåâÈíÆ */
+.panorama-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.panorama-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #45a049, #388e3c);
+}
+
+.panorama-btn:active {
+  transform: translateY(-1px);
+}
+
+.panorama-btn i {
+  font-size: 1.3rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.badge-green {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.badge-blue {
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+}
+
+.badge-purple {
+  background: rgba(103, 58, 183, 0.1);
+  color: #673AB7;
+}
+
+/* ÂìçÂ∫îÂºè */
+
+@media (max-width: 1200px) {
+  .header { padding-left: 0; }
+  .content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .left-sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .right-map {
+    height: 60vh;
+  }
+
+  .header h1 {
+    font-size: 1.3rem;
+  margin: 0 0 0.2rem 0;}
+}
+
+
+@media (max-width: 768px) {
+  .header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.5rem;
+  padding-left: 480px; /* Âú∞ÂõæÂå∫ÂüüÂ±Ö‰∏≠ */
+  box-sizing: border-box;
+}
+
+  .back-btn {
+    left: 1rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .left-sidebar {
+    padding: 1rem;
+  }
+
+  .feature-image {
+    height: 180px;
+  }
+
+  .right-map {
+    height: 50vh;
+  }
+}
+
+.title-container {
+  background: transparent;
+  padding: 0.8rem 2rem;
+  text-align: center;
+  pointer-events: auto;
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.title-container:hover {
+  transform: translateY(-2px);
+}
+
+/* Night mode styles */
+[data-theme="night"] .yingcheng-page {
+  background: var(--bg-primary, #1a1a1a);
+}
+
+[data-theme="night"] .header h1,
+[data-theme="night"] .header p,
+[data-theme="night"] .header i {
+  color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="night"] .back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary, #b0b0b0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="night"] .back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="night"] .left-sidebar {
+  background: var(--card-bg, rgba(30, 30, 30, 0.9));
+  border-right-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="night"] .placeholder-image {
+  background: var(--bg-secondary, #2a2a2a);
+}
+
+[data-theme="night"] .placeholder-text {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .placeholder-text i {
+  opacity: 0.5;
+}
+
+[data-theme="night"] .highlights {
+  background: var(--card-bg, rgba(30, 30, 30, 0.7));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="night"] .highlights h3 {
+  color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="night"] .highlights h3::before {
+  background: linear-gradient(180deg, #66bb6a, #42a5f5);
+}
+
+[data-theme="night"] .highlights li {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="night"] .highlights li:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="night"] .highlights li::before {
+  color: #66bb6a;
+}
+
+[data-theme="night"] .highlights li strong {
+  color: #42a5f5;
+}
+
+[data-theme="night"] .highlights li span {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .description {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .badge-green {
+  background: rgba(102, 187, 106, 0.15);
+  color: #66bb6a;
+}
+
+[data-theme="night"] .badge-blue {
+  background: rgba(66, 165, 245, 0.15);
+  color: #42a5f5;
+}
+
+[data-theme="night"] .badge-purple {
+  background: rgba(171, 71, 188, 0.15);
+  color: #ab47bc;
+}
+
+[data-theme="night"] .panorama-btn {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="night"] .panorama-btn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+}
+
+[data-theme="night"] .title-container {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="night"] .right-map {
+  background: var(--bg-primary-dark, #0a0a0a);
+}
+
+[data-theme="night"] .feature-image {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+</style>
+
+<!-- ÂÖ®Â±Ä‰∏ªÈ¢òÊ†∑Âºè - Â§ÑÁêÜscopedÊ†∑Âºè‰∏≠Êó†Ê≥ïÂ∫îÁî®ÁöÑÂÖ®Â±ÄÈÄâÊã©Âô® -->
+<style>
+[data-theme="night"] .yingcheng-page {
+  background: var(--bg-primary, #1a1a1a);
+}
+
+[data-theme="night"] .yingcheng-page .header h1,
+[data-theme="night"] .yingcheng-page .header p,
+[data-theme="night"] .yingcheng-page .header i {
+  color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="night"] .yingcheng-page .back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary, #b0b0b0);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="night"] .yingcheng-page .back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="night"] .yingcheng-page .left-sidebar {
+  background: var(--card-bg, rgba(30, 30, 30, 0.9));
+  border-right-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="night"] .yingcheng-page .placeholder-image {
+  background: var(--bg-secondary, #2a2a2a);
+}
+
+[data-theme="night"] .yingcheng-page .placeholder-text {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .yingcheng-page .placeholder-text i {
+  opacity: 0.5;
+}
+
+[data-theme="night"] .yingcheng-page .highlights {
+  background: var(--card-bg, rgba(30, 30, 30, 0.7));
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="night"] .yingcheng-page .highlights h3 {
+  color: var(--text-primary, #e0e0e0);
+}
+
+[data-theme="night"] .yingcheng-page .highlights h3::before {
+  background: linear-gradient(180deg, #66bb6a, #42a5f5);
+}
+
+[data-theme="night"] .yingcheng-page .highlights li {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="night"] .yingcheng-page .highlights li:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="night"] .yingcheng-page .highlights li::before {
+  color: #66bb6a;
+}
+
+[data-theme="night"] .yingcheng-page .highlights li strong {
+  color: #42a5f5;
+}
+
+[data-theme="night"] .yingcheng-page .highlights li span {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .yingcheng-page .description {
+  color: var(--text-secondary, #b0b0b0);
+}
+
+[data-theme="night"] .yingcheng-page .badge-green {
+  background: rgba(102, 187, 106, 0.15);
+  color: #66bb6a;
+}
+
+[data-theme="night"] .yingcheng-page .badge-blue {
+  background: rgba(66, 165, 245, 0.15);
+  color: #42a5f5;
+}
+
+[data-theme="night"] .yingcheng-page .badge-purple {
+  background: rgba(171, 71, 188, 0.15);
+  color: #ab47bc;
+}
+
+[data-theme="night"] .yingcheng-page .panorama-btn {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="night"] .yingcheng-page .panorama-btn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+}
+
+[data-theme="night"] .yingcheng-page .title-container {
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="night"] .yingcheng-page .right-map {
+  background: var(--bg-primary-dark, #0a0a0a);
+}
+
+[data-theme="night"] .yingcheng-page .feature-image {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+

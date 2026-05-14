@@ -38,14 +38,14 @@
       <div class="chart-card">
         <div class="card-title">高频关键词词云</div>
         <div v-if="wordData.length === 0" class="hint muted">暂无词云数据（对话记录不足）</div>
-        <v-chart v-else class="echart" :option="wordCloudOption" autoresize />
+        <div v-else ref="wordCloudRef" class="echart"></div>
       </div>
 
       <!-- 日趋势折线图 -->
       <div class="chart-card">
         <div class="card-title">每日对话量趋势</div>
         <div v-if="dailyData.length === 0" class="hint muted">暂无趋势数据</div>
-        <v-chart v-else class="echart echart-line" :option="lineOption" autoresize />
+        <div v-else ref="lineChartRef" class="echart echart-line"></div>
       </div>
 
       <!-- 最近对话记录 -->
@@ -64,22 +64,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
-import {
-  GridComponent,
-  TooltipComponent,
-  TitleComponent,
-  DataZoomComponent
-} from 'echarts/components'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import * as echarts from 'echarts'
 import 'echarts-wordcloud'
-import VChart from 'vue-echarts'
 import { useAdminAuth } from '@/stores/adminAuth'
 import { useGlobalTheme } from '@/utils/useTheme'
-
-use([CanvasRenderer, LineChart, GridComponent, TooltipComponent, TitleComponent, DataZoomComponent])
 
 const { apiFetch } = useAdminAuth()
 const { theme } = useGlobalTheme()
@@ -123,8 +112,46 @@ function setDays(d) {
   days.value = d
 }
 
+// ── 原生 ECharts ─────────────────────────────────────────────
+const wordCloudRef = ref(null)
+const lineChartRef = ref(null)
+let wordCloudChart = null
+let lineChartInst = null
+
+function initCharts() {
+  if (wordCloudRef.value && !wordCloudChart) {
+    wordCloudChart = echarts.init(wordCloudRef.value)
+  }
+  if (lineChartRef.value && !lineChartInst) {
+    lineChartInst = echarts.init(lineChartRef.value)
+  }
+}
+
+function updateCharts() {
+  if (wordCloudChart && wordData.value.length > 0) {
+    wordCloudChart.setOption(wordCloudOption.value, true)
+  }
+  if (lineChartInst && dailyData.value.length > 0) {
+    lineChartInst.setOption(lineOption.value, true)
+  }
+}
+
 watch(days, loadStats)
-onMounted(loadStats)
+onMounted(async () => {
+  await loadStats()
+  await nextTick()
+  initCharts()
+  await nextTick()
+  updateCharts()
+})
+watch(wordData, () => nextTick(() => updateCharts()), { deep: true })
+watch(dailyData, () => nextTick(() => updateCharts()), { deep: true })
+onBeforeUnmount(() => {
+  wordCloudChart?.dispose()
+  lineChartInst?.dispose()
+  wordCloudChart = null
+  lineChartInst = null
+})
 
 // ── ECharts options ──────────────────────────────────────────
 

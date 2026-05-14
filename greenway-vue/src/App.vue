@@ -7,11 +7,7 @@
     <div v-else class="desktop-app">
 
       <!-- 路由视图 -->
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <router-view />
 
       <!-- AI 绿道助手浮窗（仅在地图界面显示） -->
       <AIChatbot v-if="showChatbot" />

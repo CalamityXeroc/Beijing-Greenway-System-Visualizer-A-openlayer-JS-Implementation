@@ -3,6 +3,8 @@ import { isMobileDevice } from '@/utils/useMobileOptimization'
 import { Capacitor } from '@capacitor/core'
 import { useAdminAuth } from '@/stores/adminAuth'
 
+// 使用各自独立的详情页面组件（不再使用统一模板）
+
 const routes = [
   // 移动端路由
   {
@@ -136,73 +138,103 @@ const routes = [
     path: '/wenyu',
     name: 'WenyuDetail',
     component: () => import('@/views/WenyuDetail.vue'),
-    meta: { title: '温榆河绿道详情' }
+    meta: { title: '温榆河绿道详情', greenwayName: '温榆河' }
   },
   {
     path: '/huanerhuan',
     name: 'HuanerhuanDetail',
     component: () => import('@/views/HuanerhuanDetail.vue'),
-    meta: { title: '环二环城市绿道详情' }
+    meta: { title: '环二环城市绿道详情', greenwayName: '环二环城市绿道' }
   },
   {
     path: '/liangmahe',
     name: 'LiangmaheDetail',
     component: () => import('@/views/LiangmaheDetail.vue'),
-    meta: { title: '亮马河绿道详情' }
+    meta: { title: '亮马河绿道详情', greenwayName: '亮马河绿道' }
   },
   {
     path: '/changying',
     name: 'ChangyingDetail',
     component: () => import('@/views/ChangyingDetail.vue'),
-    meta: { title: '常营半马绿道详情' }
+    meta: { title: '常营半马绿道详情', greenwayName: '常营半马绿道' }
   },
   {
     path: '/changping42',
     name: 'Changping42Detail',
     component: () => import('@/views/Changping42Detail.vue'),
-    meta: { title: '昌平42绿道详情' }
+    meta: { title: '昌平42绿道详情', greenwayName: '昌平42绿道' }
   },
   {
     path: '/lidu',
     name: 'LiduDetail',
     component: () => import('@/views/LiduDetail.vue'),
-    meta: { title: '丽都商圈绿道详情' }
+    meta: { title: '丽都商圈绿道详情', greenwayName: '丽都商圈绿道' }
   },
   {
     path: '/beiyunhe',
     name: 'BeiyunheDetail',
     component: () => import('@/views/BeiyunheDetail.vue'),
-    meta: { title: '北运河绿道详情' }
-  },
-  {
-    path: '/nansha',
-    name: 'NanshaDetail',
-    component: () => import('@/views/NanshaDetail.vue'),
-    meta: { title: '南沙绿道详情' }
+    meta: { title: '北运河绿道详情', greenwayName: '北运河绿道' }
   },
   {
     path: '/aosen',
     name: 'AosenDetail',
     component: () => import('@/views/AosenDetail.vue'),
-    meta: { title: '奥林匹克森林公园绿道详情' }
+    meta: { title: '奥林匹克森林公园绿道详情', greenwayName: '奥林匹克森林公园绿道' }
   },
   {
     path: '/yingcheng',
     name: 'YingchengDetail',
     component: () => import('@/views/YingchengDetail.vue'),
-    meta: { title: '营城建都绿道详情' }
+    meta: { title: '营城建都绿道详情', greenwayName: '营城建都绿道' }
   },
   {
     path: '/sanshan',
     name: 'SanshanDetail',
     component: () => import('@/views/SanshanDetail.vue'),
-    meta: { title: '三山五园绿道详情' }
+    meta: { title: '三山五园绿道详情', greenwayName: '三山五园' }
   },
   {
     path: '/chaoyang',
     name: 'ChaoyangDetail',
     component: () => import('@/views/ChaoyangDetail.vue'),
-    meta: { title: '朝阳绿道详情' }
+    meta: { title: '朝阳绿道详情', greenwayName: '朝阳绿道' }
+  },
+  {
+    path: '/beiyi',
+    name: 'BeiyiDetail',
+    component: () => import('@/views/BeiyiDetail.vue'),
+    meta: { title: '北翼山水绿道详情', greenwayName: '北翼山水绿道' }
+  },
+  {
+    path: '/dongyi',
+    name: 'DongyiDetail',
+    component: () => import('@/views/DongyiDetail.vue'),
+    meta: { title: '东翼大河绿道详情', greenwayName: '东翼大河绿道' }
+  },
+  {
+    path: '/jiaoye',
+    name: 'JiaoyeDetail',
+    component: () => import('@/views/JiaoyeDetail.vue'),
+    meta: { title: '郊野休闲环绿道详情', greenwayName: '郊野休闲环绿道' }
+  },
+  {
+    path: '/nansha',
+    name: 'NanshaDetail',
+    component: () => import('@/views/NanshaDetail.vue'),
+    meta: { title: '南沙绿道详情', greenwayName: '南沙绿道' }
+  },
+  {
+    path: '/xiyi',
+    name: 'XiyiDetail',
+    component: () => import('@/views/XiyiDetail.vue'),
+    meta: { title: '西翼山水绿道详情', greenwayName: '西翼山水绿道' }
+  },
+  {
+    path: '/zhongxincheng',
+    name: 'ZhongxinchengDetail',
+    component: () => import('@/views/ZhongxinchengDetail.vue'),
+    meta: { title: '中心城滨水绿道详情', greenwayName: '中心城滨水绿道' }
   },
   // 管理端路由
   {

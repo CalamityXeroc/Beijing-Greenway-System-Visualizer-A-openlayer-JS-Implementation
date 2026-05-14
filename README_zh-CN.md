@@ -39,9 +39,9 @@
 
 ##  项目简介
 
-交互式可视化 **12 条北京主要绿道**，集成全屏落地页、OpenLayers 交互地图、GIS 工具集、实时天气、全景街景、管理后台、用户认证及 Capacitor 移动端应用。
+交互式可视化 **17 条北京主要绿道**，集成全屏落地页、OpenLayers 交互地图、GIS 工具集、实时天气、全景街景、管理后台、用户认证及 Capacitor 移动端应用。
 
--  12 条完整绿道路线
+-  17 条完整绿道路线
 -  Vue 3 + OpenLayers 8 前端
 -  Node.js + Express REST API 后端
 -  PostgreSQL + PostGIS 地理数据库
@@ -99,7 +99,7 @@ npm run dev       # http://localhost:5173
 |  **交互式地图** | OpenLayers 多图层高性能渲染，自定义深色瓦片 |
 |  **GIS 工具集** | 绘图（支持 RGB 调色板）、测量、导入 GeoJSON、基础图层切换 |
 |  **地图导出** | 将当前地图视图导出为 PNG 图片 |
-|  **12 条绿道** | 每条均有独立详情页、属性信息和全景街景 |
+|  **17 条绿道** | 每条均有独立详情页、属性信息和全景街景 |
 |  **实时天气** | 可拖动天气组件（高德地图 API） |
 |  **AI 助手** | 地图页浮窗，DeepSeek V3.2 驱动，对话写入数据库 |
 |  **AI 对话分析** | 管理员：词云 + 折线图 + 最近提问，昼夜主题自动切换 |
@@ -133,7 +133,7 @@ npm run dev       # http://localhost:5173
        views/
           LandingPage.vue          # /   首页落地页
           GreenwayOverview.vue     # /map  主地图页
-          *Detail.vue              # /wenyu  /chaoyang（12个详情页）
+          *Detail.vue              # /wenyu  /zhongxincheng（17个详情页）
           UserLogin.vue            # /login
           UserRegister.vue         # /register
           admin/                   # /admin/*（权限保护）
@@ -177,6 +177,11 @@ npm run dev       # http://localhost:5173
 | `/yingcheng` | YingchengDetail | 营城建都绿道详情 |
 | `/sanshan` | SanshanDetail | 三山五园绿道详情 |
 | `/chaoyang` | ChaoyangDetail | 朝阳绿道详情 |
+| `/beiyi` | BeiyiDetail | 北翼山水绿道详情 |
+| `/dongyi` | DongyiDetail | 东翼大河绿道详情 |
+| `/jiaoye` | JiaoyeDetail | 郊野休闲环绿道详情 |
+| `/xiyi` | XiyiDetail | 西翼山水绿道详情 |
+| `/zhongxincheng` | ZhongxinchengDetail | 中心城滨水绿道详情 |
 | `/login` | UserLogin | 用户登录 |
 | `/register` | UserRegister | 用户注册 |
 | `/admin/login` | AdminLogin | 管理员登录 |
@@ -189,7 +194,7 @@ npm run dev       # http://localhost:5173
 
 ---
 
-##  12 条绿道
+##  17 条绿道
 
 | # | 名称 | 长度 | 特色 |
 |----|------|------|------|
@@ -205,6 +210,11 @@ npm run dev       # http://localhost:5173
 | 10 | 营城建都绿道 | 42 km | 历史文化遗址绿道 |
 | 11 | 三山五园绿道 |  | 皇家园林景观绿道 |
 | 12 | 朝阳绿道 |  | 朝阳北部绿道环 |
+| 13 | 北翼山水绿道 | 174 km | 北部山区生态绿道 |
+| 14 | 东翼大河绿道 | 328 km | 东部河系生态廊道 |
+| 15 | 郊野休闲环绿道 | 109 km | 郊野公园休闲环线 |
+| 16 | 西翼山水绿道 | 160 km | 西部山水风景绿道 |
+| 17 | 中心城滨水绿道 | 125 km | 中心城区滨水绿道 |
 
 ---
 

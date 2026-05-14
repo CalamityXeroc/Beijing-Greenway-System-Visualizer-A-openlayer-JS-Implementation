@@ -1,6 +1,6 @@
 <template>
 
-  <div class="wenyu-page">
+  <div class="zhongxincheng-page">
 
     <header class="header">
 
@@ -12,9 +12,9 @@
 
       <div class="title-container">
 
-        <h1>北京温榆河滨水绿道</h1>
+        <h1>中心城滨水绿道</h1>
 
-        <p><i class="fas fa-leaf"></i> 京城北部河流景观，生态廊道</p>
+        <p><i class="fas fa-leaf"></i> 京城水系景观带，串联城市</p>
 
       </div>
 
@@ -30,9 +30,9 @@
 
         <img 
 
-          src="https://via.placeholder.com/800x300?text=温榆河滨水绿道" 
+          src="https://via.placeholder.com/800x300?text=奥林匹克森林公园绿道" 
 
-          alt="温榆河绿道景观" 
+          alt="奥森绿道景观" 
 
           class="feature-image"
 
@@ -164,7 +164,7 @@
 
     <section class="detail-comments-section">
 
-      <DesktopCommentsPanel greenway-name="北京温榆河滨水绿道" />
+      <DesktopCommentsPanel greenway-name="中心城滨水绿道" />
 
     </section>
 
@@ -178,7 +178,7 @@
 
       :latitude="weatherLocation.lat"
 
-      location-label="温榆河滨水绿道"
+      location-label="中心城滨水绿道"
 
       @weather-loaded="onWeatherLoaded"
 
@@ -264,17 +264,17 @@ const WHEEL_EDGE_EPSILON = 2
 
 
 
-// 温榆河绿道全景点位配置（真实坐标）
+// 奥森绿道全景点位配置（真实坐标）
 
 const panoramaPoints = ref([
 
   {
 
-    name: '温榆河南园主入口',
+    name: '奥森南园主入口',
 
     description: '奥林匹克森林公园南门，标志性景观',
 
-    lng: 116.420,
+    lng: 116.410,
 
     lat: 40.0050
 
@@ -312,7 +312,7 @@ const panoramaPoints = ref([
 
     lng: 116.3955,
 
-    lat: 40.0180
+    lat: 39.950
 
   },
 
@@ -336,7 +336,7 @@ const panoramaPoints = ref([
 
 const mapConfig = reactive({
 
-  center: [116.42, 40.05],
+  center: [116.41, 39.95],
 
   zoom: 13
 
@@ -348,9 +348,9 @@ const mapConfig = reactive({
 
 const weatherLocation = ref({
 
-  lon: 116.42,  // 温榆河公园中心坐标
+  lon: 116.41,  // 奥森公园中心坐标
 
-  lat: 40.05
+  lat: 39.95
 
 })
 
@@ -380,7 +380,7 @@ const layers = ref([
 
   {
 
-    id: 'wenyu-greenway',
+    id: 'zhongxincheng-greenway',
 
     type: 'geojson',
 
@@ -466,7 +466,7 @@ const handleImageError = (event) => {
 
   console.warn('[AosenDetail] 图片加载失败')
 
-  event.target.src = 'https://via.placeholder.com/800x300?text=温榆河滨水绿道'
+  event.target.src = 'https://via.placeholder.com/800x300?text=奥林匹克森林公园绿道'
 
 }
 
@@ -576,7 +576,7 @@ const loadGreenwayData = async () => {
 
   try {
 
-    const greenwayData = await loadGreenwayDataByName('温榆河', (data) => {
+    const greenwayData = await loadGreenwayDataByName('中心城滨水绿道', (data) => {
 
       // 更新界面显示的属性
 
@@ -650,7 +650,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 
-.wenyu-page {
+.zhongxincheng-page {
 
   width: 100%;
 
@@ -1320,7 +1320,7 @@ onBeforeUnmount(() => {
 
 /* Night mode styles */
 
-[data-theme="night"] .wenyu-page {
+[data-theme="night"] .zhongxincheng-page {
 
   background: var(--bg-primary, #1a1a1a);
 
@@ -1554,7 +1554,7 @@ onBeforeUnmount(() => {
 
 <style>
 
-[data-theme="night"] .wenyu-page {
+[data-theme="night"] .zhongxincheng-page {
 
   background: var(--bg-primary, #1a1a1a);
 
@@ -1562,11 +1562,11 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .header h1,
+[data-theme="night"] .zhongxincheng-page .header h1,
 
-[data-theme="night"] .wenyu-page .header p,
+[data-theme="night"] .zhongxincheng-page .header p,
 
-[data-theme="night"] .wenyu-page .header i {
+[data-theme="night"] .zhongxincheng-page .header i {
 
   color: var(--text-primary, #e0e0e0);
 
@@ -1574,7 +1574,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .back-btn {
+[data-theme="night"] .zhongxincheng-page .back-btn {
 
   background: rgba(255, 255, 255, 0.1);
 
@@ -1586,7 +1586,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .back-btn:hover {
+[data-theme="night"] .zhongxincheng-page .back-btn:hover {
 
   background: rgba(255, 255, 255, 0.15);
 
@@ -1594,7 +1594,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .left-sidebar {
+[data-theme="night"] .zhongxincheng-page .left-sidebar {
 
   background: var(--card-bg, rgba(30, 30, 30, 0.9));
 
@@ -1606,7 +1606,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .placeholder-image {
+[data-theme="night"] .zhongxincheng-page .placeholder-image {
 
   background: var(--bg-secondary, #2a2a2a);
 
@@ -1614,7 +1614,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .placeholder-text {
+[data-theme="night"] .zhongxincheng-page .placeholder-text {
 
   color: var(--text-secondary, #b0b0b0);
 
@@ -1622,7 +1622,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .placeholder-text i {
+[data-theme="night"] .zhongxincheng-page .placeholder-text i {
 
   opacity: 0.5;
 
@@ -1630,7 +1630,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights {
+[data-theme="night"] .zhongxincheng-page .highlights {
 
   background: var(--card-bg, rgba(30, 30, 30, 0.7));
 
@@ -1642,7 +1642,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights h3 {
+[data-theme="night"] .zhongxincheng-page .highlights h3 {
 
   color: var(--text-primary, #e0e0e0);
 
@@ -1650,7 +1650,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights h3::before {
+[data-theme="night"] .zhongxincheng-page .highlights h3::before {
 
   background: linear-gradient(180deg, #66bb6a, #42a5f5);
 
@@ -1658,7 +1658,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights li {
+[data-theme="night"] .zhongxincheng-page .highlights li {
 
   background: rgba(255, 255, 255, 0.08);
 
@@ -1666,7 +1666,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights li:hover {
+[data-theme="night"] .zhongxincheng-page .highlights li:hover {
 
   background: rgba(255, 255, 255, 0.12);
 
@@ -1674,7 +1674,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights li::before {
+[data-theme="night"] .zhongxincheng-page .highlights li::before {
 
   color: #66bb6a;
 
@@ -1682,7 +1682,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights li strong {
+[data-theme="night"] .zhongxincheng-page .highlights li strong {
 
   color: #42a5f5;
 
@@ -1690,7 +1690,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .highlights li span {
+[data-theme="night"] .zhongxincheng-page .highlights li span {
 
   color: var(--text-secondary, #b0b0b0);
 
@@ -1698,7 +1698,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .description {
+[data-theme="night"] .zhongxincheng-page .description {
 
   color: var(--text-secondary, #b0b0b0);
 
@@ -1706,7 +1706,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .badge-green {
+[data-theme="night"] .zhongxincheng-page .badge-green {
 
   background: rgba(102, 187, 106, 0.15);
 
@@ -1716,7 +1716,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .badge-blue {
+[data-theme="night"] .zhongxincheng-page .badge-blue {
 
   background: rgba(66, 165, 245, 0.15);
 
@@ -1726,7 +1726,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .badge-purple {
+[data-theme="night"] .zhongxincheng-page .badge-purple {
 
   background: rgba(171, 71, 188, 0.15);
 
@@ -1736,7 +1736,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .panorama-btn {
+[data-theme="night"] .zhongxincheng-page .panorama-btn {
 
   background: linear-gradient(135deg, #66bb6a, #2e7d32);
 
@@ -1746,7 +1746,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .panorama-btn:hover {
+[data-theme="night"] .zhongxincheng-page .panorama-btn:hover {
 
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
 
@@ -1756,7 +1756,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .title-container {
+[data-theme="night"] .zhongxincheng-page .title-container {
 
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.8);
 
@@ -1764,7 +1764,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .right-map {
+[data-theme="night"] .zhongxincheng-page .right-map {
 
   background: var(--bg-primary-dark, #0a0a0a);
 
@@ -1772,7 +1772,7 @@ onBeforeUnmount(() => {
 
 
 
-[data-theme="night"] .wenyu-page .feature-image {
+[data-theme="night"] .zhongxincheng-page .feature-image {
 
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 

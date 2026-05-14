@@ -1,5 +1,13 @@
 <template>
   <div class="greenroad-page">
+    <!-- 加载指示器 -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>加载中...</p>
+      </div>
+    </div>
+    
     <!-- 导航栏：sticky 吸顶，不参与页面滚动但始终可见 -->
     <div class="navbar-sticky">
       <TopNavbar :toolbarRef="toolbarRef" :layerConfig="layerConfig"/>
@@ -180,6 +188,7 @@ import TopNavbar from '@/components/TopNavbar.vue'
 
 const router = useRouter()
 const toolbarRef = ref(null)
+const isLoading = ref(true)
 
 // 地图配置
 const mapConfig = reactive({
@@ -452,6 +461,126 @@ const layerConfig = ref([
       length: 18,
       area: '朝阳区'
     }
+  },
+  {
+    id: 'beiyi-greenway',
+    name: '北翼山水绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=北翼山水绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#29B6F6',
+      lineWidth: 5
+    },
+    info: {
+      name: '北翼山水绿道',
+      description: '北京北部山区生态绿道',
+      length: 38.6,
+      area: '昌平区、怀柔区'
+    }
+  },
+  {
+    id: 'dongyi-greenway',
+    name: '东翼大河绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=东翼大河绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#26C6DA',
+      lineWidth: 5
+    },
+    info: {
+      name: '东翼大河绿道',
+      description: '东部河系生态廊道',
+      length: 64.3,
+      area: '通州区、顺义区'
+    }
+  },
+  {
+    id: 'jiaoye-greenway',
+    name: '郊野休闲环绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=郊野休闲环绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#78C850',
+      lineWidth: 5
+    },
+    info: {
+      name: '郊野休闲环绿道',
+      description: '连接郊野公园的休闲环线',
+      length: 112.8,
+      area: '多区环线'
+    }
+  },
+  {
+    id: 'nansha-greenway',
+    name: '南沙绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=南沙绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#42A5F5',
+      lineWidth: 5
+    },
+    info: {
+      name: '南沙绿道',
+      description: '南沙沿线滨水生态廊道',
+      length: 35.2,
+      area: '海淀区、昌平区'
+    }
+  },
+  {
+    id: 'xiyi-greenway',
+    name: '西翼山水绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=西翼山水绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#7E57C2',
+      lineWidth: 5
+    },
+    info: {
+      name: '西翼山水绿道',
+      description: '西部山水风景休闲绿道',
+      length: 58.7,
+      area: '门头沟区、石景山区'
+    }
+  },
+  {
+    id: 'zhongxincheng-greenway',
+    name: '中心城滨水绿道',
+    type: 'geojson',
+    url: '/api/greenways?name=中心城滨水绿道',
+    visible: true,
+    zIndex: 10,
+    fitExtent: false,
+    defer: true,
+    style: {
+      lineColor: '#EF5350',
+      lineWidth: 5
+    },
+    info: {
+      name: '中心城滨水绿道',
+      description: '中心城区滨水慢行走廊',
+      length: 44.1,
+      area: '中心城区'
+    }
   }
 ])
 
@@ -574,6 +703,8 @@ const mapManager = ref(null)
 // 地图就绪
 const onMapReady = (map) => {
   console.log('[GreenwayOverview] 地图已就绪')
+  // 关闭加载指示器
+  isLoading.value = false
   // 获取 MapManager 实例
   if (mapViewer.value) {
     mapManager.value = mapViewer.value.getMapManager()
@@ -913,13 +1044,26 @@ const viewPopupDetail = () => {
     }).catch(err => {
       console.error('[GreenwayOverview] ❌ 导航失败:', err)
     })
+  } else if (targetLayerId === 'beiyi-greenway') {
+    router.push('/beiyi')
+  } else if (targetLayerId === 'dongyi-greenway') {
+    router.push('/dongyi')
+  } else if (targetLayerId === 'jiaoye-greenway') {
+    router.push('/jiaoye')
+  } else if (targetLayerId === 'nansha-greenway') {
+    router.push('/nansha')
+  } else if (targetLayerId === 'xiyi-greenway') {
+    router.push('/xiyi')
+  } else if (targetLayerId === 'zhongxincheng-greenway') {
+    router.push('/zhongxincheng')
   } else {
     console.warn('[GreenwayOverview] ⚠️ 未找到匹配的图层ID:', targetLayerId)
     console.warn('[GreenwayOverview] 📋 所有支持的图层:', [
       'wenyu-greenway', 'huanerhuan-greenway', 'liangmahe-greenway',
       'changying-greenway', 'changping42-greenway', 'lidu-greenway',
       'beiyunhe-greenway', 'nansha-greenway', 'aosen-greenway', 'yingcheng-greenway',
-      'sanshan-greenway', 'chaoyang-greenway'
+      'sanshan-greenway', 'chaoyang-greenway', 'beiyi-greenway', 'dongyi-greenway',
+      'jiaoye-greenway', 'nansha-greenway', 'xiyi-greenway', 'zhongxincheng-greenway'
     ])
   }
 }
@@ -941,6 +1085,17 @@ onMounted(() => {
   }
 })
 
+// 监听路由变化，在导航时显示加载指示器
+watch(
+  () => router.currentRoute.value.name,
+  (newName) => {
+    if (newName === 'Home') {
+      // 路由到地图页时，重新显示加载指示器
+      isLoading.value = true
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   if (tooltipMoveRaf) {
     cancelAnimationFrame(tooltipMoveRaf)
@@ -956,6 +1111,51 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   margin: 0;
   /* 允许垂直滚动，信息区域在地图下方自然流动 */
+}
+
+/* 加载指示器 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.loading-spinner {
+  text-align: center;
+  color: white;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 20px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+  font-size: 14px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 导航栏粘性容器：吸顶显示 */

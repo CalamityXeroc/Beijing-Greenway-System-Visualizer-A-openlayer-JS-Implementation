@@ -39,9 +39,9 @@ A modern WebGIS platform for exploring Beijing's greenway network, built with Vu
 
 ##  Project Overview
 
-Interactive visualization of **12 major Beijing greenways** featuring a fullscreen landing page, an interactive OpenLayers map, GIS tools, real-time weather, panoramic street view, admin panel, user auth, and a Capacitor-based mobile app.
+Interactive visualization of **17 major Beijing greenways** featuring a fullscreen landing page, an interactive OpenLayers map, GIS tools, real-time weather, panoramic street view, admin panel, user auth, and a Capacitor-based mobile app.
 
--  12 complete greenway routes
+-  17 complete greenway routes
 -  Vue 3 + OpenLayers 8 frontend
 -  Node.js + Express REST API backend
 -  PostgreSQL + PostGIS geospatial database
@@ -99,7 +99,7 @@ npm run dev       # http://localhost:5173
 |  **Interactive Map** | OpenLayers multi-layer rendering with custom dark tile theme |
 |  **GIS Toolkit** | Draw (with RGB color picker), measure, import GeoJSON, toggle base layers |
 |  **Map Export** | Export current map view as PNG image |
-|  **12 Greenways** | Individual detail pages with attributes & street panorama |
+|  **17 Greenways** | Individual detail pages with attributes & street panorama |
 |  **Real-time Weather** | Draggable weather widget (Amap API) |
 |  **AI Assistant** | Map/detail-only floating chatbot (DeepSeek V3.2), conversations logged to DB |
 |  **AI Chat Analytics** | Admin: word cloud + daily trend + recent messages, dual day/night theme |
@@ -133,7 +133,7 @@ npm run dev       # http://localhost:5173
        views/
           LandingPage.vue          # /   fullpage homepage
           GreenwayOverview.vue     # /map  main map view
-          *Detail.vue              # /wenyu  /chaoyang (12 pages)
+          *Detail.vue              # /wenyu  /zhongxincheng (17 pages)
           UserLogin.vue            # /login
           UserRegister.vue         # /register
           admin/                   # /admin/* (auth-protected)
@@ -177,6 +177,11 @@ npm run dev       # http://localhost:5173
 | `/yingcheng` | YingchengDetail | 营城建都绿道 |
 | `/sanshan` | SanshanDetail | 三山五园绿道 |
 | `/chaoyang` | ChaoyangDetail | 朝阳绿道 |
+| `/beiyi` | BeiyiDetail | 北翼山水绿道 |
+| `/dongyi` | DongyiDetail | 东翼大河绿道 |
+| `/jiaoye` | JiaoyeDetail | 郊野休闲环绿道 |
+| `/xiyi` | XiyiDetail | 西翼山水绿道 |
+| `/zhongxincheng` | ZhongxinchengDetail | 中心城滨水绿道 |
 | `/login` | UserLogin | User login |
 | `/register` | UserRegister | User registration |
 | `/admin/login` | AdminLogin | Admin login |
@@ -189,7 +194,7 @@ npm run dev       # http://localhost:5173
 
 ---
 
-##  12 Greenways
+##  17 Greenways
 
 | # | Name | Length | Key Feature |
 |----|------|--------|-------------|
@@ -205,6 +210,11 @@ npm run dev       # http://localhost:5173
 | 10 | 营城建都绿道 (Yingcheng) | 42 km | Historical heritage route |
 | 11 | 三山五园绿道 (Sanshan) |  | Imperial gardens & landscape |
 | 12 | 朝阳绿道 (Chaoyang) |  | North Chaoyang district loop |
+| 13 | 北翼山水绿道 (Beiyi) | 174 km | Northern mountain landscape |
+| 14 | 东翼大河绿道 (Dongyi) | 328 km | Eastern river corridor |
+| 15 | 郊野休闲环绿道 (Jiaoye) | 109 km | Suburban leisure loop |
+| 16 | 西翼山水绿道 (Xiyi) | 160 km | Western mountain landscape |
+| 17 | 中心城滨水绿道 (Zhongxincheng) | 125 km | Central city waterfront |
 
 ---
 
