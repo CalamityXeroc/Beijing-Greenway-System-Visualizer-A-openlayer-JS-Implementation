@@ -9,6 +9,8 @@
 
 基于 Vue 3 + OpenLayers + PostgreSQL/PostGIS 的现代 WebGIS 平台，交互式探索北京绿道网络。
 
+目前正在全力投入于易智睿杯中国大学生GIS软件开发竞赛，更新暂时暂停~
+
 **[English](./README.md) | [中文](./README_zh-CN.md)**
 
 > ⚡ **快速开始？** 请查看 [**快速部署指南.md**](./快速部署指南.md) — 5 分钟内部署完整系统（包含 PostgreSQL、Node.js 配置步骤）
