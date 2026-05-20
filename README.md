@@ -13,6 +13,9 @@ A modern WebGIS platform for exploring Beijing's greenway network, built with Vu
 
 > ⚡ **Quick Start?** See the [**快速部署指南.md**](./快速部署指南.md) for complete setup instructions (PostgreSQL + Node.js configuration included)
 
+*Currently fully developing for the 2026 Yizhirui Cup China University Student GIS Software Development Competition, temporarily stopping updates❤
+
+
 ---
 
 ##  Screenshots
